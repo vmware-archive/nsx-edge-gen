@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<virtualWireCreateSpec>
+	<name>{{ logical_switch['name']}}</name>
+	<controlPlaneMode>UNICAST_MODE</controlPlaneMode>
+	<tenantId/>
+</virtualWireCreateSpec>

@@ -1,0 +1,7 @@
+xmltodict
+ipcalc
+pprint
+click>=6.2
+Jinja2>=2.8
+PyYAML>=3.11
+requests>=2.9.1

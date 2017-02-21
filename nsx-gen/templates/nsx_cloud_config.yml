@@ -1,0 +1,62 @@
+---
+name: test
+vcenter:
+  address:
+  admin_user:
+  admin_passwd:
+
+nsx_manager:
+  address:
+  nsx_mgr_user:
+  nsx_mgr_passwd:
+
+nsx_defaults:
+  transport_zone:
+  datacenter:
+  datastore:
+  cluster:
+  distributed_portswitch:
+  save_folder:
+
+logical_switches:
+- name: Infra
+  cidr: 192.168.10.0/26
+  # Range: 192.168.10.1-63
+- name: Deployment
+  cidr: 192.168.20.0/22
+  # Range: 192.168.20.1-23.253
+- name: Services
+  cidr: 192.168.24.0/22
+  # Range: 192.168.24.1-27.253
+
+distributed_portswitch:
+- name: testdistributedportswitch
+
+nsg_edge_lbrs:
+- name: testlbr1
+  username:
+  password:
+  primary_ip:
+  secondary_ip:
+  networks:
+  - name: Infra
+    ip_address:
+  pools:
+  - name: testcluster-1
+  - name: testcluster-2
+  virtualservers:
+  - name: testvirtual-1
+    descrp: http virtual server
+    app_profile_id: appid-1
+    persistence:
+      method: cookie
+  - name: testvirtual-2
+    descrp: https virtual server
+    app_profile_id: appid-2
+    persistence:
+      method: ssl_session
+properties:
+  test: testvalue
+  testA:
+    testInner: testInnerValue
+

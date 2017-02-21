@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<loadBalancer>
+    <enabled>true</enabled>
+    <enableServiceInsertion>false</enableServiceInsertion>
+    <accelerationEnabled>false</accelerationEnabled>
+    <logging>
+        <enable>true</enable>
+        <logLevel>info</logLevel>
+    </logging>
+    {% for virtualserver in lbr['pools'] %}
+    <virtualServer>
+        <virtualServerId>{{virtualserver['id']}}</virtualServerId>
+        <name>{{virtualserver['name']}}</name>
+        <description>Virtual server {{virtualserver['name']}} with {{virtualserver['appProfileId']}}</description>
+        <enabled>true</enabled>
+        <ipAddress>{{virtualserver['ip']}}</ipAddress>
+        <protocol>{{virtualserver['protocol']}}</protocol>
+        <port>{{virtualserver['port']}}</port>
+        <connectionLimit>0</connectionLimit>
+        <connectionRateLimit>0</connectionRateLimit>
+        <applicationProfileId>{{virtualserver['appProfileId']}}</applicationProfileId>
+        <defaultPoolId>{{virtualserver['poolId']}}</defaultPoolId>
+        <enableServiceInsertion>false</enableServiceInsertion>
+        <accelerationEnabled>false</accelerationEnabled>
+        <applicationRuleId>{{virtualserver['appRuleId']}}</applicationRuleId>
+    </virtualServer>
+    {% endfor %}
+    <applicationProfile>
+        <applicationProfileId>httpApplicationProfile-1</applicationProfileId>
+        <name>httpAAppProfile1</name>
+        <insertXForwardedFor>true</insertXForwardedFor>
+        <sslPassthrough>false</sslPassthrough>
+        <template>HTTP</template>
+        <serverSslEnabled>false</serverSslEnabled>
+    </applicationProfile>
+    <applicationProfile>
+        <applicationProfileId>httpsApplicationProfile-2</applicationProfileId>
+        <name>httpsAppProfile-2</name>
+        <insertXForwardedFor>true</insertXForwardedFor>
+        <sslPassthrough>false</sslPassthrough>
+        <template>HTTPS</template>
+        <persistence>
+            <method></method>
+            <cookieName></cookieName>
+            <cookieMode></cookieMode>
+        </persistence>
+        <serverSslEnabled></serverSslEnabled>
+        <clientSsl>
+            <clientAuth></clientAuth>
+            <serviceCertificate></serviceCertificate>
+        </clientSsl>
+    </applicationProfile>
+    {% for pool in lbr['pools'] %}
+    <pool>
+        <poolId>{{pool['id']}}</poolId>
+        <name>{{pool['name']}}</name>
+        <description>Pool {{pool['name']}}</description>
+        <transparent>false</transparent>
+        <algorithm>round-robin</algorithm>
+        <monitorId></monitorId>
+        <member>
+            <memberId></memberId>
+            <ipAddress></ipAddress>
+            <weight></weight>
+            <port></port>
+            <monitorPort></monitorPort>
+            <minConn></minConn>
+            <maxConn></maxConn>
+            <name></name>
+        </member>
+    </pool>
+    {% endfor %}
+
+    <monitor>
+        <monitorId>monitor-1</monitorId>
+        <type>tcp</type>
+        <interval>5</interval>
+        <timeout>15</timeout>
+        <maxRetries>3</maxRetries>
+        <name>default_tcp_monitor</name>
+    </monitor>
+    <monitor>
+        <monitorId>monitor-2</monitorId>
+        <type>http</type>
+        <interval>5</interval>
+        <timeout>15</timeout>
+        <maxRetries>3</maxRetries>
+        <method>GET</method>
+        <url>/</url>
+        <name>default_http_monitor</name>
+    </monitor>
+    <monitor>
+        <monitorId>monitor-3</monitorId>
+        <type>https</type>
+        <interval>5</interval>
+        <timeout>15</timeout>
+        <maxRetries>3</maxRetries>
+        <method>GET</method>
+        <url>/</url>
+        <name>default_https_monitor</name>
+    </monitor>
+    
+</loadBalancer>

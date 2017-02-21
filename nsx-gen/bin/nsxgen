@@ -1,0 +1,77 @@
+#!/usr/bin/env python
+
+import click
+import shutil
+import stat
+import sys
+import yaml
+import os
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(PATH, os.path.join('..', 'lib')))
+import nsx_builder
+import config
+from config import Config
+
+LIB_PATH = os.path.dirname(os.path.realpath(__file__))
+REPO_PATH = os.path.realpath(os.path.join(LIB_PATH, '..'))
+TEMPLATE_PATH = os.path.realpath(os.path.join(LIB_PATH, '..', 'templates'))
+
+CONFIG_FILE = "nsx_cloud_config.yml"
+
+@click.group()
+def cli():
+	pass
+
+@cli.command('init')
+@click.argument('name', nargs=1, required=False)
+def init_cmd(name):
+	if name is not None:
+		os.mkdir(name)
+		os.chdir(name)
+	if os.path.isfile(config.CONFIG_FILE):
+		print >> sys.stderr, 'Already initialized.'
+		sys.exit(0)
+	name = os.path.basename(os.getcwd())
+	root_dir = os.getcwd()
+	try:
+	    shutil.copytree(TEMPLATE_PATH + '/' + config.CONFIG_FILE, name)
+	except OSError as exc:
+	    if exc.errno == errno.ENOTDIR:
+	        shutil.copy(src, dst)
+        else: raise
+
+@cli.command('build')
+def build_cmd():
+	cfg = Config().read()
+	print('name', cfg.get('name', '<unspecified>'))
+	nsx_builder.build(cfg)
+
+def read_config():
+	try:
+		with open(CONFIG_FILE) as config_file:
+			return read_yaml(config_file)
+	except IOError as e:
+		print >> sys.stderr, 'Not a nsx-gen repository. Use "nsxgen init" in the root of your repository to create one.'
+		sys.exit(1)
+
+def read_history():
+	try:
+		with open(HISTORY_FILE) as history_file:
+			return read_yaml(history_file)
+	except IOError as e:
+		return {}
+
+def write_history(history):
+	with open(HISTORY_FILE, 'wb') as history_file:
+		write_yaml(history_file, history)
+
+def read_yaml(file):
+	return yaml.safe_load(file)
+
+def write_yaml(file, data):
+	file.write('---\n')
+	file.write(yaml.safe_dump(data, default_flow_style=False))
+
+if __name__ == "__main__":
+	cli()	
