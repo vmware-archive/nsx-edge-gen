@@ -1,0 +1,451 @@
+#!/usr/bin/env python
+
+import click
+import errno
+import shutil
+import stat
+import sys
+import traceback
+import yaml
+import os
+
+import argparse
+import ConfigParser
+import os.path
+import string
+import sys
+import yaml
+from tabulate import tabulate
+from argparse import RawTextHelpFormatter
+from pkg_resources import resource_filename
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(PATH, os.path.join('..', 'lib')))
+import nsx_builder
+import config
+import template
+from config import Config
+
+LIB_PATH = os.path.dirname(os.path.realpath(__file__))
+REPO_PATH = os.path.realpath(os.path.join(LIB_PATH, '..'))
+TEMPLATE_PATH = os.path.realpath(os.path.join(LIB_PATH, '..', 'templates'))
+
+CONFIG_FILE = "nsx_cloud_config.yml"
+
+
+ATTRIBUTE_MAP_ARRAY = {
+	'vcenter' : [ 
+		[ 'addr', 'address'],
+		[ 'user', 'admin_user'],
+		[ 'pass', 'admin_passwd'],
+		[ 'dc', 'datacenter'],
+		[ 'ds', 'datastore'],
+		[ 'cluster', 'cluster'],
+		[ 'fd', 'folder'],
+		[ 'host', 'host'],
+	],
+
+	'defaults': [
+		[ 'ntp', 'ntp_ips'],
+		[ 'dns', 'dns_ips'],
+		[ 'log', 'syslog_ips'],
+		[ 'ldap', 'ldap_ips'],
+	],
+
+	'nsxmanager': [
+		[ 'addr', 'address'],
+		[ 'user', 'admin_user'],
+		[ 'pass', 'admin_passwd'],
+		[ 'tz', 'transportzone'],
+		[ 'uplink_ip', 'uplink_ip'],
+		[ 'uplink_port', 'uplink_port_switch'],
+	],
+
+	'esg': [
+		[ 'name', 'name'],
+		[ 'size', 'size'],
+		[ 'gateway', 'gateway_ip'],
+		[ 'cli_user', 'cli_username'],
+		[ 'cli_pass', 'cli_password'],
+		[ 'certs', 'certs_name'],
+		[ 'certs_config_ou', 'certs_config_orgunit'],
+		[ 'certs_config_cc', 'certs_config_country'],
+		[ 'certs_config_sysd', 'certs_config_systemdomain'],
+		[ 'certs_config_appd', 'certs_config_appdomain'],
+	],
+
+	'routed_components':  [
+		[ 'uplink_ip', 'uplink_ip'],
+		[ 'inst', 'instances', int],
+		[ 'off', 'offset', int],
+	],
+}
+
+ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router']
+
+cli_config = { }
+
+def contruct_parser(parser):
+	# parser = subparsers.add_parser('nsx-gen', description="Functions for nsx-gen",
+	#                                help="Functions for nsx-gen",
+	#                                formatter_class=RawTextHelpFormatter)
+
+	parser.add_argument("command", help="""
+	build: build a new Edge Service Gateway
+	delete: delete a Edge Service Gateway"
+	list:   return a list of all Edge Service Gateways
+	init:  create a new nsx cloud config file
+	""")
+
+	# parser.add_argument('file', 
+	# 					help="nsx configuration yml file",
+	# 					default=CONFIG_FILE)
+
+	parser.add_argument("-i",
+						"--init",
+						nargs=1,
+						help="name for nsx config directory on init",
+						default="nsx-pcf")
+
+	parser.add_argument("-c",
+						"--nsx_conf",
+						help="nsx configuration yml file",
+						default=CONFIG_FILE)
+	
+
+	for section in ATTRIBUTE_MAP_ARRAY:
+		
+		prefix = section
+		if section == 'defaults':
+			prefix = ''
+
+		if section not in ['esg', 'routed_components']: 
+			# flatten nested dict structures to flat structure
+			for field in ATTRIBUTE_MAP_ARRAY[section]:
+				fieldType = str
+				if len(field) > 2:
+					fieldType = int
+
+				if section == 'defaults':
+
+					parser.add_argument('-{}'.format( field[0]), 
+								'--{}'.format(field[1]),
+								type=fieldType,
+								help="default {}".format(field[1].replace('_', ' '))
+							)
+				else:
+					parser.add_argument('-{}_{}'.format(prefix, field[0]), 
+								'--{}_{}'.format(prefix, field[1]),
+								type=fieldType,
+								help="{} {}".format(prefix, field[1].replace('_', ' '))
+							)
+		
+		if section == 'esg': 
+			# There can be n number of esg entries
+			for index in xrange(1, 3): 
+				
+				# flatten nested dict structures to flat structure, each suffixed with index
+				for field in ATTRIBUTE_MAP_ARRAY[section]:
+					fieldType = str
+					if len(field) > 2:
+						fieldType = int
+					parser.add_argument('-{}_{}_{}'.format(prefix, field[0], index), 
+								'--{}_{}_{}'.format(prefix, field[1], index),
+								type=fieldType,
+								help="{} instance {} {}".format(section, index, field[1].replace('_', ' '))
+								)
+
+				for component in ROUTED_COMPONENTS:
+					# Structure for routed_components
+					"""
+					edge_service_gateways:
+					- name: testedge2
+					  routed_components:
+					  - name: opsmgr
+					    switch: Infra
+					    instances: 1
+					    offset: 5
+					    #transport:
+					      # #Default incoming scheme is https/443 for opsmgr
+					      # incoming_scheme:
+					      #  port: 443
+					      #  protocol: https
+					      # #Default forward scheme is https/443 for opsmgr
+					      # forward_scheme:
+					      #  port: 443
+					      #  protocol: https
+					    uplink_details: 
+  							uplink_ip: 10.193.99.31
+
+  						uplink_ip would appear as : esg_opsmgr_uplink_ip_1
+					"""
+					for compField in ATTRIBUTE_MAP_ARRAY['routed_components']: 
+						fieldType = str  
+						if len(compField) > 2:
+							fieldType = int         
+						parser.add_argument('-{}_{}_{}_{}'.format(prefix, component, compField[0], index), 
+								'--{}_{}_{}_{}'.format(prefix, component, compField[1], index),
+								type=fieldType,
+								help="{} instance {} routed {} {}".format(prefix, index, component, compField[1].replace('_', ' '))
+								)
+
+	parser.set_defaults(func=_nsx_gen_main)	
+
+def construct_config(args):
+	cliConfig = { }
+	argDict = vars(args)
+
+	for section in ATTRIBUTE_MAP_ARRAY:
+		prefix = section
+		cliConfig[section] = { }
+		if section == 'defaults':
+			prefix = ''
+
+		if section not in ['esg', 'routed_components', 'nsxmanager']:
+			for field in ATTRIBUTE_MAP_ARRAY[section]:
+				key = '{}_{}'.format(prefix, field[1])
+				if section == 'defaults':
+					key = '{}'.format(field[1])
+
+				val =  argDict[key]
+				if val:
+					cliConfig[section][field[1]] = val
+
+		elif section == 'nsxmanager': 
+			prefix = section
+			cliConfig['nsxmanager'] = { }
+			cliConfig['nsxmanager']['uplink_details'] = { }
+
+			for field in ATTRIBUTE_MAP_ARRAY[section]:
+				key = '{}_{}'.format(prefix, field[1])
+				val =  argDict[key]
+				if val:
+					if 'uplink_' in key:
+						cliConfig['nsxmanager']['uplink_details'][field[1]] = val
+					else:
+						cliConfig[section][field[1]] = val			
+		elif section == 'esg': 
+			prefix = section
+			cliConfig['edge_service_gateways'] = [ ]
+
+
+			for index in xrange(1, 4): 
+				esgEntry = {  }
+				esgEntry['routed_components'] = { }
+				esgEntry['certs'] = {}
+				esgEntry['certs']['config'] = { }
+				esgEntry['cli'] = {}
+
+				key = '{}_{}_{}'.format(prefix, 'name', index)
+				
+				name =  argDict[key]
+				if name:
+					esgEntry['name'] = name
+				else:
+					break
+
+				for field in ATTRIBUTE_MAP_ARRAY[section]:
+					key = '{}_{}_{}'.format(prefix, field[1], index)
+					val =  argDict[key]
+					if val:
+						# build certs_config to certs.config dict structure
+						if 'certs_config' in key:
+							field[1] =  field[1].replace('certs_config_', '').replace('domain', '_domain')							
+							esgEntry['certs']['config'][field[1]] = val
+						# build certs_ to certs dict structure
+						elif 'certs' in key:
+							field[1] =  field[1].replace('certs_', '')
+							esgEntry['certs'][field[1]] = val
+						# build cli_ to cli dict structure
+						elif 'cli_' in key:	
+							field[1] =  field[1].replace('cli_', '')							
+							esgEntry['cli'][field[1]] = val
+						else:
+							esgEntry[field[1]] = val 
+								
+				esgEntry['routed_components'] = [ ]
+
+				for component in ROUTED_COMPONENTS:
+					componentName = component.replace('_', '-')
+					componentEntry = { 'name' : componentName}
+					componentEntry['uplink_details'] =  { }
+					for compField in ATTRIBUTE_MAP_ARRAY['routed_components']:                        
+
+						key = '{}_{}_{}_{}'.format(prefix, component, compField[1], index)
+						val =  argDict[key]
+						if val:
+
+							# Structure for routed_components
+							"""
+							convert esg_opsmgr_uplink_ip_1 to:
+							edge_service_gateways:
+							- name: testedge2
+							  routed_components:
+							  - name: opsmgr
+							    instances: 1
+							    offset: 5
+							    uplink_details: 
+		  							uplink_ip: 10.193.99.31
+							"""
+							if 'uplink_ip' in key:
+								compField[1] = compField[1].replace('uplink_details_', '')
+								componentEntry['uplink_details'][compField[1]] = val
+								
+							else:
+								componentEntry[compField[1]] = val 
+					esgEntry['routed_components'].append(componentEntry)
+				cliConfig['edge_service_gateways'].append(esgEntry) 
+		
+	print '\n{}\n{:<80}Command Line Args Mapped\n{}\n{}\n'.format('-'*200, ' ', '-'*200, cliConfig)
+	return cliConfig
+
+
+def _nsx_gen_main(args):
+
+	if args.command == 'init':
+		init_cmd(args.init)
+		exit()
+
+	try:
+		global cli_config 
+		cli_config = construct_config(args)
+	
+		command_selector = {
+			'list': list_cmd,
+			'delete': delete_cmd,
+			'build': build_cmd,
+			}
+		command_selector[args.command](config_file=args.nsx_conf)
+	except KeyError:
+		traceback.print_exc(file=sys.stdout)
+		print 'Unknown command, exiting...'
+		exit()		
+	except:
+		traceback.print_exc(file=sys.stdout)
+		print 'Unexpected error:' + str(sys.exc_info()[0])
+		exit()
+
+def main():
+	main_parser = argparse.ArgumentParser()	
+	contruct_parser(main_parser)
+	args = main_parser.parse_args()
+	args.func(args)
+
+def init_cmd(configFile):
+	name = configFile
+	if isinstance(configFile, list):
+		name = configFile[0]
+
+	if os.path.isfile(config.CONFIG_FILE):
+		print >> sys.stderr, 'Already initialized.'
+		sys.exit(0)
+	if name is not None:
+		os.mkdir(name)
+		os.chdir(name)
+	name = os.path.basename(os.getcwd())
+	root_dir = os.getcwd()
+	template.render(config.CONFIG_FILE, config.CONFIG_FILE, { 'name': name })
+
+def build_config(config_file):
+	file_cfg = Config().read(config_file)	
+	merged_cfg = file_cfg
+	if bool(cli_config):
+		# If the user has provided their own set of edge_service_gateways
+		esgs = cli_config['edge_service_gateways']
+		# Built-in file template config has one esg with default config
+		if esgs and len(esgs) == 1:
+			# If there is only one esg provided by user via command line,
+			# override the name of the esg instance with the user supplied name
+			# so the merge of the two would yield just one esg rather than duplicates but different names
+			file_cfg['edge_service_gateways'][0]['name'] = esgs[0]['name']
+		else:				
+			# More than one esg defined by user in command line,
+			cli_config['edge_service_gateways'] = [ ]
+	
+		merged_cfg = deepupdate( cli_config, file_cfg)
+	
+		
+	merged_cfg = Config(merged_cfg).validate()
+	print 'Effective configuration to be used :{}\n\n'.format(merged_cfg)
+	print 'Name of config:{}\n'.format(merged_cfg.get('name', '<unspecified>'))
+
+	return merged_cfg
+
+def build_cmd(config_file=CONFIG_FILE):
+	
+	finalCfg = build_config(config_file)
+	nsx_builder.build(finalCfg)
+
+	print 'Done with build...\nNow listing running config..\n\n'
+	nsx_builder.list(finalCfg)
+	print 'Exiting...\n'
+
+def list_cmd(config_file=CONFIG_FILE):
+	finalCfg = build_config(config_file)
+
+	nsx_builder.list(finalCfg)
+
+def delete_cmd(config_file=CONFIG_FILE):
+	finalCfg = build_config(config_file)
+
+	nsx_builder.delete(finalCfg)
+
+	print 'Done with delete...\nNow listing running config..\n\n'
+	nsx_builder.list(finalCfg)
+	print 'Exiting...\n'
+
+def deepupdate(original, update):
+	"""
+	Recursively update a dict.
+	Subdict's won't be overwritten but also updated.
+	"""
+	if isinstance(original, dict) and isinstance(original, dict):
+
+		for key, value in original.iteritems():
+			if (key not in update) or (not isinstance(value, (dict, list))):
+				update[key] = value				
+			elif isinstance(value, dict) and key in update:
+				deepupdate(value, update[key])
+			elif isinstance(value, list) and key in update:
+				destnList = update[key]
+				for entry in value:
+					# Go with name to identify each entry if its an array
+					matchingDestnEntry = None
+					for destEntry in destnList:
+						if destEntry['name'] == entry['name']:
+							matchingDestnEntry = destEntry
+							break
+
+					if matchingDestnEntry:
+						deepupdate(entry, matchingDestnEntry)
+					else:
+						destnList.append(entry)
+				deepupdate(value, update[key])			
+
+	elif isinstance(original, list) and isinstance(update, list):
+		srcNamedEntries = [ entry['name'] for entry in original ]
+		destnNamedEntries = [ entry['name'] for entry in update ]
+		result = []
+		destnNamedEntries.extend(srcNamedEntries)
+		for givenEntry in original:
+			if givenEntry['name'] not in destnNamedEntries:
+				destnNamedEntries.append(givenEntry)
+			else:
+				index = destnNamedEntries.index(givenEntry['name'])
+				matchingDestnEntry = update[index]
+				if not isinstance(matchingDestnEntry, (dict, list)):
+					update[index] = givenEntry
+				else:
+					deepupdate(givenEntry, matchingDestnEntry)
+				
+	return update
+
+def write_yaml(output_config_file, data):
+	
+	if os.path.isdir(output_config_file):
+		output_config_file = output_config_file + '/' + CONFIG_FILE
+	with open(output_config_file, 'w') as config_file:
+		config_file.write(yaml.safe_dump(data, default_flow_style='false', explicit_start='true'))
+
+if __name__ == "__main__":
+	main()	

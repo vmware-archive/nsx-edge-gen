@@ -1,0 +1,153 @@
+---
+name: {{ name }}
+
+vcenter:
+  address: test
+  admin_user: administrator@vsphere.local
+  admin_passwd: test
+  datacenter: Datacenter
+  datastore: Datastore
+  cluster: Cluster1
+  gateway: 1.1.1.1
+
+
+nsxmanager:
+  address: 12.1.1.1
+  admin_user: user
+  admin_passwd: passwd
+  transport_zone: TZ
+  uplink_details:
+    primary_ip: 10.114.216.167
+    uplink_port_switch: VDS_Edge_Mgmt
+
+defaults:
+  # placeholders, can be comma separated list
+  ntp_ips: 1.1.1.1
+  dns_ips: 1.1.1.1
+  syslog_ips: 1.1.1.1
+  ldap_ips: 1.1.1.1
+
+edge_service_gateways:
+- name: {{ name }}
+  size: large
+  gateway_ip: 10.114.216.1
+  cli:
+    username: testuser
+    password: Test$assword123456
+  certs:
+    name: Foundation1
+    config:
+      org_unit: Pivotal
+      country_code: US  # Default - US
+      system_domain: pcf-sys-test.corp.local
+      app_domain: pcf-app-test.corp.local  
+  routed_components:
+  - name: opsmgr
+    switch: Infra
+    instances: 1
+    offset: 5
+    uplink_details:
+      uplink_ip: 10.114.216.171    
+    #transport:
+      # #Default incoming scheme is https/443 for opsmgr
+      # incoming_scheme:
+      #  port: 443
+      #  protocol: https
+      # #Default forward scheme is https/443 for opsmgr
+      # forward_scheme: 
+      #  port: 443
+      #  protocol: https    
+      #primary_ip: 10.193.99.31
+      # Default cidr is 32 - single ip
+      #cidr: 10.193.99.31/32
+  - name: go-router
+    switch: Ert
+    instances: 4
+    offset: 10
+    uplink_details:
+      uplink_ip: 10.114.216.172
+    #transport:
+      # Default incoming scheme is https/443 for ert
+      #incoming_scheme:
+      #  port: 443
+      #  protocol: https
+      # Default forward scheme is http/8080 for ert
+      #forward_scheme: 
+      #  port: 8080
+      #  protocol: http
+      #primary_ip: 10.193.99.33
+      # Default cidr is 32 - single ip
+      #cidr: 10.193.99.33/32
+      #secondary_ips:
+      #- 10.193.99.34
+  - name: diego-brain
+    switch: Ert
+    instances: 3
+    offset: 20
+    uplink_details:
+      uplink_ip: 10.114.216.173    
+    #transport:
+      #incoming_scheme:
+      #  port: 2222
+      #  protocol: tcp
+      #forward_scheme: 
+      #  port: 2222
+      #  protocol: tcp
+      #primary_ip: 10.193.99.35
+      # Default cidr is 32 - single ip
+      #cidr: 10.193.99.35/32
+      #secondary_ips:
+      #- 10.193.99.36
+  - name: tcp-router
+    switch: Ert
+    instances: 4
+    offset: 30
+    uplink_details:
+      uplink_ip: 10.114.216.174
+    #transport:
+      # Use defaults - https/443 incoming, http/8080 forward
+      #incoming_scheme:
+      #  port: 443
+      #  protocol: https
+      #forward_scheme: 
+      #  port: 8080
+      #  protocol: http
+    
+      #primary_ip: 10.193.99.37
+      # Default cidr is 32 - single ip
+      #cidr: 10.193.99.37/32
+      #secondary_ips:
+      #- 10.193.99.38
+
+logical_switches:
+- name: Infra  
+  cidr: 192.168.10.0/26
+  primary_ip: 192.168.10.2
+  #secondary_ips:
+  #- 192.168.10.3
+  #- 192.168.10.4
+  # Range: 192.168.10.1-63
+- name: Ert
+  cidr: 192.168.20.0/22
+  primary_ip: 192.168.20.2
+  #secondary_ips:
+  #- 192.168.20.3
+  #- 192.168.20.4
+- name: CF-Tiles
+  cidr: 192.168.24.0/22
+  primary_ip: 192.168.24.2
+  #secondary_ips:
+  #- 192.168.24.3
+  #- 192.168.24.4
+- name: Services
+  cidr: 192.168.28.0/22
+  primary_ip: 192.168.28.2
+  #secondary_ips:
+  #- 192.168.28.3
+  #- 192.168.28.4
+
+properties:
+  test: testvalue
+  testA:
+    testInner: testInnerValue
+

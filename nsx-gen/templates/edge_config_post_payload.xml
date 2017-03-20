@@ -1,0 +1,456 @@
+<edge>
+    <datacenterMoid>{{edge['datacenter_id']}}</datacenterMoid>
+    <datacenterName>{{edge['datacenter_id']}}</datacenterName>
+    <name>{{edge['name']}}</name>
+    <description>Edge {{edge['name']}}</description>
+    <tenant>default</tenant>
+    <fqdn>NSX-{{edge['name']}}</fqdn>
+    <vseLogLevel>EMERGENCY</vseLogLevel>
+    <enableAesni>true</enableAesni>
+    <enableFips>false </enableFips>
+    <appliances>
+        <applianceSize>{{edge['size']}}</applianceSize>
+        <appliance>
+            <resourcePoolId>{{edge['cluster_id']}}</resourcePoolId>
+            <datastoreId>{{edge['datastore_id']}}</datastoreId>
+        </appliance>
+    </appliances>
+    <vnics>
+    
+        <vnic>
+            <index>0</index>
+            <label>vNic_0</label>
+            <name>Lif to Uplink</name>
+            <type>uplink</type> 
+            <portgroupId>{{ nsxmanager['uplink_details']['uplink_id']}}</portgroupId>
+            <portgroupName>{{ nsxmanager['uplink_details']['uplink_port_switch']}}</portgroupName>
+            <addressGroups>
+                <addressGroup>
+                    <primaryAddress>{{nsxmanager['uplink_details']['uplink_ip']}}</primaryAddress>
+                    <secondaryAddresses>
+                    {% for routed_component in routed_components %}
+                        <ipAddress>{{routed_component['uplink_details']['uplink_ip']}}</ipAddress>
+                    {% endfor %}
+                    </secondaryAddresses>                
+                    <subnetMask>{{nsxmanager['uplink_details']['subnet_mask']}}</subnetMask>
+                    <subnetPrefixLength>{{nsxmanager['uplink_details']['subnet_length']}}</subnetPrefixLength>
+                </addressGroup>
+            </addressGroups>
+                
+            <mtu>1500</mtu>
+            <enableProxyArp>false</enableProxyArp>
+            <enableSendRedirects>true</enableSendRedirects>
+            <isConnected>true</isConnected>
+        </vnic>
+        {% for lswitch in logical_switches %}
+        <vnic>
+            <index>{{ loop.index }}</index>
+            <label>vNic_{{ loop.index}}</label>
+            <name>Link to {{ lswitch['name']}}</name>
+            <type>internal</type>
+            <portgroupId>{{ lswitch['id']}}</portgroupId>
+            <addressGroups>
+                <addressGroup>
+                    <primaryAddress>{{lswitch['primary_ip']}}</primaryAddress>
+                    <subnetMask>{{lswitch['subnet_mask']}}</subnetMask>
+                    <subnetPrefixLength>{{lswitch['subnet_length']}}</subnetPrefixLength>
+                </addressGroup>
+            </addressGroups>
+            <mtu>1500</mtu>
+            <enableProxyArp>false</enableProxyArp>
+            <enableSendRedirects>false</enableSendRedirects>
+            <isConnected>true</isConnected>       
+        </vnic>
+        {% endfor %}
+        {% for index in empty_logical_switches %}
+        <vnic>
+            <index>{{ index }}</index>
+            <label>vNic_{{ index }}</label>
+            <name>vnic{{ index }}</name>
+            <addressGroups/>
+            <mtu>1500</mtu>
+            <type>internal</type>
+            <isConnected>false</isConnected>
+            <enableProxyArp>false</enableProxyArp>
+            <enableSendRedirects>true</enableSendRedirects>
+        </vnic>
+        {% endfor %}
+    </vnics>
+    <cliSettings>
+        <userName>{{edge['cli']['username']}}</userName>
+        <password>{{edge['cli']['password']}}</password>
+        <passwordExpiry>99999</passwordExpiry>
+        <remoteAccess>true</remoteAccess>
+    </cliSettings>
+    <autoConfiguration>
+        <enabled>true</enabled>
+        <rulePriority>high</rulePriority>
+    </autoConfiguration>
+    <queryDaemon>
+        <enabled>false</enabled>
+        <port>5666</port>
+    </queryDaemon>
+
+
+    <features>
+        <loadBalancer>
+           <enabled>true</enabled>
+           <enableServiceInsertion>false</enableServiceInsertion>
+           <accelerationEnabled>false</accelerationEnabled>
+           <logging>
+              <enable>true</enable>
+              <logLevel>info</logLevel>
+           </logging>
+        </loadBalancer>
+        
+        <firewall>
+            <defaultPolicy>
+                <action>deny</action>
+                <loggingEnabled>false</loggingEnabled>
+            </defaultPolicy>
+            <firewallRules> 
+                <firewallRule>
+                    <id>13101</id>
+                    <ruleTag>13101</ruleTag>
+                    <name>Allow Ingress -&gt; Ops Manager</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <destination>
+                        <exclude>false</exclude>
+                        <ipAddress>{{opsmgr_routed_component['uplink_details']['uplink_ip']}}</ipAddress>                        
+                    </destination>
+                    <application>
+                        <service>
+                            <protocol>tcp</protocol>
+                            <port>22</port>
+                            <port>80</port>
+                            <port>443</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule>  
+
+                <firewallRule>
+                    <id>13102</id>
+                    <ruleTag>13102</ruleTag>
+                    <name>Allow Ingress -&gt; Elastic Runtime</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <destination>
+                        <exclude>false</exclude>
+                        <ipAddress>{{ert_routed_component['uplink_details']['uplink_ip']}}</ipAddress>                        
+                    </destination>
+                    <application>
+                        <service>
+                            <protocol>tcp</protocol>
+                            <port>80</port>
+                            <port>443</port>
+                            <port>4443</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule>
+                <firewallRule>
+                    <id>13103</id>
+                    <ruleTag>13103</ruleTag>
+                    <name>Allow Ingress -&gt; SSH for Apps</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <destination>
+                        <exclude>false</exclude>
+                        <ipAddress>{{diego_routed_component['uplink_details']['uplink_ip']}}</ipAddress>                        
+                    </destination>
+                    <application>
+                        <service>
+                            <protocol>tcp</protocol>
+                            <port>2222</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule>                 
+                
+                <firewallRule>
+                    <id>13104</id>
+                    <ruleTag>13104</ruleTag>
+                    <name>Allow Ingress -&gt; Tcp Router</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <destination>
+                        <exclude>false</exclude>                       
+                        <ipAddress>{{tcp_routed_component['uplink_details']['uplink_ip']}}</ipAddress>
+                    </destination>
+                    <application>
+                        <service>
+                            <protocol>tcp</protocol>
+                            <port>5000</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule>
+
+                <firewallRule>
+                    <id>13105</id>
+                    <ruleTag>13105</ruleTag>
+                    <name>Allow Inside &lt;-&gt; Inside</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <source>
+                        <exclude>false</exclude>
+                        <ipAddress>{{cross_network_cidr}}</ipAddress>
+                    </source>
+                    <destination>
+                        <exclude>false</exclude>                       
+                        <ipAddress>{{cross_network_cidr}}</ipAddress>
+                    </destination>
+                </firewallRule>
+
+                <firewallRule>
+                    <id>13106</id>
+                    <ruleTag>13106</ruleTag>
+                    <name>Allow Egress -&gt; All Outbound</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <source>
+                        <exclude>false</exclude>                        
+                        <ipAddress>{{cross_network_cidr}}</ipAddress>
+                    </source>
+                </firewallRule>
+
+                <firewallRule>
+                    <id>13200</id>
+                    <ruleTag>13200</ruleTag>
+                    <name>default rule for ingress traffic</name>
+                    <ruleType>default_policy</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description>default rule for ingress traffic</description>
+                    <action>deny</action>
+                </firewallRule>
+
+                <!-- Untested.. -->
+                {% if 'a' == 'b' %}
+
+                {% if  defaults['ntp_ips'] != '1.1.1.1' %}
+                <firewallRule>
+                    <id>13107</id>
+                    <ruleTag>13107</ruleTag>
+                    <name>Allow Egress -&gt; NTP</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <source>
+                        <exclude>false</exclude>
+                        <ipAddress>{{cross_network_cidr}}</ipAddress>
+                    </source>
+                    <destination>
+                        <exclude>false</exclude>                       
+                        <ipAddress>{{defaults['ntp_ips']}}</ipAddress>
+                    </destination>
+                    <application>
+                        <service>
+                            <protocol>tcp</protocol>
+                            <port>123</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule>
+                {% endif %}
+
+                {% if  defaults['syslog_ips'] != '1.1.1.1' %}
+                <firewallRule>
+                    <id>13108</id>
+                    <ruleTag>13108</ruleTag>
+                    <name>Allow Egress -&gt; SYSLOG</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <source>
+                        <exclude>false</exclude>
+                        <ipAddress>{{cross_network_cidr}}</ipAddress>
+                    </source>
+                    <destination>
+                        <exclude>false</exclude>                       
+                        <ipAddress>{{defaults['syslog_ips']}}</ipAddress>
+                    </destination>
+                    <application>
+                        <service>
+                            <protocol>tcp</protocol>
+                            <port>514</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule>
+                 {% endif %}
+
+                <!--
+                <firewallRule>
+                    <id>13109</id>
+                    <ruleTag>13109</ruleTag>
+                    <name>Allow ICMP</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <source>
+                        <exclude>false</exclude>
+                        <ipAddress>{{infraLogicalSwitch['cidr']}}</ipAddress>
+                    </source>
+                    <application>
+                        <service>
+                            <port>icmp</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule>  
+                -->       
+            
+                {% if  defaults['ldap_ips'] != '1.1.1.1' %}
+                <firewallRule>
+                    <id>13110</id>
+                    <ruleTag>13110</ruleTag>
+                    <name>Allow Egress -&gt; LDAP</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <source>
+                        <exclude>false</exclude>
+                        <ipAddress>{{infraLogicalSwitch['cidr']}}</ipAddress>
+                        <ipAddress>{{ertLogicalSwitch['cidr']}}</ipAddress>
+                    </source>
+                    <destination>
+                        <exclude>false</exclude>                       
+                        <ipAddress>{{defaults['ldap_ips']}}</ipAddress>
+                    </destination>
+                    <application>
+                        <service>
+                            <protocol>tcp</protocol>
+                            <port>389</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule> 
+                {% endif %}
+
+                {% if  defaults['dns_ips'] != '1.1.1.1' %}
+                <firewallRule>
+                    <id>13111</id>
+                    <ruleTag>13111</ruleTag>
+                    <name>Allow Egress -&gt; DNS</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <source>
+                        <exclude>false</exclude>
+                        <ipAddress>{{cross_network_cidr}}</ipAddress>
+                    </source>
+                    <destination>
+                        <exclude>false</exclude>                       
+                        <ipAddress>{{defaults['dns_ips']}}</ipAddress>
+                    </destination>
+                    <application>
+                        <service>
+                            <port>53</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule>
+                {% endif %}
+
+
+                {% endif %}
+            
+            </firewallRules>
+        </firewall>
+
+        <routing>
+            <enabled>true</enabled>
+            <staticRouting>
+                <defaultRoute>
+                    <vnic>0</vnic>
+                    <mtu>1500</mtu>
+                    <gatewayAddress>{{gateway_address}}</gatewayAddress>
+                    <adminDistance>1</adminDistance>
+                </defaultRoute>
+            </staticRouting>
+        </routing>
+
+        <nat>
+            <enabled>true</enabled>
+            <natRules>
+                <natRule>
+                    <ruleType>user</ruleType>
+                    <action>snat</action>
+                    <originalAddress>{{ cross_network_cidr }}</originalAddress>
+                    <translatedAddress>{{ nsxmanager['uplink_details']['uplink_ip']}}</translatedAddress>
+                    <loggingEnabled>true</loggingEnabled>
+                    <enabled>true</enabled>
+                    <description></description>
+                    <protocol>any</protocol>
+                    <originalPort>any</originalPort>
+                    <translatedPort>any</translatedPort>
+                </natRule>
+                
+                <natRule>
+                    <ruleType>user</ruleType>
+                    <action>dnat</action>
+                    <originalAddress>{{ opsmgr_routed_component['uplink_details']['uplink_ip']}}</originalAddress>
+                    <translatedAddress>{{ opsmgr_routed_component['ips']}}</translatedAddress>
+                    <loggingEnabled>true</loggingEnabled>
+                    <enabled>true</enabled>
+                    <description></description>
+                    <protocol>any</protocol>
+                    <originalPort>any</originalPort>
+                    <translatedPort>any</translatedPort>
+                </natRule>
+
+            </natRules>
+        </nat>
+        
+        
+        <featureConfig/>
+    </features>
+     <type>gatewayServices</type>
+    <isUniversal>false</isUniversal>
+    <hypervisorAssist>false</hypervisorAssist>
+
+</edge>
+
+ 

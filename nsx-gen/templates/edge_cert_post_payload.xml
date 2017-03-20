@@ -1,0 +1,4 @@
+<trustObject>
+  <pemEncoding>{{ nsx_edge['certs']['cert']}}</pemEncoding>
+   <privateKey>{{ nsx_edge['certs']['key']}}</privateKey>   
+</trustObject>
