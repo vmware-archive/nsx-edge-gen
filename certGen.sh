@@ -58,8 +58,26 @@ DNS.4 = *.${APP_DOMAIN}
 EOM
 fi
 
-openssl genrsa -out ${OUTPUT_DIR}/${SYS_DOMAIN}.key 2048
-openssl req -new -out ${OUTPUT_DIR}/${SYS_DOMAIN}.csr -subj "/CN=*.${SYS_DOMAIN}/O=${ORG_UNIT}/C=${COUNTRY}" -key ${OUTPUT_DIR}/${SYS_DOMAIN}.key -config ${SSL_FILE}
-openssl req -text -noout -in ${OUTPUT_DIR}/${SYS_DOMAIN}.csr
-openssl x509 -req -days 3650 -in ${OUTPUT_DIR}/${SYS_DOMAIN}.csr -signkey ${OUTPUT_DIR}/${SYS_DOMAIN}.key -out ${OUTPUT_DIR}/${SYS_DOMAIN}.crt -extensions v3_req -extfile ${SSL_FILE}
-openssl x509 -in ${OUTPUT_DIR}/${SYS_DOMAIN}.crt -text -noout
+openssl genrsa -out ${OUTPUT_DIR}/${SYS_DOMAIN}.key 2048 >/dev/null 2>&1
+
+openssl req -new -out ${OUTPUT_DIR}/${SYS_DOMAIN}.csr                   \
+                 -subj "/CN=*.${SYS_DOMAIN}/O=${ORG_UNIT}/C=${COUNTRY}" \
+                 -key ${OUTPUT_DIR}/${SYS_DOMAIN}.key                   \
+                 -config ${SSL_FILE}                                    \
+                 >/dev/null 2>&1
+
+openssl req -text -noout -in ${OUTPUT_DIR}/${SYS_DOMAIN}.csr >/dev/null 2>&1
+
+openssl x509 -req -days 3650                              \
+                 -in ${OUTPUT_DIR}/${SYS_DOMAIN}.csr      \
+                 -signkey ${OUTPUT_DIR}/${SYS_DOMAIN}.key \
+                 -out ${OUTPUT_DIR}/${SYS_DOMAIN}.crt     \
+                 -extensions v3_req                       \
+                 -extfile ${SSL_FILE}                     \
+                 >/dev/null 2>&1
+
+openssl x509 -in ${OUTPUT_DIR}/${SYS_DOMAIN}.crt -text -noout >/dev/null 2>&1
+
+echo "Finished self-signed cert generation for requested App Domain: ${APP_DOMAIN}"
+echo "                                            and System Domain: ${SYS_DOMAIN}"
+echo ""

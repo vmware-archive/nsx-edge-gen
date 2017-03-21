@@ -1,7 +1,9 @@
-
+Complete args supported 
 ```
+$ python ./nsx-gen/bin/nsxgen -h
 usage: nsxgen [-h] [-i INIT] [-c NSX_CONF] [-esg_name_1 ESG_NAME_1]
-              [-esg_size_1 ESG_SIZE_1] [-esg_cli_user_1 ESG_CLI_USERNAME_1]
+              [-esg_size_1 ESG_SIZE_1] [-esg_gateway_1 ESG_GATEWAY_IP_1]
+              [-esg_cli_user_1 ESG_CLI_USERNAME_1]
               [-esg_cli_pass_1 ESG_CLI_PASSWORD_1]
               [-esg_certs_1 ESG_CERTS_NAME_1]
               [-esg_certs_config_ou_1 ESG_CERTS_CONFIG_ORGUNIT_1]
@@ -21,6 +23,7 @@ usage: nsxgen [-h] [-i INIT] [-c NSX_CONF] [-esg_name_1 ESG_NAME_1]
               [-esg_tcp_router_inst_1 ESG_TCP_ROUTER_INSTANCES_1]
               [-esg_tcp_router_off_1 ESG_TCP_ROUTER_OFFSET_1]
               [-esg_name_2 ESG_NAME_2] [-esg_size_2 ESG_SIZE_2]
+              [-esg_gateway_2 ESG_GATEWAY_IP_2]
               [-esg_cli_user_2 ESG_CLI_USERNAME_2]
               [-esg_cli_pass_2 ESG_CLI_PASSWORD_2]
               [-esg_certs_2 ESG_CERTS_NAME_2]
@@ -70,6 +73,8 @@ optional arguments:
                         esg instance 1 name
   -esg_size_1 ESG_SIZE_1, --esg_size_1 ESG_SIZE_1
                         esg instance 1 size
+  -esg_gateway_1 ESG_GATEWAY_IP_1, --esg_gateway_ip_1 ESG_GATEWAY_IP_1
+                        esg instance 1 gateway ip
   -esg_cli_user_1 ESG_CLI_USERNAME_1, --esg_cli_username_1 ESG_CLI_USERNAME_1
                         esg instance 1 cli username
   -esg_cli_pass_1 ESG_CLI_PASSWORD_1, --esg_cli_password_1 ESG_CLI_PASSWORD_1
@@ -112,6 +117,8 @@ optional arguments:
                         esg instance 2 name
   -esg_size_2 ESG_SIZE_2, --esg_size_2 ESG_SIZE_2
                         esg instance 2 size
+  -esg_gateway_2 ESG_GATEWAY_IP_2, --esg_gateway_ip_2 ESG_GATEWAY_IP_2
+                        esg instance 2 gateway ip
   -esg_cli_user_2 ESG_CLI_USERNAME_2, --esg_cli_username_2 ESG_CLI_USERNAME_2
                         esg instance 2 cli username
   -esg_cli_pass_2 ESG_CLI_PASSWORD_2, --esg_cli_password_2 ESG_CLI_PASSWORD_2

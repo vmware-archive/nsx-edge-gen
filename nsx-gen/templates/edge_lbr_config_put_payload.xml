@@ -3,38 +3,39 @@
    <enableServiceInsertion>false</enableServiceInsertion>
    <accelerationEnabled>false</accelerationEnabled>
    
-   {% for pool in routed_components  if pool['name'] != 'opsmgr' %}
+   {% for pool in routed_components  if pool['useVIP'] == True %}
    
    <pool>
     <poolId>pool-{{loop.index}}</poolId>
     <name>{{ pool['name']}}-Pool</name>
     <algorithm>round-robin</algorithm>
     <transparent>false</transparent>
-    <monitorId>{{ pool['monitor_type']['id']}}</monitorId>
-     {% set outer_loop = loop %}
-    {% for ip in pool['ips'].split(',') %}
+    <monitorId>{{ pool['monitor_id']}}</monitorId>
+     {% set outer_loop = loop %}    
+     {% for ip in pool['ips'].split(',') %}
+     {% set middle_loop = loop %} 
+     {% for port in pool['transport']['egress']['port'].split(',') %}
     <member>
-       <memberId>member-{{outer_loop.index}}{{loop.index}}</memberId>
+       <memberId>member-{{outer_loop.index}}{{middle_loop.index}}{{loop.index}}</memberId>
        <ipAddress>{{ ip }}</ipAddress>
        <weight>1</weight>
-       {% if 'go' in pool['name'] and 'router' in pool['name'] %}
-       <monitorPort>8080</monitorPort>
-       {% elif 'tcp' in pool['name'] and 'router' in pool['name'] %}
-       <monitorPort>80</monitorPort>
+       {% if pool['transport']['egress']['monitor_port'] %}
+       <monitorPort>{{ pool['transport']['egress']['monitor_port'] }}</monitorPort>
        {% else %}
-       <monitorPort>{{ pool['transport']['forward_scheme']['port'] }}</monitorPort>
+       <monitorPort>{{ port }}</monitorPort>
        {% endif %}
-       <port>{{ pool['transport']['forward_scheme']['port'] }}</port>
+       <port>{{ port }}</port>
        <maxConn>0</maxConn>
        <minConn>0</minConn>
        <condition>enabled</condition>
-       <name>{{ pool['name']}}-member-{{outer_loop.index}}{{loop.index}}</name>
+       <name>{{ pool['name']}}-member-{{outer_loop.index}}{{middle_loop.index}}{{loop.index}}</name>
     </member>
+    {% endfor %}
     {% endfor %}
    </pool> 
    {% endfor %}   
 
-   {% for appProfile in appProfile_Map.values() %}
+   {% for appProfile in appProfileMap.values() %}
    <applicationProfile>
       <applicationProfileId>{{ appProfile['id'] }}</applicationProfileId>
       <name>{{ appProfile['name'] }}</name>
@@ -51,7 +52,7 @@
       <serverSslEnabled>{{ appProfile['serverSslEnabled'] }}</serverSslEnabled>
    </applicationProfile>
    {% endfor %}
-   {% for monitor in monitor_Map.values() %}           
+   {% for monitor in monitorMap.values() %}           
    <monitor>
       <monitorId>{{monitor['id']}}</monitorId>
       <type>{{monitor['type']}}</type>
@@ -65,7 +66,7 @@
       <name>{{monitor['name']}}</name>
    </monitor>
    {% endfor %}
-   {% for name, appRule in appRule_Map.iteritems() %}
+   {% for name, appRule in appRuleMap.iteritems() %}
    <applicationRule>
         <applicationRuleId>{{ appRule['id'] }}</applicationRuleId>
         <name>{{ name }}</name>
@@ -76,22 +77,20 @@
    
    <virtualServer>
     <virtualServerId>virtualServer-{{loop.index}}</virtualServerId>
-    <name>VIP-{{virtServer['name']}}-{{virtServer['transport']['incoming_scheme']['protocol']}}</name>
+    <name>VIP-{{virtServer['name']}}-{{virtServer['transport']['ingress']['protocol']}}</name>
     <enabled>true</enabled>
     <ipAddress>{{virtServer['uplink_details']['uplink_ip']}}</ipAddress>
-    <protocol>{{virtServer['transport']['incoming_scheme']['protocol']}}</protocol>
-    <port>{{virtServer['transport']['incoming_scheme']['port']}}</port>
+    <protocol>{{virtServer['transport']['ingress']['protocol']}}</protocol>
+    <port>{{virtServer['transport']['ingress']['port']}}</port>
     <connectionLimit>0</connectionLimit>
     <connectionRateLimit>0</connectionRateLimit>
     <defaultPoolId>pool-{{loop.index}}</defaultPoolId>
     <applicationProfileId>{{virtServer['appProfile']['id']}}</applicationProfileId>
     <enableServiceInsertion>false</enableServiceInsertion>
     <accelerationEnabled>false</accelerationEnabled>
-    <applicationRuleId>applicationRule-1</applicationRuleId>
-    <applicationRuleId>applicationRule-2</applicationRuleId>
-    {% if virtServer['app_rule'] %}
-      <applicationRuleId>{{ virtServer['app_rule'] }}</applicationRuleId>
-    {% endif %}
+    {% for app_rule_id in virtServer['app_rules'] %}
+      <applicationRuleId>{{ app_rule_id }}</applicationRuleId>
+    {% endfor %}
    </virtualServer>
    {% endfor %}
 

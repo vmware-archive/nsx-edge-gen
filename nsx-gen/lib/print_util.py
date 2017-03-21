@@ -116,7 +116,7 @@ def print_edge_service_gateways_configured(esgs):
 																		esg.get('id', ''),
 																		routed_components,
 																		esg['global_uplink_details']['uplink_port_switch'],
-																		esg['global_uplink_details']['primary_ip'], 
+																		esg['global_uplink_details']['uplink_ip'], 
 																		cli_creds)
 		print '-'*200
 		print 
@@ -175,5 +175,99 @@ def print_edge_service_gateways_configured(esgs):
 
 			print '{:<40} | {:<20} | {:<80} | {:<80}'.format( rule['name'], rule['type'], srcRule, destRule)  
 																			
-		print '-'*200
+		print '-'*215
+
+		print '{:<80}{:<40}{:<15}{:<10}'.format('', 'Routed Component (from configuration) for Edge Instance: ',esg['name'], '')
+		print "{:<15} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} |  {:<15} |{:<10}| {:<20} | {:<20} | {:<20} ".format( \
+															'Name',
+															'Switch',
+															'VIP',
+															'Inst',
+															'Offset',
+															'Uplink IP',
+															'IPs', 
+															'App Rules',
+															'App Profile', 
+															'Monitor Id',
+															'Ingress:Port',
+															'Egress:Port',
+															'Port:Monitor Url'
+															)
+		print '-'*215
+
+		for entry in esg['routed_components']:	
+			useVip = 'Y'		
+			if not entry['useVIP']:
+				useVip = 'N'
+			transport = entry['transport']
+			uplink_ip = entry['uplink_details']['uplink_ip']
+
+			ips = entry['ips'].split(',')
+			#appRule = entry['app_rules']
+			appProfile = entry['app_profile']['id']
+			monitorId = entry['monitor_id']
+			ingressCombo = transport['ingress']['protocol'] + ':' + str(transport['ingress']['port'])
+			egressCombo = transport['egress']['protocol'] + ':' + str(transport['egress']['port'])
+
+			monitorCombo = ''
+			monitorPort = transport['egress']['monitorPort']
+			if monitorPort:
+				monitorCombo = ':' + str(monitorPort)
+				monitorUrl = transport['egress']['url']
+				if monitorUrl:
+					 monitorCombo = monitorCombo +  monitorUrl
+
+			index = 0
+			ruleCount = len(entry['app_rules'])
+			ipCount = len(ips)
+
+			count = ruleCount
+			if count < ipCount:
+				count = ipCount
+				
+
+			while index < count:
+				
+				ip = '  '
+				appRuleId = '  '
+
+				if index < ruleCount:
+					appRuleId = entry['app_rules'][index]
+				if index < ipCount:
+					ip = ips[index]
+
+				if (index == 0):
+					print "{:<15} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} | {:<15} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
+															entry['name'],
+															entry['switchName'],
+															useVip,
+															entry['instances'],
+															entry['offset'],
+															uplink_ip,
+															ip,  
+															appProfile,
+															appRuleId, 
+															monitorId,
+															ingressCombo,
+															egressCombo,
+															monitorCombo )
+
+				else:
+					print "{:<15} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} | {:<17} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
+															'',
+															'',
+															'',
+															'',
+															'',
+															'', 
+															ip,
+															'',
+															appRuleId,
+															'',
+															'',
+															'',
+															'' )
+				index = index + 1
+																			
+		print '-'*215		
 		print

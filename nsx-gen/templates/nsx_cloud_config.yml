@@ -8,17 +8,15 @@ vcenter:
   datacenter: Datacenter
   datastore: Datastore
   cluster: Cluster1
-  gateway: 1.1.1.1
-
 
 nsxmanager:
   address: 12.1.1.1
   admin_user: user
   admin_passwd: passwd
-  transport_zone: TZ
+  transport_zone: TZ # Specified TZ should exist
   uplink_details:
     primary_ip: 10.114.216.167
-    uplink_port_switch: VDS_Edge_Mgmt
+    uplink_port_switch: VDS_Edge_Mgmt # if not specified, would use VM Networks as default
 
 defaults:
   # placeholders, can be comma separated list
@@ -50,16 +48,14 @@ edge_service_gateways:
       uplink_ip: 10.114.216.171    
     #transport:
       # #Default incoming scheme is https/443 for opsmgr
-      # incoming_scheme:
+      # ingress:
       #  port: 443
       #  protocol: https
       # #Default forward scheme is https/443 for opsmgr
-      # forward_scheme: 
+      # egress: 
       #  port: 443
-      #  protocol: https    
-      #primary_ip: 10.193.99.31
-      # Default cidr is 32 - single ip
-      #cidr: 10.193.99.31/32
+      #  protocol: https
+      #  monitor_port: 443    
   - name: go-router
     switch: Ert
     instances: 4
@@ -68,18 +64,15 @@ edge_service_gateways:
       uplink_ip: 10.114.216.172
     #transport:
       # Default incoming scheme is https/443 for ert
-      #incoming_scheme:
+      #ingress:
       #  port: 443
       #  protocol: https
       # Default forward scheme is http/8080 for ert
-      #forward_scheme: 
+      #egress: 
       #  port: 8080
       #  protocol: http
-      #primary_ip: 10.193.99.33
-      # Default cidr is 32 - single ip
-      #cidr: 10.193.99.33/32
-      #secondary_ips:
-      #- 10.193.99.34
+      #  monitor_port: 80
+      #  url: /health
   - name: diego-brain
     switch: Ert
     instances: 3
@@ -87,17 +80,12 @@ edge_service_gateways:
     uplink_details:
       uplink_ip: 10.114.216.173    
     #transport:
-      #incoming_scheme:
+      #ingress:
       #  port: 2222
       #  protocol: tcp
-      #forward_scheme: 
+      #egress: 
       #  port: 2222
       #  protocol: tcp
-      #primary_ip: 10.193.99.35
-      # Default cidr is 32 - single ip
-      #cidr: 10.193.99.35/32
-      #secondary_ips:
-      #- 10.193.99.36
   - name: tcp-router
     switch: Ert
     instances: 4
@@ -106,48 +94,58 @@ edge_service_gateways:
       uplink_ip: 10.114.216.174
     #transport:
       # Use defaults - https/443 incoming, http/8080 forward
-      #incoming_scheme:
-      #  port: 443
-      #  protocol: https
-      #forward_scheme: 
-      #  port: 8080
-      #  protocol: http
-    
-      #primary_ip: 10.193.99.37
-      # Default cidr is 32 - single ip
-      #cidr: 10.193.99.37/32
-      #secondary_ips:
-      #- 10.193.99.38
+      #ingress:
+      #  port: 5000
+      #  protocol: tcp
+      #egress: 
+      #  port: 5000
+      #  protocol: tcp
+      #  monitor_port: 80
+      #  url: /health    
+
+# Commented off 
+  # - name: mysql
+  #   switch: PCF-Tiles
+  #   instances: 3 # for 3 proxies in 3 AZs
+  #   offset: 5
+  #   uplink_details:
+  #     uplink_ip: 10.114.216.175
+  #   transport:
+  #     # Use defaults - tcp/3306 incoming, tcp/3306 forward
+  #     ingress:
+  #       port: 3306
+  #       protocol: tcp
+  #     egress: 
+  #       port: 3306
+  #       protocol: tcp
+  #       monitor_port: 1936
+
+  # - name: rabbitmq
+  #   switch: PCF-Tiles
+  #   instances: 3
+  #   offset: 15
+  #   uplink_details:
+  #     uplink_ip: 10.114.216.176
+  #   transport:
+  #     # Use defaults - tcp/15672,5671,5672 incoming, tcp/15672,5671,5672 forward
+  #     ingress:
+  #       port: 15672,5671,5672
+  #       protocol: tcp
+  #     egress: 
+  #       port: 15672,5671,5672
+  #       protocol: tcp
 
 logical_switches:
 - name: Infra  
   cidr: 192.168.10.0/26
   primary_ip: 192.168.10.2
-  #secondary_ips:
-  #- 192.168.10.3
-  #- 192.168.10.4
-  # Range: 192.168.10.1-63
 - name: Ert
   cidr: 192.168.20.0/22
   primary_ip: 192.168.20.2
-  #secondary_ips:
-  #- 192.168.20.3
-  #- 192.168.20.4
-- name: CF-Tiles
+- name: PCF-Tiles
   cidr: 192.168.24.0/22
   primary_ip: 192.168.24.2
-  #secondary_ips:
-  #- 192.168.24.3
-  #- 192.168.24.4
-- name: Services
+- name: Dynamic-Services
   cidr: 192.168.28.0/22
   primary_ip: 192.168.28.2
-  #secondary_ips:
-  #- 192.168.28.3
-  #- 192.168.28.4
-
-properties:
-  test: testvalue
-  testA:
-    testInner: testInnerValue
 

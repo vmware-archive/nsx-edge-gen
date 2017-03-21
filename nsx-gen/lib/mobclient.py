@@ -56,7 +56,7 @@ def set_context(context):
     get_context.context = context
 
 
-def createUrlOpener():
+def create_url_opener():
     cookies = cookielib.LWPCookieJar()
     handlers = [
             urllib2.HTTPHandler(debuglevel=1),
@@ -261,7 +261,7 @@ def generateMoidMap(response, resourceTypes):
         print 'Entry Map: ' + str(moidMap)
     return moidMap   
 
-def lookupMoid(resourceName):
+def lookup_moid(resourceName):
 
     vcenterMobMap = checkMoidMap()
     if not vcenterMobMap:
@@ -278,7 +278,7 @@ def lookupMoid(resourceName):
     print 'Unable to lookup Moid for resource: ' + resourceName
     return resourceName
 
-def lookupLogicalSwitchManagedObjName( resourceName):
+def lookup_logicalswitch_managed_obj_name( resourceName):
     
     vcenterMobMap = checkMoidMap()
     if not vcenterMobMap:
@@ -319,7 +319,7 @@ def html_decode(s):
         s = s.replace(code[1], code[0])
     return s
 
-def createNonVerifySSLContext():
+def create_non_verify_sslcontext():
     urlctx = ssl.create_default_context()
     urlctx.check_hostname = False
     urlctx.verify_mode = ssl.CERT_NONE
@@ -329,8 +329,8 @@ def queryVCenterMob(vcenter_ctx, url, method, data, cookies):
     vcenterOriginUrl = 'https://' + vcenter_ctx['address']
     vcenterMobUrl = vcenterOriginUrl + url
 
-    urlctx = createNonVerifySSLContext()
-    opener = createUrlOpener()
+    urlctx = create_non_verify_sslcontext()
+    opener = create_url_opener()
     #data = urllib.urlencode({ 'vmware-session-nonce': context['vmware-session-nonce']})
     if data is not None and method == 'POST':
         req = urllib2.Request(vcenterMobUrl, data=urllib.urlencode(data))#, auth=auth, data=data, verify=False, headers=headers)

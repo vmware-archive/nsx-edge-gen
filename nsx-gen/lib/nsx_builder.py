@@ -33,13 +33,15 @@ import mobclient
 import subprocess
 import xmltodict
 from pprint import pprint
-from util import *
-from nsx_urls import *
 
 LIB_PATH = os.path.dirname(os.path.realpath(__file__))
 REPO_PATH = os.path.realpath(os.path.join(LIB_PATH, '..'))
 
 sys.path.append(os.path.join(LIB_PATH, os.path.join('../..')))
+
+from util import *
+from routed_component import *
+from nsx_urls import *
 
 import argparse
 from print_util  import *
@@ -53,55 +55,83 @@ import pynsxv.library.nsx_usage as usage
 
 DEBUG = False
 
+moidMap = { }
+
 def initMoidMap(context):
+	global moidMap
 	if 'vmware_mob_moid_map' not in context:
 		mobclient.set_context(context['vcenter'])
+	
 		moidMap = mobclient.lookup_vsphere_config()
 		context['vmware_mob_moid_map'] = moidMap
 
 	mapVcenterResources(context, moidMap)
 	return context['vmware_mob_moid_map']
 
-def refreshMoidMap(context):
+def refresh_moid_map(context):
 	if 'vmware_mob_moid_map' not in context:
 		return initMoidMap(context)
 	else:
 		context['vmware_mob_moid_map'].update(mobclient.refresh_vsphere_config())
 		return context['vmware_mob_moid_map']
-		
+
+def lookupVCenterMoid(context, field, moidMap):
+	vcenter_context = context['vcenter']
+	
+	moidEntry = moidMap.get(vcenter_context[field])
+	if moidEntry:
+		moid = moidEntry.get('moid')
+		if moid:
+			vcenter_context[field + '_id'] = moid
+			return
+
+	if field == 'datacenter':
+		raise ValueError('Cannot lookup Moid for provided Datacenter:{}'.format(vcenter_context[field]))
+	
+	# Try adding 'vsan' if its datastore
+	if field == 'datastore':
+		# Try adding vsan to datastore name
+		moidEntry = moidMap['vsan' + vcenter_context[field]]
+		if moidEntry:
+			moid = moidEntry.get('moid')
+			if moid:
+				vcenter_context[field + '_id'] = moid
+				return
+	
+	raise ValueError('Cannot lookup Moid for provided Datastore:{}'.format(vcenter_context[field]))
+
 def  mapVcenterResources(context, moidMap):
 	vcenter_context = context['vcenter']
-	vcenter_context['datacenter_id'] = moidMap[vcenter_context['datacenter']]['moid']
 
-	datastore_id = moidMap[vcenter_context['datastore']]['moid']
-	if datastore_id is None:
-		# Try adding vsan to datastore name
-		datastore_id = moidMap['vsan' + vcenter_context['datastore']]['moid']
-	vcenter_context['datastore_id'] = datastore_id 
+	lookupVCenterMoid(context, 'datacenter', moidMap)
+	lookupVCenterMoid(context, 'datastore', moidMap)
+
 	if DEBUG:
 		print 'Vcenter updated context\n'
 		pprint(vars(vcenter_context))
 
 def build(context, verbose=False):
-
 	client.set_context(context, 'nsxmanager')
+	moidMap = refresh_moid_map(context)
 	if DEBUG:
-		pprint(refreshMoidMap(context))
+		pprint(moidMap)   
+	
 
 	build_logical_switches('lswitch', context, 'logical_switches')
 	build_nsx_edge_gateways('edge', context)
 
 def delete(context, verbose=False):
 	client.set_context(context, 'nsxmanager')
-	refreshMoidMap(context)
+	refresh_moid_map(context)
 
 	delete_nsx_edge_gateways(context)    
 	delete_logical_switches(context, 'logical_switches')
 
 def list(context, verbose=False):
 	client.set_context(context, 'nsxmanager')
+	moidMap = refresh_moid_map(context)
 	if DEBUG:
-		pprint(refreshMoidMap(context))    
+		pprint(moidMap)    
 	
 	list_logical_switches(context)
 	list_nsx_edge_gateways(context)    
@@ -156,7 +186,9 @@ def map_logical_switches_id(logical_switches):
 				++matched_lswitches
 				break
 
-	print_logical_switches_available(logical_switches)
+	if len(logical_switches) > 0:
+			print_logical_switches_available(logical_switches)
+
 	for interested_lswitch in  logical_switches: 
 		if (interested_lswitch.get('id') is None):
 			print 'Logical Switch instance with name: {}'  \
@@ -165,7 +197,7 @@ def map_logical_switches_id(logical_switches):
 
 def check_logical_switch_exists(vcenterMobMap, lswitchName):
 
-	fullMobName = mobclient.lookupLogicalSwitchManagedObjName(lswitchName)
+	fullMobName = mobclient.lookup_logicalswitch_managed_obj_name(lswitchName)
 	# For a lswitch with name ' lswitch-nsx-pcf-CF-Tiles'
 	# it would have a MOB name of 'vxw-dvs-29-virtualwire-225-sid-5066-lswitch-nsx-pcf-CF-Tiles'
 	if fullMobName is None:
@@ -195,13 +227,13 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
 	if DEBUG:
 		print 'VDN Scopes output: {}'.format(vdnScopesDoc)
 
-	vcenterMobMap = refreshMoidMap(context)
+	vcenterMobMap = refresh_moid_map(context)
 	defaultVdnScopeId = vdnScopesDoc['vdnScopes']['vdnScope']['objectId']
 
 	for lswitch in  context[type]: 
 
 		if check_logical_switch_exists(vcenterMobMap, lswitch['name']):
-			print 'Skipping creation of Logical Switch:{}'.format(lswitch['name'])			
+			print '\tSkipping creation of Logical Switch: {} !!'.format(lswitch['name'])			
 			continue
 
 		logical_switches_context = {
@@ -242,13 +274,13 @@ def list_logical_switches(context, reportAll=True):
 	if isinstance(virtualWires, dict):
 		lswitchEntries = [ virtualWires ]
 	
-	vcenterMobMap = refreshMoidMap(context)
+	vcenterMobMap = refresh_moid_map(context)
 	print_moid_map(vcenterMobMap)
 	
 	for lswitch in lswitchEntries:
 		lswitch['id'] = lswitch['objectId']
 
-		lswitch['moName'] = mobclient.lookupLogicalSwitchManagedObjName(lswitch['name']) 
+		lswitch['moName'] = mobclient.lookup_logicalswitch_managed_obj_name(lswitch['name']) 
 		if not lswitch.get('moName'):
 			lswitch['moName'] = ''
 
@@ -262,7 +294,8 @@ def list_logical_switches(context, reportAll=True):
 			if lswitch['name'] in managed_lswitch_names:
 				managedLSwitches.append(lswitch)
 		
-		print_logical_switches_available(managedLSwitches)
+		if len(managedLSwitches) > 0:
+			print_logical_switches_available(managedLSwitches)
 
 
 def delete_logical_switches(context, type = 'logical_switches'):
@@ -320,8 +353,8 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 	map_logical_switches_id(uplink_switches)
 
 	empty_logical_switches = xrange(len(logical_switches) + 1, 10) 
-	vcenterMobMap = refreshMoidMap(context)
-	vm_network_moid = mobclient.lookupMoid('VM Network')
+	vcenterMobMap = refresh_moid_map(context)
+	vm_network_moid = mobclient.lookup_moid('VM Network')
 
 	# Go with the VM Network for default uplink
 	nsxmanager = context['nsxmanager']
@@ -332,7 +365,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		nsxmanager['uplink_details']['uplink_port_switch'] = uplink_port_switch
 		
 	# if use_port_switch is set to 'VM Network' or port switch id could not be retreived.
-	portSwitchId = mobclient.lookupMoid(uplink_port_switch) 
+	portSwitchId = mobclient.lookup_moid(uplink_port_switch) 
 	if (portSwitchId is None):
 		nsxmanager['uplink_details']['uplink_id'] = vm_network_moid
 	else:
@@ -368,32 +401,34 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 				
 
 		vcenter_ctx = context['vcenter']
-		nsx_edge['datacenter_id'] = mobclient.lookupMoid(vcenter_ctx['datacenter']) 
+
+		nsx_edge['datacenter_id'] = mobclient.lookup_moid(vcenter_ctx['datacenter']) 
 
 		# Use the cluster name/id for resource pool...
-		#nsx_edge['host_id'] = mobclient.lookupMoid(vcenterMobMap, vcenter_ctx['host'])
-		nsx_edge['datastore_id'] = mobclient.lookupMoid(vcenter_ctx['datastore']) 
-		nsx_edge['cluster_id'] = mobclient.lookupMoid(vcenter_ctx['cluster'])   
-		nsx_edge['resourcePool_id'] = mobclient.lookupMoid(vcenter_ctx['cluster'])
+		nsx_edge['datastore_id'] = mobclient.lookup_moid(vcenter_ctx['datastore']) 
+		nsx_edge['cluster_id'] = mobclient.lookup_moid(vcenter_ctx['cluster'])   
+		nsx_edge['resourcePool_id'] = mobclient.lookup_moid(vcenter_ctx['cluster'])
 		
 		# TODO: Ignore the vm folder for now...
-		#nsx_edge['vmFolder_id'] = mobclient.lookupMoid(vcenter_ctx['vmFolder']) 
+		#nsx_edge['vmFolder_id'] = mobclient.lookup_moid(vcenter_ctx['vmFolder']) 
 
+		nsx_edge['monitorMap'] = MONITOR_MAP
+		nsx_edge['appRuleMap'] = APP_RULE_MAP
+		nsx_edge['appProfileMap'] = APP_PROFILE_MAP
 
 		# Get a large cidr (like 16) that would allow all networks to talk to each other
-		infraIpSegment = infraLogicalSwitch['cidr'].split('/')[0]
-		infraIpTokens  = infraIpSegment.split('.')
-		cross_network_cidr = '{}.{}.0.0/16'.format(infraIpTokens[0], 
-													infraIpTokens[1])
-
+		cross_network_cidr = calculate_cross_network_cidr(infraLogicalSwitch)
+		
 		gateway_address = nsx_edge.get('gateway_ip')
 		if not gateway_address:
-			global_uplink_ip = context['nsxmanager']['uplink_details']['uplink_ip']
-			uplinkIpTokens   = global_uplink_ip.split('.')
-			gateway_address  = '{}.{}.{}.1'.format(	uplinkIpTokens[0], 
-													uplinkIpTokens[1],
-													uplinkIpTokens[2])
-		
+			gateway_address = calculate_gateway(context['nsxmanager']['uplink_details']['uplink_ip'])
+	
+
+		firewall_src_network_list = logical_switches
+		firewall_destn_network_list = logical_switches
+
+		cross_logical_network_combo = cross_combine_lists(firewall_src_network_list, firewall_destn_network_list)		
+
 		generate_certs(nsx_edge)
 		if DEBUG:
 			print 'NSX Edge config: {}\n'.format(str(nsx_edge))   
@@ -406,8 +441,6 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 			'logical_switches': logical_switches,
 			'empty_logical_switches': empty_logical_switches,
 			'global_switches': nsx_edge['global_switches'],
-			'appProfile_Map': nsx_edge['appProfile_Map'],
-			'appRule_Map': nsx_edge['appRule_Map'],
 			'infraLogicalSwitch': infraLogicalSwitch,
 			'ertLogicalSwitch': ertLogicalSwitch,
 			'routed_components':  nsx_edge['routed_components'],
@@ -416,6 +449,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 			'diego_routed_component': diego_routed_component,
 			'tcp_routed_component': tcp_routed_component,
 			'cross_network_cidr': cross_network_cidr,
+			'cross_logical_network_combo': cross_logical_network_combo,
 			'gateway_address': gateway_address,
 			'files': []
 		}    
@@ -427,11 +461,14 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		)
 
 		
+		"""
+		if True:
+		"""
 		post_response = client.post_xml(NSX_URLS['esg']['all'] , 
 								os.path.join(nsx_edges_dir, nsx_edge['name'] + '_post_payload.xml'), 
 								check=False)
 		data = post_response.text
-
+		
 		print 'NSX Edge creation response:{}\n'.format(data)
 
 		if post_response.status_code < 400: 
@@ -444,12 +481,33 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		else:
 			print 'Creation of NSX Edge failed, details:{}\n'.format(data)			
 
+def calculate_cross_network_cidr(infraLogicalSwitch):
+
+	# Get a large cidr (like 16) that would allow all networks to talk to each other
+	infraIpSegment = infraLogicalSwitch['cidr'].split('/')[0]
+	infraIpTokens  = infraIpSegment.split('.')
+	cross_network_cidr = '{}.{}.0.0/16'.format(infraIpTokens[0], 
+												infraIpTokens[1])
+	return cross_network_cidr
+
+def calculate_gateway(global_uplink_ip):
+
+	
+	uplinkIpTokens   = global_uplink_ip.split('.')
+	gateway_address  = '{}.{}.{}.1'.format(	uplinkIpTokens[0], 
+											uplinkIpTokens[1],
+											uplinkIpTokens[2])
+	return gateway_address
+
 def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	map_nsx_esg_id( [ nsx_edge ] )
 
 	template_dir = '.'
 	nsx_edges_context = {
 		'nsx_edge': nsx_edge,
+		'monitorMap': nsx_edge['monitorMap'],
+		'appRuleMap': nsx_edge['appRuleMap'],
+		'appProfileMap': nsx_edge['appProfileMap'],
 		'files': []
 	}    
 
@@ -490,9 +548,9 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	
 	nsx_edges_context = {
 		'nsx_edge': nsx_edge,
-		'appProfile_Map': nsx_edge['appProfile_Map'],
-		'appRule_Map': nsx_edge['appRule_Map'],
-		'monitor_Map': nsx_edge['monitor_Map'],
+		'appProfileMap': nsx_edge['appProfileMap'],
+		'appRuleMap': nsx_edge['appRuleMap'],
+		'monitorMap': nsx_edge['monitorMap'],
 		'routed_components':  nsx_edge['routed_components'],
 		'files': []
 	}    
@@ -503,6 +561,8 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 		nsx_edges_context
 	)
 	
+	#exit()
+
 	put_response = client.put_xml(NSX_URLS['esg']['all'] 
 									+ '/' + nsx_edge['id']
 									+ NSX_URLS['lbrConfig']['all'], 
@@ -599,7 +659,17 @@ def generate_certs(nsx_context):
 	org_unit = cert_config['org_unit']
 	country = cert_config['country_code']
 
-	subprocess.call([ './certGen.sh', cert_config['system_domain'], cert_config['app_domain'], output_dir, org_unit, country ])
+	subprocess.call(
+					[ 
+						'./certGen.sh', 
+						cert_config['system_domain'], 
+						cert_config['app_domain'], 
+						output_dir, 
+						org_unit, 
+						country 
+					]
+				)
+
 	nsx_context['certs']['key'] = readFileContent(output_dir + '/*.key')
 	nsx_context['certs']['cert'] = readFileContent(output_dir + '/*.crt')
 	nsx_context['certs']['name'] = 'Cert for ' + nsx_context['certs']['name']
@@ -613,3 +683,14 @@ def readFileContent(filePath):
 		with open(textfile, 'r') as myfile:
 			response=myfile.read()
 		return response
+
+# Create a cross list of network cidrs for firewall rules
+# Ignore pairing of same entries
+def cross_combine_lists(list1, list2):
+	result = [(x,y) for x in list1 for y in list2]
+	edited_result =  [ ]
+	for pair in result:
+		if pair[0] != pair[1]:
+			edited_result.append(pair)
+
+	return edited_result

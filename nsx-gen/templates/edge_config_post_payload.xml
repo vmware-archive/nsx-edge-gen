@@ -203,7 +203,7 @@
                         </service>
                     </application>
                 </firewallRule>
-
+                <!--
                 <firewallRule>
                     <id>13105</id>
                     <ruleTag>13105</ruleTag>
@@ -223,7 +223,7 @@
                         <ipAddress>{{cross_network_cidr}}</ipAddress>
                     </destination>
                 </firewallRule>
-
+                
                 <firewallRule>
                     <id>13106</id>
                     <ruleTag>13106</ruleTag>
@@ -239,6 +239,49 @@
                         <ipAddress>{{cross_network_cidr}}</ipAddress>
                     </source>
                 </firewallRule>
+                -->
+
+                {% for pair in cross_logical_network_combo %}
+                {% set pair0 = pair[0] %}
+                {% set pair1 = pair[1] %}
+                <firewallRule>
+                    <id>1313{{loop.index}}</id>
+                    <ruleTag>1313{{loop.index}}</ruleTag>
+                    <name>Allow {{ pair0['givenName'] }} -&gt; to {{ pair1['givenName'] }} </name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <source>
+                        <exclude>false</exclude>                       
+                        <ipAddress>{{pair0['cidr']}}</ipAddress>
+                    </source>
+                    <destination>
+                        <exclude>false</exclude>                       
+                        <ipAddress>{{pair1['cidr']}}</ipAddress>
+                    </destination>
+                </firewallRule>
+                {% endfor %}
+
+                {% for lswitch in logical_switches %}
+                <firewallRule>
+                    <id>1314{{loop.index}}</id>
+                    <ruleTag>1314{{loop.index}}</ruleTag>
+                    <name>Allow Egress for {{ lswitch['givenName'] }} -&gt; Outbound</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <source>
+                        <exclude>false</exclude>                        
+                        <ipAddress>{{lswitch['cidr']}}</ipAddress>
+                    </source>
+                </firewallRule>
+                {% endfor %}
 
                 <firewallRule>
                     <id>13200</id>
@@ -415,6 +458,7 @@
         <nat>
             <enabled>true</enabled>
             <natRules>
+                <!--
                 <natRule>
                     <ruleType>user</ruleType>
                     <action>snat</action>
@@ -427,6 +471,23 @@
                     <originalPort>any</originalPort>
                     <translatedPort>any</translatedPort>
                 </natRule>
+                -->
+
+                {% for lswitch in logical_switches %}
+                <natRule>
+                    <ruleType>user</ruleType>
+                    <action>snat</action>
+                    <originalAddress>{{ lswitch['cidr'] }}</originalAddress>
+                    <translatedAddress>{{ nsxmanager['uplink_details']['uplink_ip']}}</translatedAddress>
+                    <loggingEnabled>true</loggingEnabled>
+                    <enabled>true</enabled>
+                    <description></description>
+                    <protocol>any</protocol>
+                    <originalPort>any</originalPort>
+                    <translatedPort>any</translatedPort>
+                </natRule>
+                {% endfor %}
+
                 
                 <natRule>
                     <ruleType>user</ruleType>
