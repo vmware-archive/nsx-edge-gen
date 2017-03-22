@@ -78,6 +78,7 @@ openssl x509 -req -days 3650                              \
 
 openssl x509 -in ${OUTPUT_DIR}/${SYS_DOMAIN}.crt -text -noout >/dev/null 2>&1
 
-echo "Finished self-signed cert generation for requested App Domain: ${APP_DOMAIN}"
-echo "                                            and System Domain: ${SYS_DOMAIN}"
+echo "Finished self-signed cert generation"
+echo "      App Domain: ${APP_DOMAIN}"
+echo "   System Domain: ${SYS_DOMAIN}"
 echo ""

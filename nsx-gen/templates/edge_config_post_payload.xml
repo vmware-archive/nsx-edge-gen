@@ -484,11 +484,12 @@
                 <natRule>
                     <ruleType>user</ruleType>
                     <action>snat</action>
+                    <vnic>0</vnic> <!-- Uplink vnic is 0 -->
                     <originalAddress>{{ lswitch['cidr'] }}</originalAddress>
                     <translatedAddress>{{ nsxmanager['uplink_details']['uplink_ip']}}</translatedAddress>
                     <loggingEnabled>true</loggingEnabled>
                     <enabled>true</enabled>
-                    <description></description>
+                    <description>SNAT-{{ lswitch['given_name'] }}</description>
                     <protocol>any</protocol>
                     <originalPort>any</originalPort>
                     <translatedPort>any</translatedPort>
@@ -499,11 +500,12 @@
                 <natRule>
                     <ruleType>user</ruleType>
                     <action>dnat</action>
+                    <vnic>0</vnic> <!-- Uplink vnic is 0 -->
                     <originalAddress>{{ opsmgr_routed_component['uplink_details']['uplink_ip']}}</originalAddress>
                     <translatedAddress>{{ opsmgr_routed_component['ips']}}</translatedAddress>
                     <loggingEnabled>true</loggingEnabled>
                     <enabled>true</enabled>
-                    <description></description>
+                    <description>DNAT-OpsMgr</description>
                     <protocol>any</protocol>
                     <originalPort>any</originalPort>
                     <translatedPort>any</translatedPort>
