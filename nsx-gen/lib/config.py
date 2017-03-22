@@ -54,7 +54,7 @@ class Config(dict):
 			raise ValueError('vcenter section not defined')
 
 		fields = [ 'address', 'admin_user', 'admin_passwd', 'datacenter', \
-				'datastore', 'cluster', 'gateway'] #, 'vmFolder', 'host']
+				'datastore', 'cluster'] #, 'vmFolder', 'host']
 		for field in fields:
 			if self.vcenter[field] is None:
 				raise ValueError(field + ' field not set for vcenter')
@@ -139,7 +139,7 @@ class Config(dict):
 		for lswitch in self.logical_switches:
 			global_switches[lswitch['givenName'].upper()] = lswitch
 
-		fields = [ 'name', 'size', 'cli', 'routed_components']
+		fields = [ 'name', 'size', 'cli', 'routed_components', 'gateway_ip']
 		for nsx_edge in self.nsx_edges:
 
 			for field in fields:
