@@ -29,7 +29,9 @@
                     <primaryAddress>{{nsxmanager['uplink_details']['uplink_ip']}}</primaryAddress>
                     <secondaryAddresses>
                     {% for routed_component in routed_components %}
-                        <ipAddress>{{routed_component['uplink_details']['uplink_ip']}}</ipAddress>
+                    {% if routed_component['uplink_details']['real_uplink_ip'] %}
+                        <ipAddress>{{routed_component['uplink_details']['real_uplink_ip']}}</ipAddress>
+                    {% endif %}
                     {% endfor %}
                     </secondaryAddresses>                
                     <subnetMask>{{nsxmanager['uplink_details']['subnet_mask']}}</subnetMask>
@@ -52,6 +54,11 @@
             <addressGroups>
                 <addressGroup>
                     <primaryAddress>{{lswitch['primary_ip']}}</primaryAddress>
+                    <secondaryAddresses>
+                    {% for secondary_ip in lswitch['secondary_ips'] %} 
+                        <ipAddress>{{ secondary_ip }}</ipAddress>
+                    {% endfor %}
+                    </secondaryAddresses>
                     <subnetMask>{{lswitch['subnet_mask']}}</subnetMask>
                     <subnetPrefixLength>{{lswitch['subnet_length']}}</subnetPrefixLength>
                 </addressGroup>
@@ -247,7 +254,7 @@
                 <firewallRule>
                     <id>1313{{loop.index}}</id>
                     <ruleTag>1313{{loop.index}}</ruleTag>
-                    <name>Allow {{ pair0['givenName'] }} -&gt; to {{ pair1['givenName'] }} </name>
+                    <name>Allow {{ pair0['given_name'] }} -&gt; to {{ pair1['given_name'] }} </name>
                     <ruleType>user</ruleType>
                     <enabled>true</enabled>
                     <loggingEnabled>false</loggingEnabled>
@@ -269,7 +276,7 @@
                 <firewallRule>
                     <id>1314{{loop.index}}</id>
                     <ruleTag>1314{{loop.index}}</ruleTag>
-                    <name>Allow Egress for {{ lswitch['givenName'] }} -&gt; Outbound</name>
+                    <name>Allow Egress for {{ lswitch['given_name'] }} -&gt; Outbound</name>
                     <ruleType>user</ruleType>
                     <enabled>true</enabled>
                     <loggingEnabled>false</loggingEnabled>

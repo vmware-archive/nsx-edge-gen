@@ -85,7 +85,7 @@
     <connectionLimit>0</connectionLimit>
     <connectionRateLimit>0</connectionRateLimit>
     <defaultPoolId>pool-{{loop.index}}</defaultPoolId>
-    <applicationProfileId>{{virtServer['appProfile']['id']}}</applicationProfileId>
+    <applicationProfileId>{{virtServer['app_profile']['id']}}</applicationProfileId>
     <enableServiceInsertion>false</enableServiceInsertion>
     <accelerationEnabled>false</accelerationEnabled>
     {% for app_rule_id in virtServer['app_rules'] %}

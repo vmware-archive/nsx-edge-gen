@@ -83,9 +83,10 @@ KNOWN_ROUTED_COMPONENTS = [
 	'OPS',  
 	'GO-ROUTER',
 	'DIEGO',
-	'TCP-ROUTER', 
-	'MYSQL',
-	'RABBIT'
+	'TCP-ROUTER',
+	'MYSQL-ERT', 
+	'MYSQL-TILE',
+	'RABBITMQ-TILE'
 ]
 
 # Ensure the switch matches the entry in KNOWN_LSWITCHES
@@ -99,57 +100,67 @@ DEFAULT_ROUTED_COMPONENT_LSWITCH_MAP = {
 									'useVIP': True, 'instances' : 3,  'offset' : 20  },
 	KNOWN_ROUTED_COMPONENTS[3]: { 'name': 'TCP-ROUTER', 'switch': 'ERT',  
 									'useVIP': True, 'instances' : 4,  'offset' : 30  },
-	KNOWN_ROUTED_COMPONENTS[4]: { 'name': 'MYSQL', 'switch': 'PCF-TILES',
-									'useVIP': True, 'instances' : 3,  'offset' :  5  },
-	KNOWN_ROUTED_COMPONENTS[5]: { 'name': 'RABBIT', 'switch': 'PCF-TILES',
-									'useVIP': True, 'instances' : 3,  'offset' :  15  },
+	KNOWN_ROUTED_COMPONENTS[4]: { 'name': 'MYSQL-ERT', 'switch': 'ERT',
+									'useVIP': True, 'instances' : 3,  'offset' : 40  },
+	KNOWN_ROUTED_COMPONENTS[5]: { 'name': 'MYSQL-TILE', 'switch': 'PCF-TILES',
+									'useVIP': True, 'instances' : 3,  'offset' : 10  },								
+	KNOWN_ROUTED_COMPONENTS[6]: { 'name': 'RABBITMQ-TILE', 'switch': 'PCF-TILES',
+									'useVIP': True, 'instances' : 3,  'offset' : 30  }																		
 }
 
 # Ensure the monitor-id matches the ones in the MONITOR_MAP
 DEFAULT_ROUTED_COMPONENT_MAP = {
 	KNOWN_ROUTED_COMPONENTS[0]: { 
-				'name': 'OPS',
-				'switch': 'INFRA', 'useVIP': False, 'instances' : 1,  'offset' :  5, 'monitor_id' : 'monitor-3', 
+				'name': 'OPS', 'switch': 'INFRA', 
+				'useVIP': False, 'instances' : 1,  'offset' :  5, 'monitor_id' : 'monitor-3', 
 				'transport':	{
 					'ingress': { 'port': '443', 'protocol': 'https' },
 					'egress': { 'port': '443', 'protocol': 'https', 'monitor_port' : '443',  'url' :  '/' },
 				}	 
 			},
 	KNOWN_ROUTED_COMPONENTS[1]: { 
-				'name': 'GO-ROUTER',
-				'switch': 'ERT', 'useVIP': True,  'instances' : 4,  'offset' : 10, 'monitor_id' : 'monitor-4', 	
+				'name': 'GO-ROUTER', 'switch': 'ERT', 
+				'useVIP': True,  'instances' : 4,  'offset' : 10, 'monitor_id' : 'monitor-4', 	
 				'transport':	{
 					'ingress': { 'port': '443', 'protocol': 'https' },
 					'egress': { 'port': '80', 'protocol': 'http', 'monitor_port' : '8080',  'url' :  '/health' },
 				 }
 			},
 	KNOWN_ROUTED_COMPONENTS[2]: { 
-				'name': 'DIEGO',
-				'switch': 'ERT', 'useVIP': True,  'instances' : 3,  'offset' : 20,  'monitor_id' : 'monitor-1',	
+				'name': 'DIEGO', 'switch': 'ERT', 
+				'useVIP': True,  'instances' : 3,  'offset' : 20,  'monitor_id' : 'monitor-1',	
 				'transport':	{
 					'ingress': { 'port': '2222', 'protocol': 'tcp' },
 					'egress': { 'port': '2222', 'protocol': 'tcp', 'monitor_port' : '2222' },
 				}
 			},
 	KNOWN_ROUTED_COMPONENTS[3]: { 
-				'name': 'TCP-ROUTER',
-				'switch': 'ERT', 'useVIP': True,  'instances' : 4,  'offset' : 30, 'monitor_id' : 'monitor-5',	
+				'name': 'TCP-ROUTER', 'switch': 'ERT', 
+				'useVIP': True,  'instances' : 4,  'offset' : 30, 'monitor_id' : 'monitor-5',	
 				'transport':{
 					'ingress': { 'port': '5000', 'protocol': 'tcp' },
 					'egress': { 'port': '5000', 'protocol': 'tcp', 'monitor_port' : '80', 'url' :  '/health' },
 				 }
 			},
 	KNOWN_ROUTED_COMPONENTS[4]: {
-				'name': 'MYSQL',
-				'switch': 'PCF-TILES', 'useVIP': True,  'instances' : 3,  'offset' :  5,  'monitor_id' : 'monitor-1',	    
+				'name': 'MYSQL-ERT', 'switch': 'PCF-TILES', 
+				'useVIP': True,  'instances' : 3,  'offset' :  40,  'monitor_id' : 'monitor-6',	    
 				'transport':{
 					'ingress': { 'port': '3306', 'protocol': 'tcp' },
 					'egress': { 'port': '3306', 'protocol': 'tcp', 'monitor_port' : '1936' },
 				 }
 			},
-	KNOWN_ROUTED_COMPONENTS[5]: { 
-				'name': 'RABBIT',
-				'switch': 'PCF-TILES', 'useVIP': True,  'instances' : 3,  'offset' :  5,  'monitor_id' : 'monitor-6',	    
+	KNOWN_ROUTED_COMPONENTS[5]: {
+				'name': 'MYSQL-TILE', 'switch': 'PCF-TILES', 
+				'useVIP': True,  'instances' : 3,  'offset' :  10,  'monitor_id' : 'monitor-6',	    
+				'transport':{
+					'ingress': { 'port': '3306', 'protocol': 'tcp' },
+					'egress': { 'port': '3306', 'protocol': 'tcp', 'monitor_port' : '1936' },
+				 }
+			},
+	KNOWN_ROUTED_COMPONENTS[6]: { 
+				'name': 'RABBITMQ-TILE', 'switch': 'PCF-TILES', 
+				'useVIP': True,  'instances' : 3,  'offset' :  20,  'monitor_id' : 'monitor-1',	    
 				'transport':{
 					'ingress': { 'port': '15672,5672,5671', 'protocol': 'tcp' },
 					'egress': { 'port': '15672,5672,5671', 'protocol': 'tcp' },
@@ -173,7 +184,7 @@ class TransportScheme:
 						monitor_port=80, url='/'):
 		
 		self.protocol = 'http'
-		self.port = 80
+		self.port = '80'
 		self.monitor_port = None
 
 		self.url = url
@@ -242,6 +253,9 @@ class UplinkDetails:
 		self.uplink_ip = uplink_ip
 		self.subnet_length = subnet_length
 		self.subnet_mask = subnet_mask
+
+		self.real_uplink_ip = None
+
 		self.validate()
 
 	def validate(self):
@@ -251,19 +265,24 @@ class UplinkDetails:
 											   uplinkIpTokens[1],
 											   uplinkIpTokens[2])
 		if not self.subnet_length or not self.subnet_mask:
-			self.calculate_subnet()	
-
+			self.calculate_subnet()
 
 	def calculate_subnet(self):
 		addr_range = ipcalc.Network(self.cidr)
 		self.subnet_length = string.atoi(self.cidr.split('/')[1])
 		self.subnet_mask = addr_range.netmask()
 
+	def __setitem__(self, field, val):
+		if field == 'real_uplink_ip':
+			self.real_uplink_ip = val
+
 	def __getitem__(self, field):
 		if field == 'cidr':
 			return self.cidr
 		elif field == 'uplink_ip':
 			return self.uplink_ip
+		elif field == 'real_uplink_ip':
+			return self.real_uplink_ip
 		elif field == 'subnet_length':
 			return self.subnet_length
 		elif field == 'subnet_mask':
@@ -311,7 +330,7 @@ class RoutedComponent:
 		print 'Looking up for switch with name: {} for Routed component: {}'.format(keywordToMatch, self.name)
 
 		for logical_switch in logical_switches:
-			if keywordToMatch.upper().replace('-','') in logical_switch['givenName'].upper().replace('-',''):
+			if keywordToMatch.upper().replace('-','') in logical_switch['given_name'].upper().replace('-',''):
 				self.switch = logical_switch
 				return
 		
@@ -376,7 +395,7 @@ class RoutedComponent:
 			if appRule in [ 'optionlog', 'option httplog']:
 				continue
 
-			if appRule.endswith(egressProtocol.lower()):
+			if appRule.endswith(ingressProtocol.lower()):
 				self.app_rules.append( APP_RULE_MAP[appRule]['id'])
 
 

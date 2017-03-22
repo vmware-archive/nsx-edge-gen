@@ -107,7 +107,7 @@ def  mapVcenterResources(context, moidMap):
 	lookupVCenterMoid(context, 'datastore', moidMap)
 
 	if DEBUG:
-		print 'Vcenter updated context\n'
+		print 'vCenter context updated\n'
 		pprint(vars(vcenter_context))
 
 def build(context, verbose=False):
@@ -116,7 +116,7 @@ def build(context, verbose=False):
 	if DEBUG:
 		pprint(moidMap)   
 	
-
+	reconcile_uplinks(context)
 	build_logical_switches('lswitch', context, 'logical_switches')
 	build_nsx_edge_gateways('edge', context)
 
@@ -132,7 +132,8 @@ def list(context, verbose=False):
 	moidMap = refresh_moid_map(context)
 	if DEBUG:
 		pprint(moidMap)    
-	
+
+	reconcile_uplinks(context)
 	list_logical_switches(context)
 	list_nsx_edge_gateways(context)    
 	
@@ -208,6 +209,46 @@ def check_logical_switch_exists(vcenterMobMap, lswitchName):
 		return True
 
 	return False
+
+# Any internal component that requires VIP (like mysql-ert proxy or mysql-tile proxy or rabbitMQ proxy)
+# should have an uplink ip thats within the specified Logical switch
+# These ips should be added as secondary ip for the logical switch vnic
+# Only those that are used to go out should go into the Uplink vnic secondary ip (like Router/DiegoBrain/Ops Mgr)
+def reconcile_uplinks(context):
+	logicalSwitches = context['logical_switches']
+	esgInstances = context['edge_service_gateways']
+
+
+	for esgInstance in esgInstances:
+		for routedComponent in esgInstance['routed_components']:
+
+			lswitch = None
+			lSwitchName = routedComponent['switch']['name']
+			
+			for logicalSwitch in logicalSwitches:
+				if logicalSwitch['given_name'] in lSwitchName:
+					lswitch = logicalSwitch
+					break
+			
+			if not lswitch:
+				print 'Unable to find/map logical switch {} for Routed Component: {}'.\
+							format(routedComponent['name'], lSwitchName)
+			
+			lswitchCidr = lswitch['cidr']
+			routedComponentUplinkIp = routedComponent['uplink_details']['uplink_ip']
+
+			# Check if the provided uplink ip is part of a logical switch
+			isExternalUplink = True
+			# If its part of a logical switch, add the uplink ip to the related logical switch's secondary ip
+			if routedComponentUplinkIp in ipcalc.Network(lswitchCidr):
+				isExternalUplink = False
+				lswitch['secondary_ips'].append(routedComponentUplinkIp)
+
+			# If the uplink ip is not part of any other logical switches, 
+			# mark it as the real uplink for the routed component
+			if isExternalUplink:
+				routedComponent['uplink_details']['real_uplink_ip'] = routedComponentUplinkIp
+
 
 def build_logical_switches(dir, context, type='logical_switches', alternate_template=None):
 

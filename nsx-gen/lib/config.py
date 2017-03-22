@@ -118,15 +118,18 @@ class Config(dict):
 			if cidr < 22:
 				lswitch['cidr'] = addr + '/22'			
 
-			givenName = lswitch['name'].replace(' ', '-')
-			lswitch['givenName'] = givenName
+			given_name = lswitch['name'].replace(' ', '-')
+			lswitch['given_name'] = given_name
 			addr_range = ipcalc.Network(lswitch['cidr'])
 			lswitch['name'] = 'lswitch-'+self.get('name') + '-' + lswitch['name']
 			lswitch['subnet_mask'] = addr_range.netmask()
 			lswitch['gateway'] = addr_range[0]
 			lswitch['primary_ip'] = addr_range[1]
 			lswitch['subnet_length'] = string.atoi(lswitch['cidr'].split('/')[1])
-			lswitch['name'] = lswitch['name'].replace(' ', '-')		
+			lswitch['name'] = lswitch['name'].replace(' ', '-')
+
+			# This will be filled in later once we have parsed the routed components
+			lswitch['secondary_ips'] = []		
 			
  		print_logical_switches_configured(self.logical_switches)
 
@@ -137,7 +140,7 @@ class Config(dict):
 		
 		global_switches =  { }
 		for lswitch in self.logical_switches:
-			global_switches[lswitch['givenName'].upper()] = lswitch
+			global_switches[lswitch['given_name'].upper()] = lswitch
 
 		fields = [ 'name', 'size', 'cli', 'routed_components', 'gateway_ip']
 		for nsx_edge in self.nsx_edges:

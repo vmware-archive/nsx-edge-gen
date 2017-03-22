@@ -45,7 +45,7 @@ edge_service_gateways:
     instances: 1
     offset: 5
     uplink_details:
-      uplink_ip: 10.114.216.171    
+      uplink_ip: 10.114.216.171 # This gets exposed outside   
     #transport:
       # #Default incoming scheme is https/443 for opsmgr
       # ingress:
@@ -61,7 +61,7 @@ edge_service_gateways:
     instances: 4
     offset: 10
     uplink_details:
-      uplink_ip: 10.114.216.172
+      uplink_ip: 10.114.216.172 # This gets exposed outside
     #transport:
       # Default incoming scheme is https/443 for ert
       #ingress:
@@ -78,7 +78,7 @@ edge_service_gateways:
     instances: 3
     offset: 20
     uplink_details:
-      uplink_ip: 10.114.216.173    
+      uplink_ip: 10.193.99.173 # This gets exposed outside  
     #transport:
       #ingress:
       #  port: 2222
@@ -91,7 +91,7 @@ edge_service_gateways:
     instances: 4
     offset: 30
     uplink_details:
-      uplink_ip: 10.193.99.174
+      uplink_ip: 10.193.99.174 # This gets exposed outside
     #transport:
       # Use defaults - https/443 incoming, http/8080 forward
       #ingress:
@@ -102,14 +102,29 @@ edge_service_gateways:
       #  protocol: tcp
       #  monitor_port: 80
       #  url: /health    
+  - name: mysql-ert # Internal ERT MySQL proxy
+    switch: Ert
+    instances: 3
+    offset: 30
+    uplink_details:
+      uplink_ip: 192.168.23.250 # This should be on the Ert network, not external facing
+    # transport:
+    #   # Use defaults - tcp/3306 incoming, tcp/3306 forward
+    #   ingress:
+    #     port: 3306
+    #     protocol: tcp
+    #   egress: 
+    #     port: 3306
+    #     protocol: tcp
+    #     monitor_port: 1936
 
-# Commented off 
-  - name: mysql
+# Comment off if not need for mysql and rabbitmq 
+  - name: mysql-tile # MySQL Tile's proxy
     switch: PCF-Tiles
     instances: 3 # for 3 proxies in 3 AZs
     offset: 5
     uplink_details:
-      uplink_ip: 10.193.99.175
+      uplink_ip: 192.168.27.250 # This should be on the PCF-Tiles network, not external facing
     transport:
       # Use defaults - tcp/3306 incoming, tcp/3306 forward
       ingress:
@@ -120,12 +135,12 @@ edge_service_gateways:
         protocol: tcp
         monitor_port: 1936
 
-  - name: rabbitmq
+  - name: rabbitmq-tile # RabbitMQ Tile's proxy
     switch: PCF-Tiles
     instances: 3
     offset: 15
     uplink_details:
-      uplink_ip: 10.193.99.176
+      uplink_ip: 192.168.27.251 # This should be on the PCF-Tiles network, not external facing
     transport:
       # Use defaults - tcp/15672,5671,5672 incoming, tcp/15672,5671,5672 forward
       ingress:
@@ -134,6 +149,21 @@ edge_service_gateways:
       egress: 
         port: 15672,5671,5672
         protocol: tcp
+
+  ## Sample service entry
+  # - name: test-service
+  #   uplink_ip: 10.193.99.41
+  #   switch: PCF-Tiles
+  #   instances: 4
+  #   offset: 30
+  #   transport:
+  #     #Use defaults - https/443 incoming, http/80 forward
+  #     ingress:
+  #       port: 443
+  #       protocol: https
+  #     egress:
+  #       port: 80
+  #       protocol: http
 
 logical_switches:
 - name: Infra  
