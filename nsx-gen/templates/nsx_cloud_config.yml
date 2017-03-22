@@ -105,7 +105,7 @@ edge_service_gateways:
   - name: mysql-ert # Internal ERT MySQL proxy
     switch: Ert
     instances: 3
-    offset: 30
+    offset: 40
     uplink_details:
       uplink_ip: 192.168.23.250 # This should be on the Ert network, not external facing
     # transport:
@@ -122,7 +122,7 @@ edge_service_gateways:
   - name: mysql-tile # MySQL Tile's proxy
     switch: PCF-Tiles
     instances: 3 # for 3 proxies in 3 AZs
-    offset: 5
+    offset: 10
     uplink_details:
       uplink_ip: 192.168.27.250 # This should be on the PCF-Tiles network, not external facing
     transport:
@@ -138,7 +138,7 @@ edge_service_gateways:
   - name: rabbitmq-tile # RabbitMQ Tile's proxy
     switch: PCF-Tiles
     instances: 3
-    offset: 15
+    offset: 30
     uplink_details:
       uplink_ip: 192.168.27.251 # This should be on the PCF-Tiles network, not external facing
     transport:

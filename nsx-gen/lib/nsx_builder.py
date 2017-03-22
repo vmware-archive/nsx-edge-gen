@@ -415,6 +415,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 	
 	for nsx_edge in  context['edge_service_gateways']:
 	
+		# Defaults
 		opsmgr_routed_component = nsx_edge['routed_components'][0]
 		ert_routed_component    = nsx_edge['routed_components'][1]
 		diego_routed_component  = nsx_edge['routed_components'][2]
@@ -424,11 +425,11 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		for routed_component in nsx_edge['routed_components']:
 			if 'OPS' in routed_component['name'].upper():
 				opsmgr_routed_component = routed_component
-			elif 'ERT' in routed_component['name'].upper():
+			elif 'GO-ROUTER' in routed_component['name'].upper():
 				ert_routed_component = routed_component
 			elif 'DIEGO' in routed_component['name'].upper():
 				diego_routed_component = routed_component
-			elif 'TCP' in routed_component['name'].upper():
+			elif 'TCP-ROUTER' in routed_component['name'].upper():
 				tcp_routed_component = routed_component
 
 		ertLogicalSwitch = {}
@@ -510,8 +511,6 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 								check=False)
 		data = post_response.text
 		
-		print 'NSX Edge creation response:{}\n'.format(data)
-
 		if post_response.status_code < 400: 
 			print 'Created NSX Edge :{}\n'.format(nsx_edge['name'])
 			certId = add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge)
