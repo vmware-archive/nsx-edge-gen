@@ -104,36 +104,36 @@ edge_service_gateways:
       #  url: /health    
 
 # Commented off 
-  # - name: mysql
-  #   switch: PCF-Tiles
-  #   instances: 3 # for 3 proxies in 3 AZs
-  #   offset: 5
-  #   uplink_details:
-  #     uplink_ip: 10.114.216.175
-  #   transport:
-  #     # Use defaults - tcp/3306 incoming, tcp/3306 forward
-  #     ingress:
-  #       port: 3306
-  #       protocol: tcp
-  #     egress: 
-  #       port: 3306
-  #       protocol: tcp
-  #       monitor_port: 1936
+  - name: mysql
+    switch: PCF-Tiles
+    instances: 3 # for 3 proxies in 3 AZs
+    offset: 5
+    uplink_details:
+      uplink_ip: 10.114.216.175
+    transport:
+      # Use defaults - tcp/3306 incoming, tcp/3306 forward
+      ingress:
+        port: 3306
+        protocol: tcp
+      egress: 
+        port: 3306
+        protocol: tcp
+        monitor_port: 1936
 
-  # - name: rabbitmq
-  #   switch: PCF-Tiles
-  #   instances: 3
-  #   offset: 15
-  #   uplink_details:
-  #     uplink_ip: 10.114.216.176
-  #   transport:
-  #     # Use defaults - tcp/15672,5671,5672 incoming, tcp/15672,5671,5672 forward
-  #     ingress:
-  #       port: 15672,5671,5672
-  #       protocol: tcp
-  #     egress: 
-  #       port: 15672,5671,5672
-  #       protocol: tcp
+  - name: rabbitmq
+    switch: PCF-Tiles
+    instances: 3
+    offset: 15
+    uplink_details:
+      uplink_ip: 10.114.216.176
+    transport:
+      # Use defaults - tcp/15672,5671,5672 incoming, tcp/15672,5671,5672 forward
+      ingress:
+        port: 15672,5671,5672
+        protocol: tcp
+      egress: 
+        port: 15672,5671,5672
+        protocol: tcp
 
 logical_switches:
 - name: Infra  

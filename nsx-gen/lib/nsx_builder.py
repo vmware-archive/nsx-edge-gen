@@ -481,24 +481,6 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		else:
 			print 'Creation of NSX Edge failed, details:{}\n'.format(data)			
 
-def calculate_cross_network_cidr(infraLogicalSwitch):
-
-	# Get a large cidr (like 16) that would allow all networks to talk to each other
-	infraIpSegment = infraLogicalSwitch['cidr'].split('/')[0]
-	infraIpTokens  = infraIpSegment.split('.')
-	cross_network_cidr = '{}.{}.0.0/16'.format(infraIpTokens[0], 
-												infraIpTokens[1])
-	return cross_network_cidr
-
-def calculate_gateway(global_uplink_ip):
-
-	
-	uplinkIpTokens   = global_uplink_ip.split('.')
-	gateway_address  = '{}.{}.{}.1'.format(	uplinkIpTokens[0], 
-											uplinkIpTokens[1],
-											uplinkIpTokens[2])
-	return gateway_address
-
 def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	map_nsx_esg_id( [ nsx_edge ] )
 
@@ -535,12 +517,13 @@ def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 			certId = certPostResponseDoc['certificates']['certificate']['objectId']
 			nsx_edge['cert_id'] = certId
 
-		print 'Addition of NSX Edge Cert failed, details:{}\n'.format(data)
-		if post_response.status_code == 404: 
+		elif post_response.status_code == 404: 
 			print 'NSX Edge not yet up, retrying'
 			retry = True 
 			print 'Going to retry addition of cert again... for NSX Edge: {}\n'.format(nsx_edge['name'])
-
+		else:
+			print 'Addition of NSX Edge Cert failed, details:{}\n'.format(data)
+		
 
 def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	
@@ -683,6 +666,24 @@ def readFileContent(filePath):
 		with open(textfile, 'r') as myfile:
 			response=myfile.read()
 		return response
+
+def calculate_cross_network_cidr(infraLogicalSwitch):
+
+	# Get a large cidr (like 16) that would allow all networks to talk to each other
+	infraIpSegment = infraLogicalSwitch['cidr'].split('/')[0]
+	infraIpTokens  = infraIpSegment.split('.')
+	cross_network_cidr = '{}.{}.0.0/16'.format(infraIpTokens[0], 
+												infraIpTokens[1])
+	return cross_network_cidr
+
+def calculate_gateway(global_uplink_ip):
+
+	
+	uplinkIpTokens   = global_uplink_ip.split('.')
+	gateway_address  = '{}.{}.{}.1'.format(	uplinkIpTokens[0], 
+											uplinkIpTokens[1],
+											uplinkIpTokens[2])
+	return gateway_address
 
 # Create a cross list of network cidrs for firewall rules
 # Ignore pairing of same entries
