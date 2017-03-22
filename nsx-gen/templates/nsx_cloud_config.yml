@@ -91,7 +91,7 @@ edge_service_gateways:
     instances: 4
     offset: 30
     uplink_details:
-      uplink_ip: 10.114.216.174
+      uplink_ip: 10.193.99.174
     #transport:
       # Use defaults - https/443 incoming, http/8080 forward
       #ingress:
@@ -109,7 +109,7 @@ edge_service_gateways:
     instances: 3 # for 3 proxies in 3 AZs
     offset: 5
     uplink_details:
-      uplink_ip: 10.114.216.175
+      uplink_ip: 10.193.99.175
     transport:
       # Use defaults - tcp/3306 incoming, tcp/3306 forward
       ingress:
@@ -125,7 +125,7 @@ edge_service_gateways:
     instances: 3
     offset: 15
     uplink_details:
-      uplink_ip: 10.114.216.176
+      uplink_ip: 10.193.99.176
     transport:
       # Use defaults - tcp/15672,5671,5672 incoming, tcp/15672,5671,5672 forward
       ingress:
