@@ -4,19 +4,18 @@
    <accelerationEnabled>false</accelerationEnabled>
    
    {% for pool in routed_components  if pool['useVIP'] == True %}
-   
+   {% set outer_index = loop.index %}  
+   {% for port in pool['transport']['egress']['port'].split(',') %}
+   {% set port_index = loop.index %} 
    <pool>
-    <poolId>pool-{{loop.index}}</poolId>
-    <name>{{ pool['name']}}-Pool</name>
+    <poolId>pool-{{outer_index}}{{port_index}}</poolId>
+    <name>{{ pool['name']}}{{outer_index}}{{port_index}}-Pool</name>
     <algorithm>round-robin</algorithm>
     <transparent>false</transparent>
     <monitorId>{{ pool['monitor_id']}}</monitorId>
-     {% set outer_loop = loop %}    
      {% for ip in pool['ips'].split(',') %}
-     {% set middle_loop = loop %} 
-     {% for port in pool['transport']['egress']['port'].split(',') %}
     <member>
-       <memberId>member-{{outer_loop.index}}{{middle_loop.index}}{{loop.index}}</memberId>
+       <memberId>member-{{outer_index}}{{port_index}}{{loop.index}}</memberId>
        <ipAddress>{{ ip }}</ipAddress>
        <weight>1</weight>
        {% if pool['transport']['egress']['monitor_port'] %}
@@ -28,11 +27,11 @@
        <maxConn>0</maxConn>
        <minConn>0</minConn>
        <condition>enabled</condition>
-       <name>{{ pool['name']}}-member-{{outer_loop.index}}{{middle_loop.index}}{{loop.index}}</name>
+       <name>{{ pool['name']}}-member-{{outer_index}}{{port_index}}{{loop.index}}</name>
     </member>
     {% endfor %}
-    {% endfor %}
    </pool> 
+    {% endfor %}
    {% endfor %}   
 
    {% for appProfile in appProfileMap.values() %}
@@ -75,16 +74,19 @@
    {% endfor %}
    {% for virtServer in routed_components if virtServer['name'] != 'opsmgr'%}
    
+     {% set outer_index = loop.index %}    
+     {% for port in virtServer['transport']['ingress']['port'].split(',') %}
+
    <virtualServer>
-    <virtualServerId>virtualServer-{{loop.index}}</virtualServerId>
-    <name>VIP-{{virtServer['name']}}-{{virtServer['transport']['ingress']['protocol']}}</name>
+    <virtualServerId>virtualServer-{{outer_index}}{{loop.index}}</virtualServerId>
+    <name>VIP-{{virtServer['name']}}-{{virtServer['transport']['ingress']['protocol']}}-{{outer_index}}{{loop.index}}</name>
     <enabled>true</enabled>
     <ipAddress>{{virtServer['uplink_details']['uplink_ip']}}</ipAddress>
     <protocol>{{virtServer['transport']['ingress']['protocol']}}</protocol>
-    <port>{{virtServer['transport']['ingress']['port']}}</port>
+    <port>{{ port }}</port>
     <connectionLimit>0</connectionLimit>
     <connectionRateLimit>0</connectionRateLimit>
-    <defaultPoolId>pool-{{loop.index}}</defaultPoolId>
+    <defaultPoolId>pool-{{outer_index}}{{loop.index}}</defaultPoolId>
     <applicationProfileId>{{virtServer['app_profile']['id']}}</applicationProfileId>
     <enableServiceInsertion>false</enableServiceInsertion>
     <accelerationEnabled>false</accelerationEnabled>
@@ -92,6 +94,7 @@
       <applicationRuleId>{{ app_rule_id }}</applicationRuleId>
     {% endfor %}
    </virtualServer>
+   {% endfor %}
    {% endfor %}
 
    <logging>
