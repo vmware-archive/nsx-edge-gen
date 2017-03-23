@@ -117,7 +117,7 @@
             </defaultPolicy>
             <firewallRules> 
 
-                <!-- FIX ME -- would have to update this for any new component that needs direct route via firewall -->
+                <!-- FIX ME - would have to update this for any new component that needs direct route via firewall -->
                 <firewallRule>
                     <id>13101</id>
                     <ruleTag>13101</ruleTag>

@@ -99,7 +99,8 @@ ATTRIBUTE_MAP_ARRAY = {
 	],
 }
 
-ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router']
+# Should match
+ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router', 'mysql_ert', 'mysql_tile', 'rabbitmq_tile']
 
 cli_config = { }
 
@@ -185,11 +186,11 @@ def contruct_parser(parser):
 					    offset: 5
 					    #transport:
 					      # #Default incoming scheme is https/443 for opsmgr
-					      # incoming_scheme:
+					      # ingress:
 					      #  port: 443
 					      #  protocol: https
 					      # #Default forward scheme is https/443 for opsmgr
-					      # forward_scheme:
+					      # egress:
 					      #  port: 443
 					      #  protocol: https
 					    uplink_details: 

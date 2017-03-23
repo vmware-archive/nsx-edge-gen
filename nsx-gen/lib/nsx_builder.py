@@ -468,6 +468,8 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		"""
 		if True:
 		"""
+		print 'Creating NSX Edge instance: {}\n\n'.format(nsx_edge['name'])
+
 		post_response = client.post_xml(NSX_URLS['esg']['all'] , 
 								os.path.join(nsx_edges_dir, nsx_edge['name'] + '_post_payload.xml'), 
 								check=False)
@@ -481,7 +483,8 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 			add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge)
 			print 'Success!! Finished creation of NSX Edge instance: {}\n\n'.format(nsx_edge['name'])
 		else:
-			print 'Creation of NSX Edge failed, details:{}\n'.format(data)			
+			print 'Creation of NSX Edge failed, details:\n{}\n'.format(data)
+			raise Exception('Creation of NSX Edge failed, details:\n {}'.format(data))			
 
 def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	map_nsx_esg_id( [ nsx_edge ] )
@@ -525,6 +528,7 @@ def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 			print 'Going to retry addition of cert again... for NSX Edge: {}\n'.format(nsx_edge['name'])
 		else:
 			print 'Addition of NSX Edge Cert failed, details:{}\n'.format(data)
+			raise Exception('Addition of NSX Edge failed, details:\n {}'.format(data))
 
 def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	
@@ -561,6 +565,7 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 		print 'Updated NSX Edge LBR Config for : {}\n'.format(nsx_edge['name'])		
 	else:
 		print 'Update of NSX Edge LBR Config failed, details:{}\n'.format(data)
+		raise Exception('Update of NSX Edge LBR Config failed, details:\n {}'.format(data))
 
 def map_nsx_esg_id(edge_service_gateways):
 	existingEsgResponse = client.get('/api/4.0/edges')
