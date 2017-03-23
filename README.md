@@ -40,6 +40,8 @@ Example:
 # Folder named `sabha` created now with default config
 
 # Run build overriding the default configs
+RUN_CMD=build
+
 ./nsx-gen/bin/nsxgen -c sabha  -esg_name_1 sabha -esg_size_1 compact -esg_cli_user_1 admin -esg_cli_pass_1 'P1v0t4l!' -esg_certs_1 autogen -esg_certs_config_sysd_1 sys2.test.pez.pivotal.io -esg_certs_config_appd_1 apps3.test.pez.pivotal.io -esg_opsmgr_uplink_ip_1 10.13.92.171 -esg_go_router_uplink_ip_1 10.13.92.172 -esg_diego_brain_uplink_ip_1 10.13.92.173 -esg_tcp_router_uplink_ip_1 10.13.92.174 -vcenter_addr vcsa-01.test.pez.pivotal.io -vcenter_user administrator@vsphere.local -vcenter_pass 'testAdmin123' -vcenter_dc Datacenter -vcenter_ds vsanDatastore -vcenter_cluster Cluster1 -nsxmanager_addr 10.13.92.20 -nsxmanager_user admin -nsxmanager_pass 'testNsxAdmin123' -nsxmanager_tz testtrasnsportzone -nsxmanager_uplink_ip 10.13.92.170 -nsxmanager_uplink_port 'VM Network' -esg_gateway_1 10.13.92.1  $RUN_CMD
 
 
