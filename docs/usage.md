@@ -22,6 +22,15 @@ usage: nsxgen [-h] [-i INIT] [-c NSX_CONF] [-esg_name_1 ESG_NAME_1]
               [-esg_tcp_router_uplink_ip_1 ESG_TCP_ROUTER_UPLINK_IP_1]
               [-esg_tcp_router_inst_1 ESG_TCP_ROUTER_INSTANCES_1]
               [-esg_tcp_router_off_1 ESG_TCP_ROUTER_OFFSET_1]
+              [-esg_mysql_ert_uplink_ip_1 ESG_MYSQL_ERT_UPLINK_IP_1]
+              [-esg_mysql_ert_inst_1 ESG_MYSQL_ERT_INSTANCES_1]
+              [-esg_mysql_ert_off_1 ESG_MYSQL_ERT_OFFSET_1]
+              [-esg_mysql_tile_uplink_ip_1 ESG_MYSQL_TILE_UPLINK_IP_1]
+              [-esg_mysql_tile_inst_1 ESG_MYSQL_TILE_INSTANCES_1]
+              [-esg_mysql_tile_off_1 ESG_MYSQL_TILE_OFFSET_1]
+              [-esg_rabbitmq_tile_uplink_ip_1 ESG_RABBITMQ_TILE_UPLINK_IP_1]
+              [-esg_rabbitmq_tile_inst_1 ESG_RABBITMQ_TILE_INSTANCES_1]
+              [-esg_rabbitmq_tile_off_1 ESG_RABBITMQ_TILE_OFFSET_1]
               [-esg_name_2 ESG_NAME_2] [-esg_size_2 ESG_SIZE_2]
               [-esg_gateway_2 ESG_GATEWAY_IP_2]
               [-esg_cli_user_2 ESG_CLI_USERNAME_2]
@@ -43,6 +52,15 @@ usage: nsxgen [-h] [-i INIT] [-c NSX_CONF] [-esg_name_1 ESG_NAME_1]
               [-esg_tcp_router_uplink_ip_2 ESG_TCP_ROUTER_UPLINK_IP_2]
               [-esg_tcp_router_inst_2 ESG_TCP_ROUTER_INSTANCES_2]
               [-esg_tcp_router_off_2 ESG_TCP_ROUTER_OFFSET_2]
+              [-esg_mysql_ert_uplink_ip_2 ESG_MYSQL_ERT_UPLINK_IP_2]
+              [-esg_mysql_ert_inst_2 ESG_MYSQL_ERT_INSTANCES_2]
+              [-esg_mysql_ert_off_2 ESG_MYSQL_ERT_OFFSET_2]
+              [-esg_mysql_tile_uplink_ip_2 ESG_MYSQL_TILE_UPLINK_IP_2]
+              [-esg_mysql_tile_inst_2 ESG_MYSQL_TILE_INSTANCES_2]
+              [-esg_mysql_tile_off_2 ESG_MYSQL_TILE_OFFSET_2]
+              [-esg_rabbitmq_tile_uplink_ip_2 ESG_RABBITMQ_TILE_UPLINK_IP_2]
+              [-esg_rabbitmq_tile_inst_2 ESG_RABBITMQ_TILE_INSTANCES_2]
+              [-esg_rabbitmq_tile_off_2 ESG_RABBITMQ_TILE_OFFSET_2]
               [-vcenter_addr VCENTER_ADDRESS]
               [-vcenter_user VCENTER_ADMIN_USER]
               [-vcenter_pass VCENTER_ADMIN_PASSWD]
@@ -59,10 +77,10 @@ usage: nsxgen [-h] [-i INIT] [-c NSX_CONF] [-esg_name_1 ESG_NAME_1]
               command
 
 positional arguments:
-  command               build: build a new Edge Service Gateway delete: delete
-                        a Edge Service Gateway" list: return a list of all
-                        Edge Service Gateways init: create a new nsx cloud
-                        config file
+  command               build:   build a new Edge Service Gateway
+                        delete:  delete a Edge Service Gateway
+                        list:    return a list of all Edge Service Gateways
+                        init:    create a new nsx cloud config file
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -113,6 +131,24 @@ optional arguments:
                         esg instance 1 routed tcp_router instances
   -esg_tcp_router_off_1 ESG_TCP_ROUTER_OFFSET_1, --esg_tcp_router_offset_1 ESG_TCP_ROUTER_OFFSET_1
                         esg instance 1 routed tcp_router offset
+  -esg_mysql_ert_uplink_ip_1 ESG_MYSQL_ERT_UPLINK_IP_1, --esg_mysql_ert_uplink_ip_1 ESG_MYSQL_ERT_UPLINK_IP_1
+                        esg instance 1 routed mysql_ert uplink ip
+  -esg_mysql_ert_inst_1 ESG_MYSQL_ERT_INSTANCES_1, --esg_mysql_ert_instances_1 ESG_MYSQL_ERT_INSTANCES_1
+                        esg instance 1 routed mysql_ert instances
+  -esg_mysql_ert_off_1 ESG_MYSQL_ERT_OFFSET_1, --esg_mysql_ert_offset_1 ESG_MYSQL_ERT_OFFSET_1
+                        esg instance 1 routed mysql_ert offset
+  -esg_mysql_tile_uplink_ip_1 ESG_MYSQL_TILE_UPLINK_IP_1, --esg_mysql_tile_uplink_ip_1 ESG_MYSQL_TILE_UPLINK_IP_1
+                        esg instance 1 routed mysql_tile uplink ip
+  -esg_mysql_tile_inst_1 ESG_MYSQL_TILE_INSTANCES_1, --esg_mysql_tile_instances_1 ESG_MYSQL_TILE_INSTANCES_1
+                        esg instance 1 routed mysql_tile instances
+  -esg_mysql_tile_off_1 ESG_MYSQL_TILE_OFFSET_1, --esg_mysql_tile_offset_1 ESG_MYSQL_TILE_OFFSET_1
+                        esg instance 1 routed mysql_tile offset
+  -esg_rabbitmq_tile_uplink_ip_1 ESG_RABBITMQ_TILE_UPLINK_IP_1, --esg_rabbitmq_tile_uplink_ip_1 ESG_RABBITMQ_TILE_UPLINK_IP_1
+                        esg instance 1 routed rabbitmq_tile uplink ip
+  -esg_rabbitmq_tile_inst_1 ESG_RABBITMQ_TILE_INSTANCES_1, --esg_rabbitmq_tile_instances_1 ESG_RABBITMQ_TILE_INSTANCES_1
+                        esg instance 1 routed rabbitmq_tile instances
+  -esg_rabbitmq_tile_off_1 ESG_RABBITMQ_TILE_OFFSET_1, --esg_rabbitmq_tile_offset_1 ESG_RABBITMQ_TILE_OFFSET_1
+                        esg instance 1 routed rabbitmq_tile offset
   -esg_name_2 ESG_NAME_2, --esg_name_2 ESG_NAME_2
                         esg instance 2 name
   -esg_size_2 ESG_SIZE_2, --esg_size_2 ESG_SIZE_2
@@ -157,6 +193,24 @@ optional arguments:
                         esg instance 2 routed tcp_router instances
   -esg_tcp_router_off_2 ESG_TCP_ROUTER_OFFSET_2, --esg_tcp_router_offset_2 ESG_TCP_ROUTER_OFFSET_2
                         esg instance 2 routed tcp_router offset
+  -esg_mysql_ert_uplink_ip_2 ESG_MYSQL_ERT_UPLINK_IP_2, --esg_mysql_ert_uplink_ip_2 ESG_MYSQL_ERT_UPLINK_IP_2
+                        esg instance 2 routed mysql_ert uplink ip
+  -esg_mysql_ert_inst_2 ESG_MYSQL_ERT_INSTANCES_2, --esg_mysql_ert_instances_2 ESG_MYSQL_ERT_INSTANCES_2
+                        esg instance 2 routed mysql_ert instances
+  -esg_mysql_ert_off_2 ESG_MYSQL_ERT_OFFSET_2, --esg_mysql_ert_offset_2 ESG_MYSQL_ERT_OFFSET_2
+                        esg instance 2 routed mysql_ert offset
+  -esg_mysql_tile_uplink_ip_2 ESG_MYSQL_TILE_UPLINK_IP_2, --esg_mysql_tile_uplink_ip_2 ESG_MYSQL_TILE_UPLINK_IP_2
+                        esg instance 2 routed mysql_tile uplink ip
+  -esg_mysql_tile_inst_2 ESG_MYSQL_TILE_INSTANCES_2, --esg_mysql_tile_instances_2 ESG_MYSQL_TILE_INSTANCES_2
+                        esg instance 2 routed mysql_tile instances
+  -esg_mysql_tile_off_2 ESG_MYSQL_TILE_OFFSET_2, --esg_mysql_tile_offset_2 ESG_MYSQL_TILE_OFFSET_2
+                        esg instance 2 routed mysql_tile offset
+  -esg_rabbitmq_tile_uplink_ip_2 ESG_RABBITMQ_TILE_UPLINK_IP_2, --esg_rabbitmq_tile_uplink_ip_2 ESG_RABBITMQ_TILE_UPLINK_IP_2
+                        esg instance 2 routed rabbitmq_tile uplink ip
+  -esg_rabbitmq_tile_inst_2 ESG_RABBITMQ_TILE_INSTANCES_2, --esg_rabbitmq_tile_instances_2 ESG_RABBITMQ_TILE_INSTANCES_2
+                        esg instance 2 routed rabbitmq_tile instances
+  -esg_rabbitmq_tile_off_2 ESG_RABBITMQ_TILE_OFFSET_2, --esg_rabbitmq_tile_offset_2 ESG_RABBITMQ_TILE_OFFSET_2
+                        esg instance 2 routed rabbitmq_tile offset
   -vcenter_addr VCENTER_ADDRESS, --vcenter_address VCENTER_ADDRESS
                         vcenter address
   -vcenter_user VCENTER_ADMIN_USER, --vcenter_admin_user VCENTER_ADMIN_USER

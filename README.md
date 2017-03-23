@@ -29,6 +29,11 @@ Example:
 
 ## Use command line args
 Build/Delete config can be overriden using command line args.
+
+Built-in templated routed components can be overridden by using command line args.
+Known routed component templates include opsmgr, go-router, tcp-router, diego-brain, mysql-ert, mysql-tile, rabbitmq-tile
+The uplink ip (assigned for component or to Loadbalancer VIP), instances (# of dedicated ips to loadbalance against), offset (from a given range) can be overridden via command line args for these components
+
 Refer to [command line usage docs][] for complete set of available args
 
 Example:
@@ -46,6 +51,27 @@ RUN_CMD=build
 
 
 ```
+
+For a new component that is not part of the known templated components, one would have to add the entry into the config file 
+and specify the switch, ingress and egress transports (with port/protocol/monitor_port etc.) and its uplink details.
+Command line arg overriding is not supported for new types.
+
+Sample Entry in template:
+# Sample service entry
+- name: test-service
+ uplink_ip: 10.193.99.41
+ switch: PCF-Tiles
+ instances: 4
+ offset: 30
+ transport:
+   #Use defaults - https/443 incoming, http/80 forward
+   ingress:
+     port: 443
+     protocol: https
+   egress:
+     port: 80
+     protocol: http
+     monitor_port: 80  
 
 # List Logical switches and ESG
 List local configuration as well as connect to the vcenter/nsx manager and show configured components

@@ -30,6 +30,7 @@ import ConfigParser
 import os.path
 import string
 import sys
+import textwrap
 import yaml
 
 from tabulate import tabulate
@@ -109,12 +110,12 @@ def contruct_parser(parser):
 	#                                help="Functions for nsx-gen",
 	#                                formatter_class=RawTextHelpFormatter)
 
-	parser.add_argument("command", help="""
-	build: build a new Edge Service Gateway
-	delete: delete a Edge Service Gateway"
-	list:   return a list of all Edge Service Gateways
-	init:  create a new nsx cloud config file
-	""")
+	parser.add_argument("command", help=textwrap.dedent("""\
+	build:   build a new Edge Service Gateway
+	delete:  delete a Edge Service Gateway
+	list:    return a list of all Edge Service Gateways
+	init:    create a new nsx cloud config file
+	"""))
 
 	# parser.add_argument('file', 
 	# 					help="nsx configuration yml file",
@@ -347,7 +348,7 @@ def _nsx_gen_main(args):
 		exit()
 
 def main():
-	main_parser = argparse.ArgumentParser()	
+	main_parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)	
 	contruct_parser(main_parser)
 	args = main_parser.parse_args()
 	args.func(args)
