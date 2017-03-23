@@ -13,10 +13,10 @@ nsxmanager:
   address: 12.1.1.1
   admin_user: user
   admin_passwd: passwd
-  transport_zone: TZ # Specified TZ should exist
+  transport_zone: TZ # Specified TransportZone should exist
   uplink_details:
     primary_ip: 10.114.216.167
-    uplink_port_switch: VDS_Edge_Mgmt # if not specified, would use VM Networks as default
+    uplink_port_switch: SampleUplinkPort # if not specified, would use VM Networks as default
 
 defaults:
   # placeholders, can be comma separated list
@@ -47,11 +47,11 @@ edge_service_gateways:
     uplink_details:
       uplink_ip: 10.114.216.171 # This gets exposed outside   
     #transport:
-      # #Default incoming scheme is https/443 for opsmgr
+      # #Default ingress scheme is https/443 for opsmgr
       # ingress:
       #  port: 443
       #  protocol: https
-      # #Default forward scheme is https/443 for opsmgr
+      # #Default egress scheme is https/443 for opsmgr
       # egress: 
       #  port: 443
       #  protocol: https
@@ -63,11 +63,11 @@ edge_service_gateways:
     uplink_details:
       uplink_ip: 10.114.216.172 # This gets exposed outside
     #transport:
-      # Default incoming scheme is https/443 for ert
+      # Default ingress scheme is https/443 for ert
       #ingress:
       #  port: 443
       #  protocol: https
-      # Default forward scheme is http/8080 for ert
+      # Default egress scheme is http/8080 for ert
       #egress: 
       #  port: 8080
       #  protocol: http
@@ -93,7 +93,7 @@ edge_service_gateways:
     uplink_details:
       uplink_ip: 10.193.99.174 # This gets exposed outside
     #transport:
-      # Use defaults - https/443 incoming, http/8080 forward
+      # Use defaults - tcp/5000 ingress, tcp/5000 egress
       #ingress:
       #  port: 5000
       #  protocol: tcp
@@ -118,7 +118,7 @@ edge_service_gateways:
     #     protocol: tcp
     #     monitor_port: 1936
 
-# Comment off if not need for mysql and rabbitmq 
+# Comment off if mysql and rabbitmq not needed
   - name: mysql-tile # MySQL Tile's proxy
     switch: PCF-Tiles
     instances: 3 # for 3 proxies in 3 AZs

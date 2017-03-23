@@ -136,31 +136,6 @@ def list(context, verbose=False):
 	reconcile_uplinks(context)
 	list_logical_switches(context)
 	list_nsx_edge_gateways(context)    
-	
-
-def setup_parsers():
-	parser = argparse.ArgumentParser(description='PyNSXv Command Line Client for NSX for vSphere')
-	parser.add_argument("-i",
-						"--ini",
-						help="nsx configuration file",
-						default="nsx.ini")
-	parser.add_argument("-v",
-						"--verbose",
-						help="increase output verbosity",
-						action="store_true")
-	parser.add_argument("-d",
-						"--debug",
-						help="print low level debug of http transactions",
-						action="store_true")
-
-	subparsers = parser.add_subparsers()
-	lswitch.contruct_parser(subparsers)
-	dlr.contruct_parser(subparsers)
-	esg.contruct_parser(subparsers)
-	dhcp.contruct_parser(subparsers)
-	lb.contruct_parser(subparsers)
-	dfw.contruct_parser(subparsers)
-	usage.contruct_parser(subparsers)
 
 def map_logical_switches_id(logical_switches):
 	existinglSwitchesResponse = client.get(NSX_URLS['lswitch']['all'] + '?&startindex=0&pagesize=100')
@@ -194,7 +169,6 @@ def map_logical_switches_id(logical_switches):
 		if (interested_lswitch.get('id') is None):
 			print 'Logical Switch instance with name: {}'  \
 				+ ' does not exist, possibly deleted already'.format(interested_lswitch['name'])
-		
 
 def check_logical_switch_exists(vcenterMobMap, lswitchName):
 
@@ -248,7 +222,6 @@ def reconcile_uplinks(context):
 			# mark it as the real uplink for the routed component
 			if isExternalUplink:
 				routedComponent['uplink_details']['real_uplink_ip'] = routedComponentUplinkIp
-
 
 def build_logical_switches(dir, context, type='logical_switches', alternate_template=None):
 
@@ -338,7 +311,6 @@ def list_logical_switches(context, reportAll=True):
 		if len(managedLSwitches) > 0:
 			print_logical_switches_available(managedLSwitches)
 
-
 def delete_logical_switches(context, type = 'logical_switches'):
 
 	lswitches = context[type]
@@ -381,17 +353,10 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 	if alternate_template is not None:
 		template_dir = os.path.join(template_dir, alternate_template)
 
-
 	logical_switches = context['logical_switches']
-	
-	
 	map_logical_switches_id(logical_switches)
 	if DEBUG:
 		print 'Logical Switches:{}\n'.format(str(logical_switches))
-
-	uplink_switches = [ ]
-	
-	map_logical_switches_id(uplink_switches)
 
 	empty_logical_switches = xrange(len(logical_switches) + 1, 10) 
 	vcenterMobMap = refresh_moid_map(context)
@@ -411,16 +376,16 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		nsxmanager['uplink_details']['uplink_id'] = vm_network_moid
 	else:
 		nsxmanager['uplink_details']['uplink_id'] = portSwitchId
-
 	
 	for nsx_edge in  context['edge_service_gateways']:
 	
-		# Defaults
+		# Defaults routed components
+		# FIX ME -- would have to update this 
+		# for any new component that needs direct route via firewall
 		opsmgr_routed_component = nsx_edge['routed_components'][0]
 		ert_routed_component    = nsx_edge['routed_components'][1]
 		diego_routed_component  = nsx_edge['routed_components'][2]
 		tcp_routed_component    = nsx_edge['routed_components'][3]
-
 
 		for routed_component in nsx_edge['routed_components']:
 			if 'OPS' in routed_component['name'].upper():
@@ -439,8 +404,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 			if 'ERT' in name.upper():
 				ertLogicalSwitch = lswitch
 			elif 'INFRA' in name.upper():
-				infraLogicalSwitch = lswitch
-				
+				infraLogicalSwitch = lswitch				
 
 		vcenter_ctx = context['vcenter']
 
@@ -463,8 +427,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		
 		gateway_address = nsx_edge.get('gateway_ip')
 		if not gateway_address:
-			gateway_address = calculate_gateway(context['nsxmanager']['uplink_details']['uplink_ip'])
-	
+			gateway_address = calculate_gateway(context['nsxmanager']['uplink_details']['uplink_ip'])	
 
 		firewall_src_network_list = logical_switches
 		firewall_destn_network_list = logical_switches
@@ -501,7 +464,6 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 			os.path.join(template_dir, 'edge_config_post_payload.xml' ),
 			nsx_edges_context
 		)
-
 		
 		"""
 		if True:
@@ -563,7 +525,6 @@ def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 			print 'Going to retry addition of cert again... for NSX Edge: {}\n'.format(nsx_edge['name'])
 		else:
 			print 'Addition of NSX Edge Cert failed, details:{}\n'.format(data)
-		
 
 def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	
@@ -582,8 +543,7 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 		os.path.join(nsx_edges_dir, nsx_edge['name'] + '_lbr_config_put_payload.xml'),
 		os.path.join(template_dir, 'edge_lbr_config_put_payload.xml' ),
 		nsx_edges_context
-	)
-	
+	)	
 	#exit()
 
 	put_response = client.put_xml(NSX_URLS['esg']['all'] 
@@ -591,7 +551,7 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 									+ NSX_URLS['lbrConfig']['all'], 
 									os.path.join(nsx_edges_dir, nsx_edge['name'] 
 									+ '_lbr_config_put_payload.xml'), 
-							check=False)
+								check=False)
 	data = put_response.text
 
 	if DEBUG:
@@ -601,7 +561,6 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 		print 'Updated NSX Edge LBR Config for : {}\n'.format(nsx_edge['name'])		
 	else:
 		print 'Update of NSX Edge LBR Config failed, details:{}\n'.format(data)
-
 
 def map_nsx_esg_id(edge_service_gateways):
 	existingEsgResponse = client.get('/api/4.0/edges')
@@ -646,10 +605,6 @@ def list_nsx_edge_gateways(context):
 	if isinstance(edgeSummaries, dict):
 		edgeEntries = [ edgeSummaries ]
 
-	"""
-	for nsx_esg in edgeEntries:
-		print '\nNSX Edge Service Gateway Instance:{}\n'.format(str(nsx_esg))
-	"""
 	print_edge_service_gateways_available(edgeEntries)
 	
 def delete_nsx_edge_gateways(context):
@@ -697,8 +652,6 @@ def generate_certs(nsx_context):
 	nsx_context['certs']['cert'] = readFileContent(output_dir + '/*.crt')
 	nsx_context['certs']['name'] = 'Cert for ' + nsx_context['certs']['name']
 	nsx_context['certs']['description'] = nsx_context['certs']['name'] + '-' + nsx_context['certs']['config']['system_domain']
-	#print 'Generated key:\n' + nsx_context['certs']['key']
-	#print 'Generated cert:\n' + nsx_context['certs']['cert']
 
 def readFileContent(filePath):
 	txt = glob.glob(filePath)

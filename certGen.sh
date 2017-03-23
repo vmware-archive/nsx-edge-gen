@@ -1,13 +1,13 @@
 #!/bin/bash
-#mglynn@pivotal.io
+# author: mglynn@pivotal.io
 
 set -e
 
 if [ $# -lt 2 ]; then
   echo "Run certGen.sh with arguments!!"
-  echo "./certGen.sh system-domain app-domain [output-directory] [org-unit] [2-letter country code] [vip]"
+  echo "./certGen.sh system-domain app-domain [output-directory] [org-unit] [2-letter country code]"
   echo "Example: ./certGen.sh pcf-sys.corp.local pcf-app.corp.local . Pivotal US"
-  echo "Default for output-directory: . (assumes current working directory)"
+  echo "Default for output-directory: autogen"
   echo "Default for org-unit: Pivotal"
   echo "Default for country: US"
   exit
@@ -15,11 +15,11 @@ fi
 
 SYS_DOMAIN=$1
 APP_DOMAIN=$2
-OUTPUT_DIR=${3:-.}
+OUTPUT_DIR=${3:-autogen}
 ORG_UNIT=${4:-Pivotal}
 COUNTRY=${5:-US}
 
-VIP=$6
+#VIP=$6
 
 mkdir -p $OUTPUT_DIR
 SSL_FILE=${OUTPUT_DIR}/sslconf-${SYS_DOMAIN}.conf
