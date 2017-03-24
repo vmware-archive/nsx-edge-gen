@@ -14,7 +14,7 @@ For initializing a brand new one from available template, use init command to ns
 
 Example: 
 ```
-`./nsx-gen/bin/nsxgen init test` would create a new folder `test` with the default template.
+`./nsx-gen/bin/nsxgen -i test init` would create a new folder `test` with the default template.
  `./nsx-gen/bin/nsxgen init` would create a default `nsx-pcf` folder with the default template of nsx_cloud-config.yml
 ```
 
