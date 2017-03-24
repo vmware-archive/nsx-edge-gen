@@ -34,6 +34,21 @@ edge_service_gateways:
     password: Test$assword123456
   certs:
     name: Foundation1
+    # cert_id: cert-11 # Uncomment and edit this in order to use an existing cert id
+    # # Uncomment and edit below in order to use an existing cert and private key
+    # # Ensure the alignment is correct and no extra newlines in either beginning or end of the entry
+    # key: |+ # PEM encoded private key 
+    #   -----BEGIN RSA PRIVATE KEY-----
+    #   MIIEoQIBAAKCAQEAxFT4ktPgj8sBMumiK4nVXGC6UGqXgQkZly/7xC+c5T8pdsvl
+    #   ..........................
+    #   KdnT9tJIN80VMPkbsNPn2hxx3K7Wbb/tzvRtjCUkqP7/fnVXIQ==
+    #   -----END RSA PRIVATE KEY-----
+    # cert: |+ # PEM encoded cert 
+    #   -----BEGIN CERTIFICATE-----
+    #   MIIDwjCCAqqgAwIBAgIJAOx8KRhUILhrMA0GCSqGSIb3DQEBBQUAMEcxJjAkBgNV
+    #   ...........
+    #   TAvqkR+T
+    #   -----END CERTIFICATE-----    
     config:
       org_unit: Pivotal
       country_code: US  # Default - US

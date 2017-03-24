@@ -434,7 +434,6 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 
 		cross_logical_network_combo = cross_combine_lists(firewall_src_network_list, firewall_destn_network_list)		
 
-		generate_certs(nsx_edge)
 		if DEBUG:
 			print 'NSX Edge config: {}\n'.format(str(nsx_edge))   
 
@@ -487,19 +486,44 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 			raise Exception('Creation of NSX Edge failed, details:\n {}'.format(data))			
 
 def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
+
 	map_nsx_esg_id( [ nsx_edge ] )
+
+	if not nsx_edge.get('certs'):
+		print 'No certs section to use an available cert or generate cert was specified for edge instance: {}'.\
+					format( nsx_edge['name'])
+		raise Exception('Creation of NSX Edge failed, no certs section was provided')	
+
+	if nsx_edge['certs'].get('cert_id'):
+		print 'Going to use available cert id: {} for edge instance: {}'.\
+					format(nsx_edge['cert_id'], nsx_edge['name'])
+		return
+
+	
+	if nsx_edge['certs'].get('key') and nsx_edge['certs'].get('cert'):
+		print 'Using the provided certs and key for associating with NSX Edge instance: {}'.format(nsx_edge['name'])
+		nsx_edge['certs']['key'] = nsx_edge['certs'].get('key').strip() + '\n'
+		nsx_edge['certs']['cert'] = nsx_edge['certs'].get('cert').strip() + '\n'
+	else:
+		cert_config = nsx_edge['certs'].get('config')
+		if not cert_config:
+			print 'No cert config was specified for edge instance: {}'.\
+						format( nsx_edge['name'])
+			raise Exception('Creation of NSX Edge failed, no cert config to associate/generate certs was provided')	
+
+		# Try to generate certs if key and cert are not provided
+		generate_certs(nsx_edge)
+	
+	certPayloadFile = os.path.join(nsx_edges_dir, nsx_edge['name'] + '_cert_post_payload.xml')
 
 	template_dir = '.'
 	nsx_edges_context = {
 		'nsx_edge': nsx_edge,
-		'monitorMap': nsx_edge['monitorMap'],
-		'appRuleMap': nsx_edge['appRuleMap'],
-		'appProfileMap': nsx_edge['appProfileMap'],
 		'files': []
 	}    
 
 	template.render(
-		os.path.join(nsx_edges_dir, nsx_edge['name'] + '_cert_post_payload.xml'),
+		certPayloadFile,
 		os.path.join(template_dir, 'edge_cert_post_payload.xml' ),
 		nsx_edges_context
 	)
@@ -509,7 +533,7 @@ def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 			
 		retry = False
 		post_response = client.post_xml(NSX_URLS['cert']['all'] + '/' + nsx_edge['id'], 
-				os.path.join(nsx_edges_dir, nsx_edge['name'] + '_cert_post_payload.xml'), check=False)
+				certPayloadFile, check=False)
 		data = post_response.text
 
 		if DEBUG:
@@ -635,9 +659,24 @@ def delete_nsx_edge_gateways(context):
 			print 'Deletion of NSX ESG failed, details:{}\n'.format(data +'\n')    
 
 
+def check_cert_config(nsx_context):
+
+	if not nsx_edge.get('certs'):
+		print 'No cert config was specified for edge instance: {}'.\
+					format( nsx_edge['name'])
+		raise Exception('Creation of NSX Edge failed, no cert config was provided')	
+
+	if not nsx_edge['certs'].get('config'):
+		print 'No cert config was specified for edge instance: {}'.\
+					format( nsx_edge['name'])
+		raise Exception('Creation of NSX Edge failed, neither cert_id nor config to generate certs was provided')	
+
 def generate_certs(nsx_context):
+
 	output_dir = './' + nsx_context['certs']['name']
-	cert_config = nsx_context['certs']['config']
+	cert_config = nsx_context['certs'].get('gen_config')
+	if not cert_config:
+		cert_config = nsx_context['certs'].get('config')
  
 	org_unit = cert_config['org_unit']
 	country = cert_config['country_code']
