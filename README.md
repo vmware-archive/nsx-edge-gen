@@ -2,28 +2,42 @@
 
 Generate nsx logical switches, edge service gateways and lbs against Vmware NSX 6.3 API version
 
-# Requirements
+## Requirements
 Ensure Python min version 2.7.10
 Install the required python libraries using `pip install -r requirements.txt`
 
-# nsx_cloud_config.yml
-Create a new template using nsx-gen init.
+# Generating initial config
+Create a new config from template using nsx-gen init. The config file used to drive nsxgen is nsx_cloud_config.yml.
+
 For initializing a brand new one from available template, use init command to nsxgen
 ./nsx-gen/bin/nsxgen init [identifier]
 
 Example: 
+```
 `./nsx-gen/bin/nsxgen init test` would create a new folder `test` with the default template.
  `./nsx-gen/bin/nsxgen init` would create a default `nsx-pcf` folder with the default template of nsx_cloud-config.yml
+```
 
-# Configure networks, dns, credentials
-Then edit/update the nsx_cloud_config.yml file to generate logical switches and edge service gateways.
-
-## Editing the config
+# Configuration
 The default nsx_cloud_config.yml specifies the default set of logical switches and routed components.
 
-Edit the vcenter, nsxmanager configs. 
+## VCenter, NSXManager
+Edit/update the nsx_cloud_config.yml file to update the vcenter, nsxmanager configs along with other information (networks, dns, credentials etc.).
 
-For every instance of edge_service_gateway, specify its name, cli credentials, its gateway ip (can be the same for all instances) as well as certs needed to generate.
+## Logical Switches
+
+A logical switch is associated with separate subnet for each type of component typically installed for PCF.
+* Infra - Ops manager and BOSH Director
+* Ert - for core PCF ERT tile to use
+* PCF-Tiles - for mysql, rabbit, any other supporting service tiles
+* Dynamic-Services - for services that would be kicked off dynamically by BOSH using the ODB broker model
+
+Avoid editing the default set of logical switches names or subnet. 
+Additional logical switches with their own subnets can be added if necessary.
+
+## Edge Service Gateways
+For every instance of edge service gateway to be created, specify its name, cli credentials, its gateway ip (can be the same for all instances) as well as certs needed to generate.
+
 Based on the certs section within each edge gateway entry, self-signed certs can be generated for the specified system and org domains (under esg -> certs -> config). If certs already exist, then insert the key and cert contents under certs section to be loaded into the loadbalancers. Or if a global cert is already available on the NSX, specify the cert id associated with the cert.
 
 Example:
@@ -58,17 +72,6 @@ edge_service_gateways:
       system_domain: pcf-sys-test.corp.local
       app_domain: pcf-app-test.corp.local  
 ```
-
-### Logical Switches
-
-A logical switch is associated with separate subnet for each type of component typically installed for PCF.
-Infra - Ops manager and BOSH Director
-Ert - for core PCF ERT tile to use
-PCF-Tiles - for mysql, rabbit, any other supporting service tiles
-Dynamic-Services - for services that would be kicked off dynamically by BOSH using the ODB broker model
-
-Avoid editing the default set of logical switches names or subnet. 
-Additional logical switches with their own subnets can be added if necessary.
 
 ### Routed Components
 
@@ -126,8 +129,11 @@ Avoid editing the default set of routed_components.
 Additional new routed components can be added if necessary.
 
 # Build Logical switches and ESG
-./nsx-gen/bin/nsxgen [-c path-to-config] build 
+Build new instances of ESGs and logical switches using the build command as arg to nsxgen
 
+```
+./nsx-gen/bin/nsxgen [-c path-to-config] build 
+```
 If no -c flag specified, check current folder for locating the nsx_cloud_config.yml and use it.
 If file not in current folder, use `-c <directory-path> ` as argument.
 Example:
@@ -181,7 +187,7 @@ Sample Entry in template:
      protocol: http
      monitor_port: 80  
 ```
-# Output of Edge configuration
+## nsxgen output
 
 When the nsxgen is executed, it first outputs the configurations loaded (doing a merge of the file template and the command line args) and emits the logical switches and routable components config before proceeding to build or tear down the edge instance.
 The derived instance ips, routing and monitor details along with application profiles, rules would be all displayed for each routable component.
@@ -296,16 +302,19 @@ List local configuration as well as connect to the vcenter/nsx manager and show 
 ./nsx-gen/bin/nsxgen [-c path-to-config] list
 
 Example:
+```
 ./nsx-gen/bin/nsxgen list            (if nsx_cloud_config.yml available in current folder)
 ./nsx-gen/bin/nsxgen -c nsx-pcf list (if init was used earlier and nsx_cloud_config.yml file is under nsx-pcf)
-
+```
 
 # Destroy Logical switches and ESG
 Destroy components wired using the specified configuration
 ./nsx-gen/bin/nsxgen [-c path-to-config] delete
 
 Example:
+```
 ./nsx-gen/bin/nsxgen delete            (if nsx_cloud_config.yml available in current folder)
 ./nsx-gen/bin/nsxgen -c nsx-pcf delete (if init was used earlier and nsx_cloud_config.yml file is under nsx-pcf)
+```
 
 [command line usage docs]: docs/usage.md
