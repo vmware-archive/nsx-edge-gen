@@ -195,7 +195,7 @@ def contruct_parser(parser):
         """
 
     for section in ATTRIBUTE_MAP_ARRAY:
-        print 'Section: ' + section 
+        print('Section: ' + section) 
         
         prefix = section
         if section == 'defaults':
@@ -297,10 +297,10 @@ def construct_config(args):
                 
                 global_config['edge_service_gateways'].append(esgEntry) 
         
-    print 'Final Config... : ' + str(global_config)
+    print('Final Config... : ' + str(global_config))
 
 def _nsx_gen_main(args):
-    print 'args : ' + str(args)
+    print('args : ' + str(args))
     config = Config().read(args.nsx_conf)
     assert config, 'could not read config file {}'.format(args.nsx_conf)
 

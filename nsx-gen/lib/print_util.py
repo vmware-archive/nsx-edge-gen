@@ -20,131 +20,131 @@ __author__ = 'Sabha Parameswaran'
 
 def print_moid_map(moidMap):
 	print
-	print '-'*150 
-	print '{:<60}{:<60}{:<10}'.format('', 'vCenter Managed Object ID Map', '')
-	print "{:<80} | {:<20} | {:60} ".format('Name', 
+	print('-'*150) 
+	print('{:<60}{:<60}{:<10}'.format('', 'vCenter Managed Object ID Map', ''))
+	print("{:<80} | {:<20} | {:60} ".format('Name', 
 											'Moid', 
-											'Url Path')
-	print '-'*150 
+											'Url Path'))
+	print('-'*150)
 	for key, val in moidMap.iteritems():
-		print '{:<80} | {:<20} | {:60}'.format(key, 
+		print('{:<80} | {:<20} | {:60}'.format(key, 
 												val['moid'], 
-												val['href'])
-	print '-'*150
+												val['href']))
+	print('-'*150)
 	print  	
 
 
 def print_logical_switches_available(switches):
 	print
-	print '-'*220 
-	print '{:<80}{:<60}{:<10}'.format('', 'Logical Switch Instances', '')
-	print "{:<60} | {:<20} | {:80} | {:<15}".format(	'Name', 
+	print('-'*220)
+	print('{:<80}{:<60}{:<10}'.format('', 'Logical Switch Instances', ''))
+	print("{:<60} | {:<20} | {:80} | {:<15}".format(	'Name', 
 														'Moid', 
 														'Managed Object Name', 
-														'Subnet')
-	print '-'*220 
+														'Subnet'))
+	print('-'*220) 
 	for switch in switches:
-		print '{:<60} | {:<20} | {:80} | {:<15}'.format(switch['name'], 
+		print('{:<60} | {:<20} | {:80} | {:<15}'.format(switch['name'], 
 														switch.get('id', ''), 
 														switch.get('moName', ''), 
-														'---')
-	print '-'*220
+														'---'))
+	print('-'*220)
 	print  	
 
 def print_logical_switches_configured(switches):
 	print
-	print '-'*150 
-	print '{:<50}{:<60}{:<10}'.format('', 'Logical Switches (from configuration)', '')
-	print "{:<60} | {:<20} | {:20}".format(	'Name', 
+	print('-'*150)
+	print('{:<50}{:<60}{:<10}'.format('', 'Logical Switches (from configuration)', ''))
+	print("{:<60} | {:<20} | {:20}".format(	'Name', 
 											'CIDR', 
-											'Primary IP')
-	print '-'*150 
+											'Primary IP'))
+	print('-'*150)
 	for switch in switches:
-		print '{:<60} | {:<20} | {:20}'.format(switch['name'], 
+		print('{:<60} | {:<20} | {:20}'.format(switch['name'], 
 												switch.get('cidr'), 
-												switch['primary_ip'])
-	print '-'*150
+												switch['primary_ip']))
+	print('-'*150)
 	print  	
 
 
 def print_routed_components(routed_components):
 	print
-	print '-'*200
-	print '{:<80}{:<60}{:<10}'.format('', 'Routed Components (from configuration)', '') 
-	print "{:<30} | {:<30} | {:<50} |{:10}| {:<80}".format('Name', 
+	print('-'*200)
+	print('{:<80}{:<60}{:<10}'.format('', 'Routed Components (from configuration)', '')) 
+	print("{:<30} | {:<30} | {:<50} |{:10}| {:<80}".format('Name', 
 															'Network', 
 															'Logical Switch', 
 															'Instances', 
-															'IPs')
-	print '-'*200 
+															'IPs'))
+	print('-'*200)
 	for component in routed_components:
-		print '{:<30} | {:<30} | {:<50} |{:10}| {:<80}'.format(component['name'], 
+		print('{:<30} | {:<30} | {:<50} |{:10}| {:<80}'.format(component['name'], 
 													component['switch'],
 													component['logical_switch']['name'],
 													component['instances'], 
-													component['ips'])
-	print '-'*200
+													component['ips']))
+	print('-'*200)
 	print
 
 def print_edge_service_gateways_available(esgs):
 	print
-	print '-'*200
-	print '{:<80}{:<60}{:<10}'.format('', 'Edge Service Gateway Instances', '') 
-	print "{:<40} | {:<10} | {:<20} | {:20} | {:10} | {:<40}| {:<15}| {:<40}".format('Name', 
+	print('-'*200)
+	print('{:<80}{:<60}{:<10}'.format('', 'Edge Service Gateway Instances', '')) 
+	print("{:<40} | {:<10} | {:<20} | {:20} | {:10} | {:<40}| {:<15}| {:<40}".format('Name', 
 																			'Moid', 
 																			'Datacenter',
 																			'Datastore', 
 																			'Size', 
 																			'FQDN',
 																			'Status',
-																			'Vnics')
-	print '-'*200 
+																			'Vnics'))
+	print('-'*200) 
 	for esg in esgs:	
 		esgAppliance = esg['appliancesSummary']
 		#vnics = ', '.join([vic['name'] for vnic in esg['vnics']])
 		
 		#print vnics
 		
-		print '{:<40} | {:<10} | {:<20} | {:20} | {:10} | {:<40}| {:<15}| {:<40}'.format(	esg['name'], 
+		print('{:<40} | {:<10} | {:<20} | {:20} | {:10} | {:<40}| {:<15}| {:<40}'.format(	esg['name'], 
 																		esg['id'],
 																		esg['datacenterName'],
 																		esgAppliance.get('dataStoreNameOfActiveVse', ''),
 																		esgAppliance['applianceSize'],
 																		esgAppliance['fqdn'],
 																		esg['edgeStatus'],
-																		'') #vnics)
-	print '-'*200
+																		'')) #vnics))
+	print('-'*200)
 	print
 
 def print_edge_service_gateways_configured(esgs):
 	print
-	print '-'*200
-	print '{:<80}{:<60}{:<10}'.format('', 'Edge Service Gateways (from configuration)', '')
-	print "{:<30} | {:<30} | {:<50} | {:20} | {:10} | {:<50}".format('Name', 
+	print('-'*200)
+	print('{:<80}{:<60}{:<10}'.format('', 'Edge Service Gateways (from configuration)', ''))
+	print("{:<30} | {:<30} | {:<50} | {:20} | {:10} | {:<50}".format('Name', 
 																	'Moid', 
 																	'Routed Components', 
 																	'Uplink Port', 
 																	'Uplink IP', 
-																	'Creds')
-	print '-'*200 
+																	'Creds'))
+	print('-'*200) 
 	for esg in esgs:
 		routed_components = ','.join([routed_component['name'] for routed_component in esg['routed_components']])
 		cli_creds = 'user={}, passwd={}'.format(esg['cli']['username'], esg['cli']['password'])
 		
-		print '{:<30} | {:<30} | {:<50} | {:20} | {:10} | {:<50}'.format(	esg['name'], 
+		print('{:<30} | {:<30} | {:<50} | {:20} | {:10} | {:<50}'.format(	esg['name'], 
 																		esg.get('id', ''),
 																		routed_components,
 																		esg['global_uplink_details']['uplink_port_switch'],
 																		esg['global_uplink_details']['uplink_ip'], 
-																		cli_creds)
-		print '-'*200
+																		cli_creds))
+		print('-'*200)
 		print 
-		print '{:<80}{:<60}{:<10}'.format('', 'Firewall (from configuration)', '')
-		print "{:<40} | {:<20} | {:<80} | {:<80} ".format(	'Name', 
+		print('{:<80}{:<60}{:<10}'.format('', 'Firewall (from configuration)', ''))
+		print("{:<40} | {:<20} | {:<80} | {:<80} ".format(	'Name', 
 															'Ingress/Egress',
 															'Source', 
-															'Destination')
-		print '-'*200
+															'Destination'))
+		print('-'*200)
 
 		ruleMap = {
 			'ops'    : { 'name': 'Allow Ingress -> Ops Manager', 'type': 'Ingress', 'ports' : 'tcp/22,80,443' },
@@ -175,7 +175,7 @@ def print_edge_service_gateways_configured(esgs):
 				srcRule = rule['ports']
 				destRule = rule['ports']
 
-			print '{:<40} | {:<20} | {:<80} | {:<80}'.format( rule['name'], rule['type'], srcRule, destRule)  
+			print('{:<40} | {:<20} | {:<80} | {:<80}'.format( rule['name'], rule['type'], srcRule, destRule))  
 
 		for ruleName, ruleRow in ruleMap.iteritems():
 			if not 'any' in ruleName:
@@ -192,12 +192,12 @@ def print_edge_service_gateways_configured(esgs):
 				srcRule = rule['ports']
 				destRule = rule['ports']
 
-			print '{:<40} | {:<20} | {:<80} | {:<80}'.format( rule['name'], rule['type'], srcRule, destRule)  
+			print('{:<40} | {:<20} | {:<80} | {:<80}'.format( rule['name'], rule['type'], srcRule, destRule))  
 																			
-		print '-'*215
+		print('-'*215)
 
-		print '{:<80}{:<40}{:<15}{:<10}'.format('', 'Routed Component (from configuration) for Edge Instance: ',esg['name'], '')
-		print "{:<15} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} |  {:<15} |{:<10}| {:<20} | {:<20} | {:<20} ".format( \
+		print('{:<80}{:<40}{:<15}{:<10}'.format('', 'Routed Component (from configuration) for Edge Instance: ',esg['name'], ''))
+		print("{:<15} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} |  {:<15} |{:<10}| {:<20} | {:<20} | {:<20} ".format( \
 															'Name',
 															'Switch',
 															'VIP',
@@ -211,8 +211,8 @@ def print_edge_service_gateways_configured(esgs):
 															'Ingress:Port',
 															'Egress:Port',
 															'Port:Monitor Url'
-															)
-		print '-'*215
+															))
+		print('-'*215)
 
 		for entry in esg['routed_components']:	
 			useVip = 'Y'		
@@ -256,7 +256,7 @@ def print_edge_service_gateways_configured(esgs):
 					ip = ips[index]
 
 				if (index == 0):
-					print "{:<15} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} | {:<15} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
+					print("{:<15} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} | {:<15} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
 															entry['name'],
 															entry['switchName'],
 															useVip,
@@ -269,10 +269,10 @@ def print_edge_service_gateways_configured(esgs):
 															monitorId,
 															ingressCombo,
 															egressCombo,
-															monitorCombo )
+															monitorCombo ))
 
 				else:
-					print "{:<15} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} | {:<17} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
+					print("{:<15} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} | {:<17} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
 															'',
 															'',
 															'',
@@ -285,8 +285,8 @@ def print_edge_service_gateways_configured(esgs):
 															'',
 															'',
 															'',
-															'' )
+															'' ))
 				index = index + 1
 																			
-		print '-'*215		
+		print('-'*215)		
 		print

@@ -107,7 +107,7 @@ def  mapVcenterResources(context, moidMap):
 	lookupVCenterMoid(context, 'datastore', moidMap)
 
 	if DEBUG:
-		print 'vCenter context updated\n'
+		print('vCenter context updated\n')
 		pprint(vars(vcenter_context))
 
 def build(context, verbose=False):
@@ -141,7 +141,7 @@ def map_logical_switches_id(logical_switches):
 	existinglSwitchesResponse = client.get(NSX_URLS['lswitch']['all'] + '?&startindex=0&pagesize=100')
 	existinglSwitchesResponseDoc = xmltodict.parse(existinglSwitchesResponse.text)
 	if DEBUG:
-		print 'LogicalSwitches response :{}\n'.format(existinglSwitchesResponse.text) 
+		print('LogicalSwitches response :{}\n'.format(existinglSwitchesResponse.text)) 
 	
 	num_lswitches = len(logical_switches)
 	matched_lswitches = 0
@@ -167,8 +167,8 @@ def map_logical_switches_id(logical_switches):
 
 	for interested_lswitch in  logical_switches: 
 		if (interested_lswitch.get('id') is None):
-			print 'Logical Switch instance with name: {}'  \
-				+ ' does not exist, possibly deleted already'.format(interested_lswitch['name'])
+			print('Logical Switch instance with name: {}'  \
+				+ ' does not exist, possibly deleted already'.format(interested_lswitch['name']))
 
 def check_logical_switch_exists(vcenterMobMap, lswitchName):
 
@@ -179,7 +179,7 @@ def check_logical_switch_exists(vcenterMobMap, lswitchName):
 		return False
 
 	if 'vxw-' in fullMobName and '-virtualwire-' in fullMobName:
-		print 'Logical switch : {} exists with MOB:{}'.format(lswitchName, fullMobName)
+		print('Logical switch : {} exists with MOB:{}'.format(lswitchName, fullMobName))
 		return True
 
 	return False
@@ -205,8 +205,8 @@ def reconcile_uplinks(context):
 					break
 			
 			if not lswitch:
-				print 'Unable to find/map logical switch {} for Routed Component: {}'.\
-							format(routedComponent['name'], lSwitchName)
+				print('Unable to find/map logical switch {} for Routed Component: {}'.\
+							format(routedComponent['name'], lSwitchName))
 			
 			lswitchCidr = lswitch['cidr']
 			routedComponentUplinkIp = routedComponent['uplink_details']['uplink_ip']
@@ -239,15 +239,36 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
 	vdnScopesDoc = xmltodict.parse(vdnScopesResponse.text)
 
 	if DEBUG:
-		print 'VDN Scopes output: {}'.format(vdnScopesDoc)
+		print('VDN Scopes output: {}'.format(vdnScopesDoc))
 
 	vcenterMobMap = refresh_moid_map(context)
-	defaultVdnScopeId = vdnScopesDoc['vdnScopes']['vdnScope']['objectId']
+
+	# Handle multiple Transport zones
+	vdnScopes = vdnScopesDoc['vdnScopes']['vdnScope']
+
+	# If just single entry, just wrap it in an array
+	if isinstance(vdnScopes, dict):
+		vdnScopes = [ vdnScopes ]
+	
+	defaultVdnScopeId = None
+	transportZone = context['nsxmanager']['transport_zone']
+
+	for entry in vdnScopes:
+		if DEBUG:
+			print('Transport Zone name: {}, Vdn Scope name in entry: {}'.format(transportZone, entry['name']))
+		if entry['name'] == transportZone:
+			defaultVdnScopeId = entry['objectId']
+			print('Found matching TZ, VDN Scope id :{}\n'.format(defaultVdnScopeId))
+			break
+
+	if not defaultVdnScopeId:
+		defaultVdnScopeId = vdnScopes[0]['objectId']
+		print('Unable to find matching TZ, going with fist available TZ, VDN Scope id : {}\n'.format(defaultVdnScopeId))
 
 	for lswitch in  context[type]: 
 
 		if check_logical_switch_exists(vcenterMobMap, lswitch['name']):
-			print '\tSkipping creation of Logical Switch: {} !!'.format(lswitch['name'])			
+			print('\tSkipping creation of Logical Switch: {} !!'.format(lswitch['name']))			
 			continue
 
 		logical_switches_context = {
@@ -272,16 +293,16 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
 					+ defaultVdnScopeId+'/virtualwires', 
 				os.path.join(logical_switches_dir, lswitch['name'] + '_payload.xml'))
 		data = post_response.text
-		print 'Created Logical Switch : {}\n'.format(lswitch['name'])
+		print('Created Logical Switch : {}\n'.format(lswitch['name']))
 		if DEBUG:
-			print 'Logical switch creation response:{}\n'.format(data)
+			print('Logical switch creation response:{}\n'.format(data))
 
 def list_logical_switches(context, reportAll=True):
 
 	existinglSwitchesResponse = client.get(NSX_URLS['lswitch']['all']+ '?&startindex=0&pagesize=100')#'/api/2.0/vdn/virtualwires')
 	existinglSwitchesResponseDoc = xmltodict.parse(existinglSwitchesResponse.text)
 	if DEBUG:
-		print 'LogicalSwitches response :{}\n'.format(existinglSwitchesResponse.text) 
+		print('LogicalSwitches response :{}\n'.format(existinglSwitchesResponse.text)) 
 	
 	virtualWires = existinglSwitchesResponseDoc['virtualWires']['dataPage']['virtualWire']
 	lswitchEntries = virtualWires
@@ -330,16 +351,16 @@ def delete_logical_switches(context, type = 'logical_switches'):
 			data = delete_response.text
 
 			if DEBUG:
-				print 'NSX Logical Switch Deletion response:{}\n'.format(data)
+				print('NSX Logical Switch Deletion response:{}\n'.format(data))
 
 			if delete_response.status_code < 400: 
-				print 'Deleted NSX Logical Switch:{}\n'.format(lswitch['name'])
+				print('Deleted NSX Logical Switch:{}\n'.format(lswitch['name']))
 
 			else:
-				print 'Deletion of NSX Logical Switch failed, details: {}\n'.format(data)
+				print('Deletion of NSX Logical Switch failed, details: {}\n'.format(data))
 				if 'resource is still in use' in str(data):
 					retry = True 
-					print 'Going to retry deletion again... for Logical Switch:{}\n'.format(lswitch['name'])
+					print('Going to retry deletion again... for Logical Switch:{}\n'.format(lswitch['name']))
 
 
 def build_nsx_edge_gateways(dir, context, alternate_template=None):
@@ -356,7 +377,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 	logical_switches = context['logical_switches']
 	map_logical_switches_id(logical_switches)
 	if DEBUG:
-		print 'Logical Switches:{}\n'.format(str(logical_switches))
+		print('Logical Switches:{}\n'.format(str(logical_switches)))
 
 	empty_logical_switches = xrange(len(logical_switches) + 1, 10) 
 	vcenterMobMap = refresh_moid_map(context)
@@ -435,7 +456,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		cross_logical_network_combo = cross_combine_lists(firewall_src_network_list, firewall_destn_network_list)		
 
 		if DEBUG:
-			print 'NSX Edge config: {}\n'.format(str(nsx_edge))   
+			print('NSX Edge config: {}\n'.format(str(nsx_edge)))   
 
 		nsx_edges_context = {
 			'context': context,
@@ -467,7 +488,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		"""
 		if True:
 		"""
-		print 'Creating NSX Edge instance: {}\n\n'.format(nsx_edge['name'])
+		print('Creating NSX Edge instance: {}\n\n'.format(nsx_edge['name']))
 
 		post_response = client.post_xml(NSX_URLS['esg']['all'] , 
 								os.path.join(nsx_edges_dir, nsx_edge['name'] + '_post_payload.xml'), 
@@ -475,14 +496,14 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		data = post_response.text
 		
 		if post_response.status_code < 400: 
-			print 'Created NSX Edge :{}\n'.format(nsx_edge['name'])
+			print('Created NSX Edge :{}\n'.format(nsx_edge['name']))
 			certId = add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge)
-			print 'Got cert id: {}\n'.format(nsx_edge['cert_id'])
-			print 'Now updating LBR config!!'
+			print('Got cert id: {}\n'.format(nsx_edge['cert_id']))
+			print('Now updating LBR config!!')
 			add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge)
-			print 'Success!! Finished creation of NSX Edge instance: {}\n\n'.format(nsx_edge['name'])
+			print('Success!! Finished creation of NSX Edge instance: {}\n\n'.format(nsx_edge['name']))
 		else:
-			print 'Creation of NSX Edge failed, details:\n{}\n'.format(data)
+			print('Creation of NSX Edge failed, details:\n{}\n'.format(data))
 			raise Exception('Creation of NSX Edge failed, details:\n {}'.format(data))			
 
 def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
@@ -490,25 +511,25 @@ def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	map_nsx_esg_id( [ nsx_edge ] )
 
 	if not nsx_edge.get('certs'):
-		print 'No certs section to use an available cert or generate cert was specified for edge instance: {}'.\
-					format( nsx_edge['name'])
+		print('No certs section to use an available cert or generate cert was specified for edge instance: {}'.\
+					format( nsx_edge['name']))
 		raise Exception('Creation of NSX Edge failed, no certs section was provided')	
 
 	if nsx_edge['certs'].get('cert_id'):
-		print 'Going to use available cert id: {} for edge instance: {}'.\
-					format(nsx_edge['cert_id'], nsx_edge['name'])
+		print('Going to use available cert id: {} for edge instance: {}'.\
+					format(nsx_edge['cert_id'], nsx_edge['name']))
 		return
 
 	
 	if nsx_edge['certs'].get('key') and nsx_edge['certs'].get('cert'):
-		print 'Using the provided certs and key for associating with NSX Edge instance: {}'.format(nsx_edge['name'])
+		print('Using the provided certs and key for associating with NSX Edge instance: {}'.format(nsx_edge['name']))
 		nsx_edge['certs']['key'] = nsx_edge['certs'].get('key').strip() + '\n'
 		nsx_edge['certs']['cert'] = nsx_edge['certs'].get('cert').strip() + '\n'
 	else:
 		cert_config = nsx_edge['certs'].get('config')
 		if not cert_config:
-			print 'No cert config was specified for edge instance: {}'.\
-						format( nsx_edge['name'])
+			print('No cert config was specified for edge instance: {}'.\
+						format( nsx_edge['name']))
 			raise Exception('Creation of NSX Edge failed, no cert config to associate/generate certs was provided')	
 
 		# Try to generate certs if key and cert are not provided
@@ -537,21 +558,21 @@ def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 		data = post_response.text
 
 		if DEBUG:
-			print 'NSX Edge Cert Addition response:\{}\n'.format(data)
+			print('NSX Edge Cert Addition response:\{}\n'.format(data))
 
 		if post_response.status_code < 400: 
-			print 'Added NSX Edge Cert to {}\n'.format(nsx_edge['name'])
+			print('Added NSX Edge Cert to {}\n'.format(nsx_edge['name']))
 			certPostResponseDoc = xmltodict.parse(data)
 
 			certId = certPostResponseDoc['certificates']['certificate']['objectId']
 			nsx_edge['cert_id'] = certId
 
 		elif post_response.status_code == 404: 
-			print 'NSX Edge not yet up, retrying'
+			print('NSX Edge not yet up, retrying')
 			retry = True 
-			print 'Going to retry addition of cert again... for NSX Edge: {}\n'.format(nsx_edge['name'])
+			print('Going to retry addition of cert again... for NSX Edge: {}\n'.format(nsx_edge['name']))
 		else:
-			print 'Addition of NSX Edge Cert failed, details:{}\n'.format(data)
+			print('Addition of NSX Edge Cert failed, details:{}\n'.format(data))
 			raise Exception('Addition of NSX Edge failed, details:\n {}'.format(data))
 
 def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
@@ -583,12 +604,12 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	data = put_response.text
 
 	if DEBUG:
-		print 'NSX Edge LBR Config Update response:{}\n'.format(data)
+		print('NSX Edge LBR Config Update response:{}\n'.format(data))
 
 	if put_response.status_code < 400: 
-		print 'Updated NSX Edge LBR Config for : {}\n'.format(nsx_edge['name'])		
+		print('Updated NSX Edge LBR Config for : {}\n'.format(nsx_edge['name']))		
 	else:
-		print 'Update of NSX Edge LBR Config failed, details:{}\n'.format(data)
+		print('Update of NSX Edge LBR Config failed, details:{}\n'.format(data))
 		raise Exception('Update of NSX Edge LBR Config failed, details:\n {}'.format(data))
 
 def map_nsx_esg_id(edge_service_gateways):
@@ -599,7 +620,7 @@ def map_nsx_esg_id(edge_service_gateways):
 	num_nsx_esgs = len(edge_service_gateways)
 	
 	if DEBUG:
-		print 'ESG response :\n{}\n'.format(existingEsgResponse.text) 
+		print('ESG response :\n{}\n'.format(existingEsgResponse.text)) 
 
 	edgeSummaries = existingEsgResponseDoc['pagedEdgeList']['edgePage']['edgeSummary']
 	edgeEntries = edgeSummaries
@@ -618,7 +639,7 @@ def map_nsx_esg_id(edge_service_gateways):
 
 	for interested_Esg in  edge_service_gateways: 
 		if (interested_Esg.get('id') is None):
-			print 'NSX ESG instance with name: {} does not exist anymore\n'.format(interested_Esg['name'])
+			print('NSX ESG instance with name: {} does not exist anymore\n'.format(interested_Esg['name']))
 
 	return matched_nsx_esgs   
 
@@ -627,7 +648,7 @@ def list_nsx_edge_gateways(context):
 	existingEsgResponseDoc = xmltodict.parse(existingEsgResponse.text)
 
 	if DEBUG:
-		print 'NSX ESG response :{}\n'.format(existingEsgResponse.text)
+		print('NSX ESG response :{}\n'.format(existingEsgResponse.text))
 
 	edgeSummaries = existingEsgResponseDoc['pagedEdgeList']['edgePage']['edgeSummary']
 	edgeEntries = edgeSummaries
@@ -651,24 +672,24 @@ def delete_nsx_edge_gateways(context):
 		data = delete_response.text
 
 		if DEBUG:
-			print 'NSX ESG Deletion response:{}\n'.format(data)
+			print('NSX ESG Deletion response:{}\n'.format(data))
 
 		if delete_response.status_code < 400: 
-			print 'Deleted NSX ESG : {}\n'.format(nsx_esg['name'])
+			print('Deleted NSX ESG : {}\n'.format(nsx_esg['name']))
 		else:
-			print 'Deletion of NSX ESG failed, details:{}\n'.format(data +'\n')    
+			print('Deletion of NSX ESG failed, details:{}\n'.format(data +'\n'))    
 
 
 def check_cert_config(nsx_context):
 
 	if not nsx_edge.get('certs'):
-		print 'No cert config was specified for edge instance: {}'.\
-					format( nsx_edge['name'])
+		print('No cert config was specified for edge instance: {}'.\
+					format( nsx_edge['name']))
 		raise Exception('Creation of NSX Edge failed, no cert config was provided')	
 
 	if not nsx_edge['certs'].get('config'):
-		print 'No cert config was specified for edge instance: {}'.\
-					format( nsx_edge['name'])
+		print('No cert config was specified for edge instance: {}'.\
+					format( nsx_edge['name']))
 		raise Exception('Creation of NSX Edge failed, neither cert_id nor config to generate certs was provided')	
 
 def generate_certs(nsx_context):

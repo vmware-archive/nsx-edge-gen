@@ -100,7 +100,7 @@ class Config(dict):
 		uplink_details['subnet_mask'] = addr_range.netmask()
 		uplink_details['subnet_length'] = string.atoi(uplink_details['cidr'].split('/')[1])
 
-		#print 'NSX Manager context:{}'.format(self.nsxmanager)
+		#print('NSX Manager context:{}'.format(self.nsxmanager))
 
 	def validate_logical_switches(self):
 		self.logical_switches = self.get('logical_switches')
@@ -163,7 +163,7 @@ class Config(dict):
 			nsx_edge['routed_components'] = [ ]
 			for entry in routed_component_context:
 				routedComponent = self.parse_routing_component(entry)
-				print 'Routed component: {}'.format(routedComponent)
+				print('Routed component: {}'.format(routedComponent))
 				nsx_edge['routed_components'].append(routedComponent)
 
 			name = 'esg-' + self.get('name')
@@ -175,7 +175,7 @@ class Config(dict):
 
 
 	def parse_routing_component(self, routeComponentEntry):
-		print 'Parsing Routed Component: {}'.format(routeComponentEntry)
+		print('Parsing Routed Component: {}'.format(routeComponentEntry))
 
 		instances = routeComponentEntry.get('instances')
 		offset = routeComponentEntry.get('offset')

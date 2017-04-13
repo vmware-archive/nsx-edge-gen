@@ -316,7 +316,7 @@ def construct_config(args):
 					esgEntry['routed_components'].append(componentEntry)
 				cliConfig['edge_service_gateways'].append(esgEntry) 
 		
-	print '\n{}\n{:<80}Command Line Args Mapped\n{}\n{}\n'.format('-'*200, ' ', '-'*200, cliConfig)
+	print('\n{}\n{:<80}Command Line Args Mapped\n{}\n{}\n'.format('-'*200, ' ', '-'*200, cliConfig))
 	return cliConfig
 
 
@@ -340,11 +340,11 @@ def _nsx_gen_main(args):
 		command_selector[args.command](config_file=args.nsx_conf)
 	except KeyError as e:
 		traceback.print_exc(file=sys.stdout)
-		print 'Unknown command, {}\n Exiting...'.format(repr(e))
+		print('Unknown command, {}\n Exiting...'.format(repr(e)))
 		exit()		
 	except:
 		traceback.print_exc(file=sys.stdout)
-		print 'Unexpected error:' + str(sys.exc_info()[0])
+		print('Unexpected error:' + str(sys.exc_info()[0]))
 		exit()
 
 def main():
@@ -391,8 +391,8 @@ def build_config(config_file):
 	
 		
 	merged_cfg = Config(merged_cfg).validate()
-	print '\nEffective configuration to be used :\n{}\n\n'.format(merged_cfg)
-	print 'Name of config:{}\n'.format(merged_cfg.get('name', '<unspecified>'))
+	print('\nEffective configuration to be used :\n{}\n\n'.format(merged_cfg))
+	print('Name of config:{}\n'.format(merged_cfg.get('name', '<unspecified>')))
 
 	return merged_cfg
 
@@ -401,9 +401,9 @@ def build_cmd(config_file=CONFIG_FILE):
 	finalCfg = build_config(config_file)
 	nsx_builder.build(finalCfg)
 
-	print 'Done with build...\nNow listing running config..\n\n'
+	print('Done with build...\nNow listing running config..\n\n')
 	nsx_builder.list(finalCfg)
-	print 'Exiting...\n'
+	print('Exiting...\n')
 
 def list_cmd(config_file=CONFIG_FILE):
 	finalCfg = build_config(config_file)
@@ -415,9 +415,9 @@ def delete_cmd(config_file=CONFIG_FILE):
 
 	nsx_builder.delete(finalCfg)
 
-	print 'Done with delete...\nNow listing running config..\n\n'
+	print('Done with delete...\nNow listing running config..\n\n')
 	nsx_builder.list(finalCfg)
-	print 'Exiting...\n'
+	print('Exiting...\n')
 
 def deepupdate(original, update):
 	"""

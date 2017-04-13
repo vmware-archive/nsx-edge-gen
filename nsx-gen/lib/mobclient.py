@@ -76,7 +76,7 @@ def lookupSessionNonce(response):
     if hidden_entry.attr('name') == 'vmware-session-nonce' :
         vmware_session_nonce = hidden_entry.attr('value')
     if DEBUG:
-        print 'vmware-session-nonce: ' + vmware_session_nonce
+        print('vmware-session-nonce: ' + vmware_session_nonce)
     return vmware_session_nonce
 
 
@@ -95,9 +95,9 @@ def init_vmware_session():
     serviceInstanceGetRespSock.close()
     
     if DEBUG:
-        print 'Cookies: ' + cookies
-        print 'Info: ' + str(serviceInstanceGetRespInfo)
-        print 'vCenter MOB response :\n' + str(serviceInstanceGetResp)+ '\n-----\n'
+        print('Cookies: ' + cookies)
+        print('Info: ' + str(serviceInstanceGetRespInfo))
+        print('vCenter MOB response :\n' + str(serviceInstanceGetResp)+ '\n-----\n')
 
     #if response.status_code != requests.codes.ok:
     #        raise Error('Unable to connect to vcenter, error message: ' + vcenterServiceInstanceResponse.text)
@@ -159,7 +159,7 @@ def traversedMoidTree(context, data, cookies):
 
     detailedMoidMap.update(datacenterMoidMap)
     if DEBUG:
-        print 'Datacenters Moid Map:\n' + str(detailedMoidMap)
+        print('Datacenters Moid Map:\n' + str(detailedMoidMap))
 
     hostMobUrl = '/mob/?moid=' + detailedMoidMap['host']['moid']
     detailedMoidMap.update(processVCenterMobRequest(context, hostMobUrl, 'GET', data, cookies))
@@ -173,7 +173,7 @@ def traversedMoidTree(context, data, cookies):
     detailedMoidMap.update(datastoreMoidMap)
 
     if DEBUG:
-        print 'Entire Moid Map:\n' + str(detailedMoidMap)
+        print('Entire Moid Map:\n' + str(detailedMoidMap))
    
     # Save the tree locally
     context['vcenterMobMap'] = detailedMoidMap
@@ -188,7 +188,7 @@ def processVCenterMobRequest(context, vcenterMobUrl, method, data, cookies):
     mobRespSock.close()
     
     if DEBUG:
-        print '\n\n Mob Response for url[' + vcenterMobUrl + ']:\n' + mobResp 
+        print('\n\n Mob Response for url[' + vcenterMobUrl + ']:\n' + mobResp)
 
     moidMap = generateMoidMap(mobResp, RESOURCE_TYPES)
     return moidMap
@@ -198,7 +198,7 @@ def generateMoidMap(response, resourceTypes):
 
     """
     for e in tree.xpath("//td/a[contains(text(),'datacenter')]/.."):
-        print 'Entry: ' + str(e) + '\n\t content: ' + e.text_content() + '\n' 
+        print('Entry: ' + str(e) + '\n\t content: ' + e.text_content() + '\n') 
         if e.attrib.has_key('href') and e.attrib['href'].find('datacenter') != -1:
             print('Found Match 3 ............' + e.text)
     if response is None or response == '':
@@ -225,7 +225,7 @@ def generateMoidMap(response, resourceTypes):
             continue
 
         if DEBUG:
-            print 'Entry content is: ' + href_and_rest
+            print('Entry content is: ' + href_and_rest)
         
         
         # for child in entry:
@@ -255,10 +255,10 @@ def generateMoidMap(response, resourceTypes):
             mobName = match.group(3)
             moidMap[mobName] = { 'moid' :  moid, 'href': href }
             if DEBUG:
-                print 'Mob Name: ' + mobName + ', moid : ' + moid + ', href: ' + href 
+                print('Mob Name: ' + mobName + ', moid : ' + moid + ', href: ' + href )
 
     if DEBUG:
-        print 'Entry Map: ' + str(moidMap)
+        print('Entry Map: ' + str(moidMap))
     return moidMap   
 
 def lookup_moid(resourceName):
@@ -275,7 +275,7 @@ def lookup_moid(resourceName):
         elif 'vsan' + resourceName in vcenterMobMap:
             return vcenterMobMap['vsan' + resourceName]['moid']
 
-    print 'Unable to lookup Moid for resource: ' + resourceName
+    print('Unable to lookup Moid for resource: ' + resourceName)
     return resourceName
 
 def lookup_logicalswitch_managed_obj_name( resourceName):
@@ -292,11 +292,11 @@ def lookup_logicalswitch_managed_obj_name( resourceName):
     """
 
     for key in vcenterMobMap:
-        #print 'key[{}] : {}'.format(key, str(vcenterMobMap[key]))
+        #print('key[{}] : {}'.format(key, str(vcenterMobMap[key])))
         if resourceName in key:
             return key        
 
-    print 'Unable to lookup Moid for resource: {}'.format(resourceName)
+    print('Unable to lookup Moid for resource: {}'.format(resourceName))
     return resourceName
 
 def escape(html):
@@ -338,7 +338,7 @@ def queryVCenterMob(vcenter_ctx, url, method, data, cookies):
         req = urllib2.Request(vcenterMobUrl)
 
     base64string = createBaseAuthToken(vcenter_ctx.get('admin_user'), vcenter_ctx.get('admin_passwd'))
-    #print 'Url: {}'.format(vcenterMobUrl)
+    #print('Url: {}'.format(vcenterMobUrl))
     
     req.add_header('Authorization', "Basic %s" % base64string)
     req.add_header('User-Agent', "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/534.30 (KHTML, like Gecko) Ubuntu/11.04 Chromium/12.0.742.112 Chrome/12.0.742.112 Safari/534.30")

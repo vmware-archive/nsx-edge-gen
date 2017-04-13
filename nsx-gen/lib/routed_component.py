@@ -327,7 +327,7 @@ class RoutedComponent:
 			raise ValueError('Unable to determine switch for given component:{} ,\
 			 no switch name specified nor known from templates'.format(self.name))
 
-		print 'Looking up for switch with name: {} for Routed component: {}'.format(keywordToMatch, self.name)
+		print('Looking up for switch with name: {} for Routed component: {}'.format(keywordToMatch, self.name))
 
 		for logical_switch in logical_switches:
 			if keywordToMatch.upper().replace('-','') in logical_switch['given_name'].upper().replace('-',''):
@@ -578,7 +578,7 @@ def validate_default_routed_components_map():
 		else:
 			raise Exception('Routed Component[{}] not found... in DEFAULT_ROUTED_COMPONENT_MAP'.format(routedCompKey))
 
-	print 'Validation of Default Routed components successful...\n'
+	print('Validation of Default Routed components successful...\n')
 
 
 """
@@ -599,7 +599,7 @@ class Config(dict):
 				uplink_ip = routedComp['uplink_ip']
 			routedComponent = RoutedComponent(routedComp['name'],											
 											uplink_ip )
-			print 'Routed component: {}'.format(routedComponent)
+			print('Routed component: {}'.format(routedComponent))
 
 		return self
 
@@ -624,7 +624,7 @@ def read_yaml(file):
 	return yaml.safe_load(file)
 
 def main():
-	print 'Calling main...'
+	print('Calling main...')
 	file_cfg = Config().read(CONFIG_FILE)
 	file_cfg.validate()
 
