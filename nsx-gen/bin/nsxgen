@@ -101,7 +101,7 @@ ATTRIBUTE_MAP_ARRAY = {
 }
 
 # Should match
-ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router', 'mysql_ert', 'mysql_tile', 'rabbitmq_tile']
+ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router', 'mysql_ert', 'mysql_tile', 'rabbitmq_tile', 'go_router_isozone_1', 'tcp_router_isozone_1']
 
 cli_config = { }
 

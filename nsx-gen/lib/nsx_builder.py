@@ -213,11 +213,12 @@ def reconcile_uplinks(context):
 
 			# Check if the provided uplink ip is part of a logical switch
 			isExternalUplink = True
+			
 			# If its part of a logical switch, add the uplink ip to the related logical switch's secondary ip
 			if routedComponentUplinkIp in ipcalc.Network(lswitchCidr):
 				isExternalUplink = False
 				lswitch['secondary_ips'].append(routedComponentUplinkIp)
-
+			
 			# If the uplink ip is not part of any other logical switches, 
 			# mark it as the real uplink for the routed component
 			if isExternalUplink:

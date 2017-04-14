@@ -37,6 +37,7 @@ KNOWN_LSWITCHES = {
 	'ERT' : 'Ert',
 	'PCF-TILES' : 'PCF-Tiles', 
 	'DYNAMIC-SERVICES': 'Dynamic-Services',
+	'ISOZONE': 'IsoZone',
 }
 
 
@@ -86,7 +87,9 @@ KNOWN_ROUTED_COMPONENTS = [
 	'TCP-ROUTER',
 	'MYSQL-ERT', 
 	'MYSQL-TILE',
-	'RABBITMQ-TILE'
+	'RABBITMQ-TILE',
+	'GO-ROUTER-ISO',
+	'TCP-ROUTER-ISO'
 ]
 
 # Ensure the switch matches the entry in KNOWN_LSWITCHES
@@ -105,7 +108,12 @@ DEFAULT_ROUTED_COMPONENT_LSWITCH_MAP = {
 	KNOWN_ROUTED_COMPONENTS[5]: { 'name': 'MYSQL-TILE', 'switch': 'PCF-TILES',
 									'useVIP': True, 'instances' : 3,  'offset' : 10  },								
 	KNOWN_ROUTED_COMPONENTS[6]: { 'name': 'RABBITMQ-TILE', 'switch': 'PCF-TILES',
-									'useVIP': True, 'instances' : 3,  'offset' : 30  }																		
+									'useVIP': True, 'instances' : 3,  'offset' : 30  },
+	KNOWN_ROUTED_COMPONENTS[7]: { 'name': 'GO-ROUTER-ISO', 'switch': 'ISOZONE',  
+							      	'useVIP': True, 'instances' : 2,  'offset' : 10  },
+	KNOWN_ROUTED_COMPONENTS[8]: { 'name': 'TCP-ROUTER-ISO', 'switch': 'ISOZONE',  
+									'useVIP': True, 'instances' : 2,  'offset' : 30  }
+																											
 }
 
 # Ensure the monitor-id matches the ones in the MONITOR_MAP
@@ -164,6 +172,22 @@ DEFAULT_ROUTED_COMPONENT_MAP = {
 				'transport':{
 					'ingress': { 'port': '15672,5672,5671', 'protocol': 'tcp' },
 					'egress': { 'port': '15672,5672,5671', 'protocol': 'tcp' },
+				 }
+			},
+	KNOWN_ROUTED_COMPONENTS[7]: { 
+				'name': 'GO-ROUTER-ISO', 'switch': 'ISOZONE', 
+				'useVIP': True,  'instances' : 2,  'offset' : 10, 'monitor_id' : 'monitor-4', 	
+				'transport':	{
+					'ingress': { 'port': '443', 'protocol': 'https' },
+					'egress': { 'port': '80', 'protocol': 'http', 'monitor_port' : '8080',  'url' :  '/health' },
+				 }
+			},
+	KNOWN_ROUTED_COMPONENTS[8]: { 
+				'name': 'TCP-ROUTER-ISO', 'switch': 'ISOZONE', 
+				'useVIP': True,  'instances' : 2,  'offset' : 30, 'monitor_id' : 'monitor-5',	
+				'transport':{
+					'ingress': { 'port': '5000', 'protocol': 'tcp' },
+					'egress': { 'port': '5000', 'protocol': 'tcp', 'monitor_port' : '80', 'url' :  '/health' },
 				 }
 			}
 }

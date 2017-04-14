@@ -31,6 +31,8 @@ A logical switch is associated with separate subnet for each type of component t
 * Ert - for core PCF ERT tile to use
 * PCF-Tiles - for mysql, rabbit, any other supporting service tiles
 * Dynamic-Services - for services that would be kicked off dynamically by BOSH using the ODB broker model
+* IsoZone-## - for Isolation segments with their own router and diego cells
+Note: There can be additional logical switches per isolation segment as shown in the sample nsx_cloud_config.yml template
 
 Avoid editing the default set of logical switches names or subnet. 
 Additional logical switches with their own subnets can be added if necessary.
@@ -211,6 +213,7 @@ lswitch-sabha-Infra                                          | 192.168.10.0/26  
 lswitch-sabha-Ert                                            | 192.168.20.0/22      | 192.168.20.1
 lswitch-sabha-PCF-Tiles                                      | 192.168.24.0/22      | 192.168.24.1
 lswitch-sabha-Dynamic-Services                               | 192.168.28.0/22      | 192.168.28.1
+lswitch-sabha-IsoZone-01                                     | 192.168.32.0/22      | 192.168.32.1
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Parsing Routed Component: {'instances': 1, 'switch': 'Infra', 'name': 'opsmgr', 'uplink_details': {'uplink_ip': '10.193.99.171'}, 'offset': 5}
@@ -242,57 +245,43 @@ Allow Ingress -> Tcp Router              | Ingress              | any           
 Allow Ingress -> Elastic Runtime         | Ingress              | any                                                                              | tcp/80,443,443
 Allow Egress -> All Outbound             | Egress               | any                                                                              | any
 Allow Inside <-> Inside                  | Both                 | any                                                                              | any
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                                                                                Routed Component (from configuration) for Edge Instance: esg-sabha
-Name            | Switch       |VIP  |Inst |Offset| Uplink IP      | IPs            | App Rules                 |  App Profile     |Monitor Id| Ingress:Port         | Egress:Port          | Port:Monitor Url
+                                                                                Routed Component (from configuration) for Edge Instance: esg-sabha-sabha3
+Name                   | Switch       |VIP  |Inst |Offset| Uplink IP      | IPs            | App Rules                 |  App Profile     |Monitor Id| Ingress:Port         | Egress:Port          | Port:Monitor Url
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-opsmgr          | Infra        |N    |1    |5    | 10.193.99.171  | 192.168.10.5   | applicationProfile-4      | applicationRule-1 |monitor-3 |https:443             |https:443             |:https/
-                |              |     |     |     |                |                |                           | applicationRule-2 |          |                      |                      |
-                |              |     |     |     |                |                |                           | applicationRule-4 |          |                      |                      |
-go-router       | Ert          |Y    |4    |10   | 10.193.99.172  | 192.168.20.10  | applicationProfile-3      | applicationRule-1 |monitor-4 |https:443             |http:80               |:http/health
-                |              |     |     |     |                | 192.168.20.11  |                           | applicationRule-2 |          |                      |                      |
-                |              |     |     |     |                | 192.168.20.12  |                           | applicationRule-4 |          |                      |                      |
-                |              |     |     |     |                | 192.168.20.13  |                           |                   |          |                      |                      |
-diego-brain     | Ert          |Y    |3    |20   | 10.193.99.173  | 192.168.20.20  | applicationProfile-6      | applicationRule-1 |monitor-1 |tcp:2222              |tcp:2222              |:tcp
-                |              |     |     |     |                | 192.168.20.21  |                           | applicationRule-2 |          |                      |                      |
-                |              |     |     |     |                | 192.168.20.22  |                           |                   |          |                      |                      |
-tcp-router      | Ert          |Y    |4    |30   | 10.193.99.174  | 192.168.20.30  | applicationProfile-6      | applicationRule-1 |monitor-5 |tcp:5000              |tcp:5000              |:tcp/health
-                |              |     |     |     |                | 192.168.20.31  |                           | applicationRule-2 |          |                      |                      |
-                |              |     |     |     |                | 192.168.20.32  |                           |                   |          |                      |                      |
-                |              |     |     |     |                | 192.168.20.33  |                           |                   |          |                      |                      |
-mysql-ert       | Ert          |Y    |5    |40   | 10.193.99.175  | 192.168.20.40  | applicationProfile-6      | applicationRule-1 |monitor-6 |tcp:3306              |tcp:3306              |:tcp
-                |              |     |     |     |                | 192.168.20.41  |                           | applicationRule-2 |          |                      |                      |
-                |              |     |     |     |                | 192.168.20.42  |                           |                   |          |                      |                      |
-                |              |     |     |     |                | 192.168.20.43  |                           |                   |          |                      |                      |
-                |              |     |     |     |                | 192.168.20.44  |                           |                   |          |                      |                      |
-mysql-tile      | PCF-Tiles    |Y    |2    |10   | 10.193.99.176  | 192.168.24.10  | applicationProfile-6      | applicationRule-1 |monitor-1 |tcp:3306              |tcp:3306              |:tcp
-                |              |     |     |     |                | 192.168.24.11  |                           | applicationRule-2 |          |                      |                      |
-rabbitmq-tile   | PCF-Tiles    |Y    |5    |10   | 10.193.99.177  | 192.168.24.10  | applicationProfile-6      | applicationRule-1 |monitor-1 |tcp:15672,5671,5672   |tcp:15672,5671,5672   |:tcp
-                |              |     |     |     |                | 192.168.24.11  |                           | applicationRule-2 |          |                      |                      |
-                |              |     |     |     |                | 192.168.24.12  |                           |                   |          |                      |                      |
-                |              |     |     |     |                | 192.168.24.13  |                           |                   |          |                      |                      |
-                |              |     |     |     |                | 192.168.24.14  |                           |                   |          |                      |                      |
+opsmgr                 | Infra        |N    |1    |5    | 10.193.99.171  | 192.168.10.5   | applicationProfile-4      | applicationRule-1 |monitor-3 |https:443             |https:443             |:https/
+                       |              |     |     |     |                |                |                           | applicationRule-2 |          |                      |                      |
+                       |              |     |     |     |                |                |                           | applicationRule-4 |          |                      |                      |
+go-router              | Ert          |Y    |4    |10   | 10.193.99.172  | 192.168.20.10  | applicationProfile-3      | applicationRule-1 |monitor-4 |https:443             |http:80               |:http/health
+                       |              |     |     |     |                | 192.168.20.11  |                           | applicationRule-2 |          |                      |                      |
+                       |              |     |     |     |                | 192.168.20.12  |                           | applicationRule-4 |          |                      |                      |
+                       |              |     |     |     |                | 192.168.20.13  |                           |                   |          |                      |                      |
+diego-brain            | Ert          |Y    |3    |20   | 10.193.99.173  | 192.168.20.20  | applicationProfile-6      | applicationRule-1 |monitor-1 |tcp:2222              |tcp:2222              |:tcp
+                       |              |     |     |     |                | 192.168.20.21  |                           | applicationRule-2 |          |                      |                      |
+                       |              |     |     |     |                | 192.168.20.22  |                           |                   |          |                      |                      |
+tcp-router             | Ert          |Y    |4    |30   | 10.193.99.174  | 192.168.20.30  | applicationProfile-6      | applicationRule-1 |monitor-5 |tcp:5000              |tcp:5000              |:tcp/health
+                       |              |     |     |     |                | 192.168.20.31  |                           | applicationRule-2 |          |                      |                      |
+                       |              |     |     |     |                | 192.168.20.32  |                           |                   |          |                      |                      |
+                       |              |     |     |     |                | 192.168.20.33  |                           |                   |          |                      |                      |
+mysql-ert              | Ert          |Y    |5    |40   | 192.168.23.250 | 192.168.20.40  | applicationProfile-6      | applicationRule-1 |monitor-6 |tcp:3306              |tcp:3306              |:tcp
+                       |              |     |     |     |                | 192.168.20.41  |                           | applicationRule-2 |          |                      |                      |
+                       |              |     |     |     |                | 192.168.20.42  |                           |                   |          |                      |                      |
+                       |              |     |     |     |                | 192.168.20.43  |                           |                   |          |                      |                      |
+                       |              |     |     |     |                | 192.168.20.44  |                           |                   |          |                      |                      |
+mysql-tile             | PCF-Tiles    |Y    |2    |10   | 192.168.27.250 | 192.168.24.10  | applicationProfile-6      | applicationRule-1 |monitor-1 |tcp:3306              |tcp:3306              |:tcp
+                       |              |     |     |     |                | 192.168.24.11  |                           | applicationRule-2 |          |                      |                      |
+rabbitmq-tile          | PCF-Tiles    |Y    |5    |10   | 192.168.27.251 | 192.168.24.10  | applicationProfile-6      | applicationRule-1 |monitor-1 |tcp:15672,5671,5672   |tcp:15672,5671,5672   |:tcp
+                       |              |     |     |     |                | 192.168.24.11  |                           | applicationRule-2 |          |                      |                      |
+                       |              |     |     |     |                | 192.168.24.12  |                           |                   |          |                      |                      |
+                       |              |     |     |     |                | 192.168.24.13  |                           |                   |          |                      |                      |
+                       |              |     |     |     |                | 192.168.24.14  |                           |                   |          |                      |                      |
+go-router-isozone-1    | IsoZone-01   |Y    |2    |10   | 10.193.99.175  | 192.168.32.10  | applicationProfile-3      | applicationRule-1 |monitor-4 |https:443             |http:80               |:http/health
+                       |              |     |     |     |                | 192.168.32.11  |                           | applicationRule-2 |          |                      |                      |
+                       |              |     |     |     |                |                |                           | applicationRule-4 |          |                      |                      |
+tcp-router-isozone-1   | IsoZone-01   |Y    |2    |30   | 10.193.99.176  | 192.168.32.30  | applicationProfile-6      | applicationRule-1 |monitor-5 |tcp:5000              |tcp:5000              |:tcp/health
+                       |              |     |     |     |                | 192.168.32.31  |                           | applicationRule-2 |          |                      |                      |
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-Effective configuration to be used :
-........
-
-
-Name of config:sabha
-
-Deleted NSX ESG : esg-sabha
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-                                                                                Logical Switch Instances
-Name                                                         | Moid                 | Managed Object Name                                                              | Subnet
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-lswitch-sabha-Infra                                          | virtualwire-406      |                                                                                  | ---
-lswitch-sabha-Ert                                            | virtualwire-407      |                                                                                  | ---
-lswitch-sabha-PCF-Tiles                                      | virtualwire-408      |                                                                                  | ---
-lswitch-sabha-Dynamic-Services                               | virtualwire-409      |                                                                                  | ---
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 ```

@@ -165,6 +165,57 @@ edge_service_gateways:
         port: 15672,5671,5672
         protocol: tcp
 
+  - name: go-router-isozone-1
+    switch: IsoZone-01
+    instances: 2
+    offset: 10
+    uplink_details:
+      uplink_ip: 10.193.99.175 # This gets exposed outside
+    #transport:
+      # Default ingress scheme is https/443 for ert
+      #ingress:
+      #  port: 443
+      #  protocol: https
+      # Default egress scheme is http/8080 for ert
+      #egress: 
+      #  port: 8080
+      #  protocol: http
+      #  monitor_port: 80
+      #  url: /health
+  - name: tcp-router-isozone-1
+    switch: IsoZone-01
+    instances: 2
+    offset: 30
+    uplink_details:
+      uplink_ip: 10.193.99.176 # This gets exposed outside
+    #transport:
+      # Use defaults - tcp/5000 ingress, tcp/5000 egress
+      #ingress:
+      #  port: 5000
+      #  protocol: tcp
+      #egress: 
+      #  port: 5000
+      #  protocol: tcp
+      #  monitor_port: 80
+      #  url: /health    
+  # - name: go-router-isozone-2
+  #   switch: IsoZone-02
+  #   instances: 2
+  #   offset: 10
+  #   uplink_details:
+  #     uplink_ip: 10.193.99.177 # This gets exposed outside
+  #   #transport:
+  #     # Default ingress scheme is https/443 for ert
+  #     #ingress:
+  #     #  port: 443
+  #     #  protocol: https
+  #     # Default egress scheme is http/8080 for ert
+  #     #egress: 
+  #     #  port: 8080
+  #     #  protocol: http
+  #     #  monitor_port: 80
+  #     #  url: /health
+
   ## Sample service entry
   # - name: test-service
   #   uplink_ip: 10.193.99.41
@@ -193,4 +244,11 @@ logical_switches:
 - name: Dynamic-Services
   cidr: 192.168.28.0/22
   primary_ip: 192.168.28.2
+- name: IsoZone-01
+  cidr: 192.168.32.0/22
+  primary_ip: 192.168.32.2
+# - name: IsoZone-02
+#   cidr: 192.168.36.0/22
+#   primary_ip: 192.168.36.2
+
 
