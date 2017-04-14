@@ -751,6 +751,9 @@ def cross_combine_lists(list1, list2):
 	edited_result =  [ ]
 	for pair in result:
 		if pair[0] != pair[1]:
-			edited_result.append(pair)
+			# Ensure IsoZones talk to each other
+			if not ( 'ISOZONE' in pair[0]['given_name'].upper() 
+				and 'ISOZONE' in pair[1]['given_name'].upper()): 
+				edited_result.append(pair)
 
 	return edited_result
