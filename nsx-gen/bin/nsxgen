@@ -101,7 +101,15 @@ ATTRIBUTE_MAP_ARRAY = {
 }
 
 # Should match
-ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router', 'mysql_ert', 'mysql_tile', 'rabbitmq_tile', 'go_router_isozone_1', 'tcp_router_isozone_1']
+# Supporting atmost 5 isolation segments
+ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router', 'mysql_ert', 
+						'mysql_tile', 'rabbitmq_tile', 
+						'go_router_isozone_1', 'tcp_router_isozone_1',
+						'go_router_isozone_2', 'tcp_router_isozone_2',
+						'go_router_isozone_3', 'tcp_router_isozone_3',
+						'go_router_isozone_4', 'tcp_router_isozone_4',
+						'go_router_isozone_5', 'tcp_router_isozone_5',
+					]
 
 cli_config = { }
 
@@ -289,6 +297,8 @@ def construct_config(args):
 					componentName = component.replace('_', '-')
 					componentEntry = { 'name' : componentName}
 					componentEntry['uplink_details'] =  { }
+
+					isEmpty = True
 					for compField in ATTRIBUTE_MAP_ARRAY['routed_components']:                        
 
 						key = '{}_{}_{}_{}'.format(prefix, component, compField[1], index)
@@ -307,13 +317,16 @@ def construct_config(args):
 							    uplink_details: 
 		  							uplink_ip: 10.193.99.31
 							"""
+							isEmpty = False
 							if 'uplink_ip' in key:
 								compField[1] = compField[1].replace('uplink_details_', '')
 								componentEntry['uplink_details'][compField[1]] = val
 								
 							else:
 								componentEntry[compField[1]] = val 
-					esgEntry['routed_components'].append(componentEntry)
+
+					if not isEmpty:
+						esgEntry['routed_components'].append(componentEntry)
 				cliConfig['edge_service_gateways'].append(esgEntry) 
 		
 	print('\n{}\n{:<80}Command Line Args Mapped\n{}\n{}\n'.format('-'*200, ' ', '-'*200, cliConfig))
