@@ -33,12 +33,12 @@ import sys
 import textwrap
 import yaml
 
-from tabulate import tabulate
 from argparse import RawTextHelpFormatter
 from pkg_resources import resource_filename
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(PATH, os.path.join('..', 'lib')))
+
 import nsx_builder
 import config
 import template

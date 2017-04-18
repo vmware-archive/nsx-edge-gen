@@ -45,13 +45,6 @@ from nsx_urls import *
 
 import argparse
 from print_util  import *
-import pynsxv.library.nsx_logical_switch as lswitch
-import pynsxv.library.nsx_dlr as dlr
-import pynsxv.library.nsx_esg as esg
-import pynsxv.library.nsx_dhcp as dhcp
-import pynsxv.library.nsx_lb as lb
-import pynsxv.library.nsx_dfw as dfw
-import pynsxv.library.nsx_usage as usage
 
 DEBUG = False
 
