@@ -6,6 +6,10 @@ Generate nsx logical switches, edge service gateways and lbs against Vmware NSX 
 Ensure Python min version 2.7.10
 Install the required python libraries using `pip install -r requirements.txt`
 
+## NSX + PCF Architecture 
+
+  ![](docs/overview-4-2017.png)
+
 # Generating initial config
 Create a new config from template using nsx-gen init. The config file used to drive nsxgen is nsx_cloud_config.yml.
 
@@ -252,9 +256,6 @@ Sample Entry in template:
      monitor_port: 80  
 ```
 
-## NSX Architecture 
-
-  ![](docs/overview-4-2017.png)
 
 ## nsxgen output
 
