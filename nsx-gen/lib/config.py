@@ -107,7 +107,7 @@ class Config(dict):
 		if self.logical_switches is None:
 			raise ValueError('logical_switches section not defined')		
 		
-		fields = [ 'name',  'primary_ip', 'cidr'] #, 'secondary_ips']
+		fields = [ 'name',  'cidr'] #, 'primary_ip', 'secondary_ips']
 		for lswitch in self.logical_switches:
 			for field in fields:
 				if lswitch[field] is None:
@@ -131,6 +131,7 @@ class Config(dict):
 			# This will be filled in later once we have parsed the routed components
 			lswitch['secondary_ips'] = []		
 			
+			print('Logical Switch Entry:', lswitch)
  		print_logical_switches_configured(self.logical_switches)
 
 	def validate_nsx_edges(self):

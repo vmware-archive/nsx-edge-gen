@@ -348,24 +348,31 @@ class RoutedComponent:
 			keywordToMatch = self.switchTemplate
 		
 		if not keywordToMatch:
-			raise ValueError('Unable to determine switch for given component:{} ,\
+			raise ValueError('Unable to determine switch for given component:{} ,\n\
 			 no switch name specified nor known from templates'.format(self.name))
 
 		print('Looking up for switch with name: {} for Routed component: {}'.format(keywordToMatch, self.name))
 
+		isozone_switches =  [ lswitch['name'] for lswitch in logical_switches if 'ISOZONE' in lswitch['name'].upper()]
 		for logical_switch in logical_switches:
+
+			if not self.switchName and 'ISOZONE' in keywordToMatch.upper() and len(isozone_switches) > 1:
+				raise ValueError('Unable to choose a matching switch for given component:{} ,\n\
+ 					as there are multiple IsoZone related logical switches.\n\
+ 					Specify the associated switch name'.format(self.name))
+
 			if keywordToMatch.upper().replace('-','') in logical_switch['given_name'].upper().replace('-',''):
 				self.switch = logical_switch
 				return
 		
 		if not self.switch:
-			raise ValueError('Unable to find matching switch for given component:{} ,\
-			 from any of the defined logical switches'.format(self.name))
+			raise ValueError('Unable to find matching switch for given component:{} ,\n\
+ 				from any of the defined logical switches'.format(self.name))
 
 
 	def validate_component(self):
 		if not self.switch:
-			raise ValueError('Unable to find matching switch for given component:{} ,\
+			raise ValueError('Unable to find matching switch for given component:{} ,\n\
 			 from any of the defined logical switches'.format(self.name))
 
 		self.check_for_opsmgr()
@@ -503,7 +510,10 @@ def run_once(f):
 def select_templated_routed_component(routedComponentName):
 	routedComponentNameUpper = routedComponentName.upper()
 
-	if routedComponentNameUpper in DEFAULT_ROUTED_COMPONENT_MAP:
+	# Go first with longer name matches (like go-router-isozone rather than go-router)
+	default_routed_component_names = sorted(DEFAULT_ROUTED_COMPONENT_MAP, key=len, reverse=True)
+	
+	if routedComponentNameUpper in default_routed_component_names:
 		return DEFAULT_ROUTED_COMPONENT_MAP[routedComponentNameUpper]
 
 	# for routedComponent in DEFAULT_ROUTED_COMPONENT_TRANSPORT_MAP:
@@ -511,14 +521,14 @@ def select_templated_routed_component(routedComponentName):
 	# 		return DEFAULT_ROUTED_COMPONENT_TRANSPORT_MAP[routedComponent]
 
 	routedComponent = None
-	for key in DEFAULT_ROUTED_COMPONENT_MAP:
+	for key in default_routed_component_names: #DEFAULT_ROUTED_COMPONENT_MAP:
 		if key in routedComponentNameUpper or routedComponentNameUpper in key:
 			routedComponent = DEFAULT_ROUTED_COMPONENT_MAP[key]
 			return routedComponent
 
 	 
 	routedComponentNameUpper = routedComponentNameUpper.replace('-','')
-	for routedEntryName in DEFAULT_ROUTED_COMPONENT_MAP.keys():
+	for routedEntryName in default_routed_component_names: #DEFAULT_ROUTED_COMPONENT_MAP.keys():
 		name = routedEntryName.replace('-', '')
 		if name in routedComponentNameUpper or routedComponentNameUpper in name:
 			routedComponent = DEFAULT_ROUTED_COMPONENT_MAP[routedEntryName]
@@ -540,6 +550,11 @@ def select_switch_template(routedComponentName, switchName):
 	for switch in KNOWN_LSWITCHES:
 		if any( token for token in switch.split('-') if token in switchUpper):
 			return KNOWN_LSWITCHES[switch]
+
+	if 'ISOZONE' in routedComponentName.upper():
+		templatedRoutedComp = select_templated_routed_component(routedComponentName)
+		return templatedRoutedComp['switch']
+
 	raise ValueError('Unable to find match for specified switch:{} \
 							for Routed Component:{}'.format( switchName, routedComponentName))
 
@@ -602,7 +617,7 @@ def validate_default_routed_components_map():
 		else:
 			raise Exception('Routed Component[{}] not found... in DEFAULT_ROUTED_COMPONENT_MAP'.format(routedCompKey))
 
-	print('Validation of Default Routed components successful...\n')
+	print('Validation of Default Routed components successful against template...\n')
 
 
 """

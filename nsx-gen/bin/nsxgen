@@ -95,13 +95,18 @@ ATTRIBUTE_MAP_ARRAY = {
 
 	'routed_components':  [
 		[ 'uplink_ip', 'uplink_ip'],
+		[ 'switch', 'switch'],
 		[ 'inst', 'instances', int],
 		[ 'off', 'offset', int],
 	],
+	'isozone_switch':  [	
+		[ 'name', 'name'],
+	    [ 'cidr', 'cidr'],
+	]
 }
 
 # Should match
-# Supporting atmost 5 isolation segments
+# Supporting atmost 5 isolation segments per ESG Edge instance
 ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router', 'mysql_ert', 
 						'mysql_tile', 'rabbitmq_tile', 
 						'go_router_isozone_1', 'tcp_router_isozone_1',
@@ -147,7 +152,7 @@ def contruct_parser(parser):
 		if section == 'defaults':
 			prefix = ''
 
-		if section not in ['esg', 'routed_components']: 
+		if section not in ['esg', 'routed_components', 'isozone_switch']: 
 			# flatten nested dict structures to flat structure
 			for field in ATTRIBUTE_MAP_ARRAY[section]:
 				fieldType = str
@@ -167,8 +172,21 @@ def contruct_parser(parser):
 								type=fieldType,
 								help="{} {}".format(prefix, field[1].replace('_', ' '))
 							)
-		
-		if section == 'esg': 
+		if section == 'isozone_switch': 
+			# There can be n number of esg entries
+			for index in xrange(1, 6): 
+
+				for field in ATTRIBUTE_MAP_ARRAY[section]:
+					fieldType = str
+					if len(field) > 2:
+						fieldType = int
+					parser.add_argument('-{}_{}_{}'.format(prefix, field[0], index), 
+								'--{}_{}_{}'.format(prefix, field[1], index),
+								type=fieldType,
+								help="{} instance {} {}".format(section, index, field[1].replace('_', ' '))
+								)
+
+		elif section == 'esg': 
 			# There can be n number of esg entries
 			for index in xrange(1, 3): 
 				
@@ -229,7 +247,7 @@ def construct_config(args):
 		if section == 'defaults':
 			prefix = ''
 
-		if section not in ['esg', 'routed_components', 'nsxmanager']:
+		if section not in ['esg', 'routed_components', 'nsxmanager', 'isozone_switch']:
 			for field in ATTRIBUTE_MAP_ARRAY[section]:
 				key = '{}_{}'.format(prefix, field[1])
 				if section == 'defaults':
@@ -252,6 +270,29 @@ def construct_config(args):
 						cliConfig['nsxmanager']['uplink_details'][field[1]] = val
 					else:
 						cliConfig[section][field[1]] = val			
+		elif section == 'isozone_switch': 
+			prefix = section
+			cliConfig['logical_switches'] = [ ]
+
+
+			for index in xrange(1, 6): 
+				switchEntry = {  }
+				
+				key = '{}_{}_{}'.format(prefix, 'name', index)
+				name =  argDict[key]
+				if name:
+					if 'IsoZone' not in name:
+						switchEntry['name'] = 'IsoZone-' + name
+					else:
+						switchEntry['name'] = name
+
+					key = '{}_{}_{}'.format(prefix, 'cidr', index)
+					cidr =  argDict[key]
+					if cidr:
+						switchEntry['cidr'] = cidr
+				
+					cliConfig['logical_switches'].append(switchEntry)
+
 		elif section == 'esg': 
 			prefix = section
 			cliConfig['edge_service_gateways'] = [ ]

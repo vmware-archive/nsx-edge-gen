@@ -32,7 +32,7 @@ A logical switch is associated with separate subnet for each type of component t
 * PCF-Tiles - for mysql, rabbit, any other supporting service tiles
 * Dynamic-Services - for services that would be kicked off dynamically by BOSH using the ODB broker model
 * IsoZone-## - for Isolation segments with their own router and diego cells
-Note: There can be additional logical switches per isolation segment as shown in the sample nsx_cloud_config.yml template
+Note: There can be additional logical switches per isolation segment as shown in the sample nsx_cloud_config.yml template. Use `IsoZone-` for naming the Zones and ensure the matching switch name is specifed for the routed components running in that Isolation Segment.
 
 Avoid editing the default set of logical switches names or subnet. 
 Additional logical switches with their own subnets can be added if necessary.
@@ -162,8 +162,70 @@ Example:
 # Run build overriding the default configs
 RUN_CMD=build
 
-./nsx-gen/bin/nsxgen -c sabha  -esg_name_1 sabha -esg_size_1 compact -esg_cli_user_1 admin -esg_cli_pass_1 'P1v0t4l!' -esg_certs_1 autogen -esg_certs_config_sysd_1 sys2.test.pez.pivotal.io -esg_certs_config_appd_1 apps3.test.pez.pivotal.io -esg_opsmgr_uplink_ip_1 10.13.92.171 -esg_go_router_uplink_ip_1 10.13.92.172 -esg_diego_brain_uplink_ip_1 10.13.92.173 -esg_tcp_router_uplink_ip_1 10.13.92.174 -vcenter_addr vcsa-01.test.pez.pivotal.io -vcenter_user administrator@vsphere.local -vcenter_pass 'testAdmin123' -vcenter_dc Datacenter -vcenter_ds vsanDatastore -vcenter_cluster Cluster1 -nsxmanager_addr 10.13.92.20 -nsxmanager_user admin -nsxmanager_pass 'testNsxAdmin123' -nsxmanager_tz testtrasnsportzone -nsxmanager_uplink_ip 10.13.92.170 -nsxmanager_uplink_port 'VM Network' -esg_gateway_1 10.13.92.1  $RUN_CMD
+# Following would create 2 isolation segments overriding the single Isolation segment in the template file
+# each with its own go-router and tcp-router with uplink
+# IsoZone-1 : -isozone_switch_name_1 IsoZone-1  
+# IsoZone-2 : -isozone_switch_name_2 IsoZone-2 
 
+# Uplink for GoRouter in IsoZone-1 (part of ESG instance 1):  -esg_go_router_isozone_1_uplink_ip_1  10.13.92.181 
+# Switch Name for the above GoRouter : -esg_go_router_isozone_1_switch_1 IsoZone-1 
+# Uplink for TcpRouter in IsoZone-1 (part of ESG instance 1):  -esg_tcp_router_isozone_1_uplink_ip_1  10.13.92.182
+
+# Uplink for GoRouter in IsoZone-2 (part of ESG instance 1):  -esg_go_router_isozone_2_uplink_ip_1  10.13.92.184 
+# Switch Name for the above GoRouter : -esg_go_router_isozone_2_switch_1 IsoZone-2 
+# Uplink for TcpRouter in IsoZone-1 (part of ESG instance 1):  -esg_tcp_router_isozone_2_uplink_ip_1  10.13.92.185
+
+./nsx-gen/bin/nsxgen -c sabha \
+  -esg_name_1 sabha \
+  -esg_size_1 compact \
+  -esg_cli_user_1 admin \
+  -esg_cli_pass_1 'P1v0t4l!P1v0t4l!' \
+  -esg_certs_1 autogen \
+  -esg_certs_config_sysd_1 sys2.test.pez.pivotal.io \
+  -esg_certs_config_appd_1 apps2.test.pez.pivotal.io \
+  -esg_opsmgr_uplink_ip_1 10.13.92.171 \
+  -esg_go_router_uplink_ip_1 10.13.92.172 \
+  -esg_diego_brain_uplink_ip_1 10.13.92.173 \
+  -esg_tcp_router_uplink_ip_1 10.13.92.174 \
+  -esg_mysql_ert_uplink_ip_1 192.168.23.250 \
+  -esg_mysql_ert_inst_1 5  \
+  -esg_mysql_tile_uplink_ip_1 192.168.27.250 \
+  -esg_mysql_tile_inst_1 2  \
+  -esg_rabbitmq_tile_uplink_ip_1 192.168.27.251 \
+  -esg_rabbitmq_tile_inst_1 5 \
+  -esg_rabbitmq_tile_off_1 10 \
+  -vcenter_addr vc-01.test.pez.pivotal.io \
+  -vcenter_user administrator@vsphere.local \
+  -vcenter_pass 'testAdmin123' \
+  -vcenter_dc Datacenter \
+  -vcenter_ds Datastore \
+  -vcenter_cluster Cluster \
+  -nsxmanager_addr 10.13.92.21 \
+  -nsxmanager_user admin \
+  -nsxmanager_pass 'testNsxAdmin123' \
+  -nsxmanager_tz testtz \
+  -nsxmanager_uplink_ip 10.13.92.170 \
+  -nsxmanager_uplink_port 'VM Network' \
+  -esg_gateway_1 10.13.92.1 \
+  -isozone_switch_name_1 IsoZone-1 \
+  -isozone_switch_cidr_1 192.168.34.0/22 \
+  -isozone_switch_name_2 IsoZone-2 \
+  -isozone_switch_cidr_2 192.168.38.0/22 \
+  -isozone_switch_name_3 IsoZone-3 \
+  -isozone_switch_cidr_3 192.168.42.0/22 \
+  -esg_go_router_isozone_1_uplink_ip_1  10.13.92.181 \
+  -esg_go_router_isozone_1_switch_1 IsoZone-1  \
+  -esg_go_router_isozone_1_inst_1 2 \
+  -esg_tcp_router_isozone_1_uplink_ip_1  10.13.92.182 \
+  -esg_tcp_router_isozone_1_switch_1  IsoZone-1 \
+  -esg_tcp_router_isozone_1_inst_1 2 \
+  -esg_go_router_isozone_2_uplink_ip_1  10.13.92.184 \
+  -esg_go_router_isozone_2_inst_1 2 \
+  -esg_go_router_isozone_2_switch_1 IsoZone-2 \
+  -esg_tcp_router_isozone_2_uplink_ip_1  10.13.92.185 \
+  -esg_tcp_router_isozone_2_switch_1  IsoZone-2 \
+  -esg_tcp_router_isozone_2_inst_1 1 \
+  $RUN_CMD
 
 ```
 
@@ -189,6 +251,11 @@ Sample Entry in template:
      protocol: http
      monitor_port: 80  
 ```
+
+## NSX Architecture 
+
+  ![](docs/overview-4-2017.png)
+
 ## nsxgen output
 
 When the nsxgen is executed, it first outputs the configurations loaded (doing a merge of the file template and the command line args) and emits the logical switches and routable components config before proceeding to build or tear down the edge instance.
