@@ -1,0 +1,47 @@
+<edge>
+    <datacenterMoid>{{dlr['datacenter_id']}}</datacenterMoid>
+    <datacenterName>{{dlr['datacenter_id']}}</datacenterName>
+    <name>{{dlr['name']}}</name>
+    <description>Edge {{dlr['name']}}</description>
+    <tenant>default</tenant>
+    <fqdn>NSX-DLR-{{dlr['name']}}</fqdn>
+    <vseLogLevel>EMERGENCY</vseLogLevel>
+    <enableAesni>true</enableAesni>
+    <enableFips>false </enableFips>
+    <appliances>
+        <applianceSize>{{dlr['size']}}</applianceSize>
+        <appliance>
+            <resourcePoolId>{{dlr['cluster_id']}}</resourcePoolId>
+            <datastoreId>{{dlr['datastore_id']}}</datastoreId>
+        </appliance>
+    </appliances>
+    <cliSettings>
+        <userName>{{dlr['cli']['username']}}</userName>
+        <password>{{dlr['cli']['password']}}</password>
+        <passwordExpiry>99999</passwordExpiry>
+        <remoteAccess>true</remoteAccess>
+    </cliSettings>
+    <autoConfiguration>
+        <enabled>true</enabled>
+        <rulePriority>high</rulePriority>
+    </autoConfiguration>
+    <queryDaemon>
+        <enabled>false</enabled>
+        <port>5666</port>
+    </queryDaemon>
+   <mgmtInterface>
+        <label>vNic_0</label>
+        <name>mgmtInterface</name>
+        <addressGroups/>
+        <mtu>1500</mtu>
+        <index>0</index>
+        <connectedToId>{{ nsxmanager['distributed_port_switch_id']}}</connectedToId>
+        <connectedToName>{{ nsxmanager['distributed_port_switch']}}</connectedToName>
+    </mgmtInterface>
+
+     <type>distributedRouter</type>
+    <isUniversal>false</isUniversal>
+
+</edge>
+
+ 

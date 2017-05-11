@@ -78,6 +78,10 @@ ATTRIBUTE_MAP_ARRAY = {
 		[ 'tz', 'transportzone'],
 		[ 'uplink_ip', 'uplink_ip'],
 		[ 'uplink_port', 'uplink_port_switch'],
+		[ 'sr_name', 'static_route_name'],
+		[ 'sr_subnet', 'static_route_subnet'],
+		[ 'sr_gateway', 'static_route_gateway'],
+		[ 'sr_hop', 'static_route_hop', int],
 	],
 
 	'esg': [
@@ -97,7 +101,7 @@ ATTRIBUTE_MAP_ARRAY = {
 		[ 'uplink_ip', 'uplink_ip'],
 		[ 'switch', 'switch'],
 		[ 'inst', 'instances', int],
-		[ 'off', 'offset', int],
+		[ 'off', 'offset', int]
 	],
 	'isozone_switch':  [	
 		[ 'name', 'name'],
@@ -260,6 +264,9 @@ def construct_config(args):
 		elif section == 'nsxmanager': 
 			prefix = section
 			cliConfig['nsxmanager'] = { }
+			cliConfig['nsxmanager']['static_routes'] = [ ]
+			staticRoute = { 'name' : 'default_static_route'}
+
 			cliConfig['nsxmanager']['uplink_details'] = { }
 
 			for field in ATTRIBUTE_MAP_ARRAY[section]:
@@ -268,8 +275,12 @@ def construct_config(args):
 				if val:
 					if 'uplink_' in key:
 						cliConfig['nsxmanager']['uplink_details'][field[1]] = val
+					elif 'static_' in key:
+						staticRoute[field[1].replace('static_route_', '')] = val
+						cliConfig['nsxmanager']['static_routes']= [ staticRoute ]
 					else:
-						cliConfig[section][field[1]] = val			
+						cliConfig[section][field[1]] = val
+
 		elif section == 'isozone_switch': 
 			prefix = section
 			cliConfig['logical_switches'] = [ ]

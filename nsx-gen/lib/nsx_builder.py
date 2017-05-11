@@ -28,6 +28,7 @@ import re
 import template
 import ipcalc
 import client
+import copy
 import glob
 import mobclient
 import subprocess
@@ -111,13 +112,15 @@ def build(context, verbose=False):
 	
 	reconcile_uplinks(context)
 	build_logical_switches('lswitch', context, 'logical_switches')
+	build_nsx_dlrs('dlr', context)
 	build_nsx_edge_gateways('edge', context)
 
 def delete(context, verbose=False):
 	client.set_context(context, 'nsxmanager')
 	refresh_moid_map(context)
-
-	delete_nsx_edge_gateways(context)    
+  
+	delete_nsx_edge_gateways(context) 
+	delete_nsx_dlr_gateways(context)      
 	delete_logical_switches(context, 'logical_switches')
 
 def list(context, verbose=False):
@@ -186,6 +189,11 @@ def reconcile_uplinks(context):
 	esgInstances = context['edge_service_gateways']
 
 
+	ospfLogicalSwitch = None
+	for logicalSwitch in logicalSwitches:
+		if 'OSPF' in logicalSwitch['name'].upper():
+			ospfLogicalSwitch = logicalSwitch
+
 	for esgInstance in esgInstances:
 		for routedComponent in esgInstance['routed_components']:
 
@@ -206,16 +214,33 @@ def reconcile_uplinks(context):
 
 			# Check if the provided uplink ip is part of a logical switch
 			isExternalUplink = True
+
+			#print 'Routed component {} has uplink ip: {} and lswitch:{}'.format(\
+			# routedComponent['name'], routedComponentUplinkIp, lswitch['name'])
 			
 			# If its part of a logical switch, add the uplink ip to the related logical switch's secondary ip
 			if routedComponentUplinkIp in ipcalc.Network(lswitchCidr):
 				isExternalUplink = False
 				lswitch['secondary_ips'].append(routedComponentUplinkIp)
+				#print 'Routed component {} added to secondary for lswitch: {}'.format(\
+				# routedComponent['name'], lswitch['name'])
+			
+			# If we come here - means the uplink ip was not part of a lswitch
+			# Can happen in case of VIP exposed on OSPF but the component is on a internal logical switch like for PCF-Tiles
+			if isExternalUplink and not routedComponent['external']:
+				isExternalUplink = False
+				ospfLogicalSwitch['secondary_ips'].append(routedComponentUplinkIp)
+				#print 'Routed component {} added to secondary for lswitch: {}'.format(\
+				# routedComponent['name'], ospfLogicalSwitch['name'])
+			
 			
 			# If the uplink ip is not part of any other logical switches, 
 			# mark it as the real uplink for the routed component
 			if isExternalUplink:
 				routedComponent['uplink_details']['real_uplink_ip'] = routedComponentUplinkIp
+				#print 'Routed component {} mareked with routed component uplink ip: {}'.format(\
+				# routedComponent['name'], routedComponentUplinkIp)
+			
 
 def build_logical_switches(dir, context, type='logical_switches', alternate_template=None):
 
@@ -356,6 +381,171 @@ def delete_logical_switches(context, type = 'logical_switches'):
 					retry = True 
 					print('Going to retry deletion again... for Logical Switch:{}\n'.format(lswitch['name']))
 
+def build_nsx_dlrs(dir, context, alternate_template=None):
+	nsx_dlrs_dir = os.path.realpath(os.path.join(dir ))
+	
+	if os.path.isdir(nsx_dlrs_dir):
+		shutil.rmtree(nsx_dlrs_dir)
+	mkdir_p(nsx_dlrs_dir)
+
+	template_dir = '.'
+	if alternate_template is not None:
+		template_dir = os.path.join(template_dir, alternate_template)
+
+	logical_switches = context['logical_switches']
+	map_logical_switches_id(logical_switches)
+	if DEBUG:
+		print('Logical Switches:{}\n'.format(str(logical_switches)))
+
+	empty_logical_switches = xrange(len(logical_switches) + 1, 10) 
+	vcenterMobMap = refresh_moid_map(context)
+	vm_network_moid = mobclient.lookup_moid('VM Network')
+
+	# Go with the VM Network for default uplink
+	nsxmanager = context['nsxmanager']
+
+	uplink_port_switch = nsxmanager['uplink_details'].get('uplink_port_switch')
+	if uplink_port_switch is None:
+		uplink_port_switch = 'VM Network'
+		nsxmanager['uplink_details']['uplink_port_switch'] = uplink_port_switch
+		
+	nsxmanager['distributed_port_switch_id'] =  mobclient.lookup_moid(nsxmanager['distributed_port_switch'])
+		
+	# if use_port_switch is set to 'VM Network' or port switch id could not be retreived.
+	portSwitchId = mobclient.lookup_moid(uplink_port_switch) 
+	if (portSwitchId is None):
+		#nsxmanager['uplink_details']['uplink_id'] = vm_network_moid
+		raise Exception('Error! Uplink Port Group not defined...!!')
+	
+	nsxmanager['uplink_details']['uplink_id'] = portSwitchId
+
+	dlr_instances = []
+	
+	for nsx_edge in  context['edge_service_gateways']:
+	
+		nsx_dlr = copy.deepcopy(nsx_edge)
+
+		vcenter_ctx = context['vcenter']
+
+		nsx_dlr['name'] = nsx_dlr['name'] + '-dlr'
+		print('Name of DLR: ' + nsx_dlr['name'])
+		nsx_dlr['datacenter_id'] = mobclient.lookup_moid(vcenter_ctx['datacenter']) 
+
+		# Use the cluster name/id for resource pool...
+		nsx_dlr['datastore_id'] = mobclient.lookup_moid(vcenter_ctx['datastore']) 
+		nsx_dlr['cluster_id'] = mobclient.lookup_moid(vcenter_ctx['cluster'])   
+		nsx_dlr['resourcePool_id'] = mobclient.lookup_moid(vcenter_ctx['cluster'])
+
+		
+		gateway_address = nsx_dlr.get('gateway_ip')
+		if not gateway_address:
+			gateway_address = calculate_gateway(context['nsxmanager']['uplink_details']['uplink_ip'])
+			nsx_dlr['gateway_ip'] = gateway_address	
+
+		nsx_dlrs_context = {
+			'context': context,
+			'defaults': context['defaults'],
+			'nsxmanager': context['nsxmanager'],
+			'dlr': nsx_dlr,
+			'logical_switches': logical_switches,
+			'empty_logical_switches': empty_logical_switches,
+			'gateway_address': gateway_address,
+			'files': []
+		}    
+
+		template.render(
+			os.path.join(nsx_dlrs_dir, nsx_dlr['name'] + '_dlr_post_payload.xml'),
+			os.path.join(template_dir, 'dlr_config_post_payload.xml' ),
+			nsx_dlrs_context
+		)
+		
+		print('Creating NSX DLR instance: {}\n\n'.format(nsx_dlr['name']))
+
+		post_response = client.post_xml(NSX_URLS['esg']['all'] , 
+								os.path.join(nsx_dlrs_dir, nsx_dlr['name'] + '_dlr_post_payload.xml'), 
+								check=False)
+		data = post_response.text
+		
+		if post_response.status_code < 400: 
+			print('Created NSX DLR :{}\n'.format(nsx_dlr['name']))
+			print('Success!! Finished creation of NSX DLR instance: {}\n\n'.format(nsx_dlr['name']))
+			add_ospf_to_nsx_dlr(nsx_dlrs_dir, context, nsx_dlr)
+			print('Success!! Finished adding OSPF & Interfaces for NSX DLR instance: {}\n\n'.format(nsx_dlr['name']))
+		else:
+			print('Creation of NSX DLR failed, details:\n{}\n'.format(data))
+			raise Exception('Creation of NSX DLR failed, details:\n {}'.format(data))			
+
+		dlr_instances.append(nsx_dlr)
+
+	context['nsx_dlrs'] = dlr_instances
+
+def add_ospf_to_nsx_dlr(nsx_dlrs_dir, context, nsx_dlr):
+
+	map_nsx_esg_id( [ nsx_dlr ] )
+
+	template_dir = '.'
+	logical_switches = context['logical_switches']
+	
+	nsx_dlrs_context = {
+		'context': context,
+		'defaults': context['defaults'],
+		'nsxmanager': context['nsxmanager'],
+		'dlr': nsx_dlr,
+		'logical_switches': logical_switches,
+		'gateway_address': nsx_dlr['gateway_ip'],
+		'files': []
+	}    
+
+
+	template.render(
+		os.path.join(nsx_dlrs_dir, nsx_dlr['name'] + '_dlr_config_put_payload.xml'),
+		os.path.join(template_dir, 'dlr_config_put_payload.xml' ),
+		nsx_dlrs_context
+	)
+
+	put_response = client.put_xml(NSX_URLS['esg']['all'] 
+									+ '/' + nsx_dlr['id'], 
+									os.path.join(nsx_dlrs_dir, nsx_dlr['name'] 
+									+ '_dlr_config_put_payload.xml'), 
+								check=False)
+	data = put_response.text
+
+	if DEBUG:
+		print('NSX DLR Config Update response:{}\n'.format(data))
+
+	if put_response.status_code < 400: 
+		print('Updated NSX DLR Config for : {}\n'.format(nsx_dlr['name']))		
+	else:
+		print('Update of NSX DLR Config failed, details:{}\n'.format(data))
+		raise Exception('Update of NSX DLR Config failed, details:\n {}'.format(data))
+
+def delete_nsx_dlr_gateways(context):
+
+	nsx_dlrs = context.get('nsx_dlrs')
+	if not nsx_dlrs:
+		nsx_dlrs = []
+		edge_service_gateways = context['edge_service_gateways']
+		for edge in  edge_service_gateways:
+			nsx_dlrs.append( { 'name': edge['name'] + '-dlr' })
+
+	map_nsx_esg_id(nsx_dlrs)
+	
+	for nsx_dlr in nsx_dlrs:
+
+		if  nsx_dlr.get('id') is None:
+			continue
+
+		delete_response = client.delete(NSX_URLS['esg']['all'] + '/' +
+				nsx_dlr['id'])
+		data = delete_response.text
+
+		if DEBUG:
+			print('NSX DLR Deletion response:{}\n'.format(data))
+
+		if delete_response.status_code < 400: 
+			print('Deleted NSX DLR : {}\n'.format(nsx_dlr['name']))
+		else:
+			print('Deletion of NSX DLR failed, details:{}\n'.format(data +'\n'))    
 
 def build_nsx_edge_gateways(dir, context, alternate_template=None):
 	nsx_edges_dir = os.path.realpath(os.path.join(dir ))
@@ -402,6 +592,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		diego_routed_component  = nsx_edge['routed_components'][2]
 		tcp_routed_component    = nsx_edge['routed_components'][3]
 
+
 		for routed_component in nsx_edge['routed_components']:
 			if 'OPS' in routed_component['name'].upper():
 				opsmgr_routed_component = routed_component
@@ -414,12 +605,15 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 
 		ertLogicalSwitch = {}
 		infraLogicalSwitch = {}
+		ospfLogicalSwitch = {}
 
 		for name, lswitch in nsx_edge['global_switches'].iteritems():
 			if 'ERT' in name.upper():
 				ertLogicalSwitch = lswitch
 			elif 'INFRA' in name.upper():
-				infraLogicalSwitch = lswitch				
+				infraLogicalSwitch = lswitch
+			elif 'OSPF' in name.upper():
+				ospfLogicalSwitch = lswitch				
 
 		vcenter_ctx = context['vcenter']
 
@@ -456,10 +650,12 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 			'context': context,
 			'defaults': context['defaults'],
 			'nsxmanager': context['nsxmanager'],
+			'static_routes': context['nsxmanager']['static_routes'],
 			'edge': nsx_edge,
 			'logical_switches': logical_switches,
 			'empty_logical_switches': empty_logical_switches,
 			'global_switches': nsx_edge['global_switches'],
+			'ospfLogicalSwitch': ospfLogicalSwitch,
 			'infraLogicalSwitch': infraLogicalSwitch,
 			'ertLogicalSwitch': ertLogicalSwitch,
 			'routed_components':  nsx_edge['routed_components'],
@@ -607,7 +803,7 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 		raise Exception('Update of NSX Edge LBR Config failed, details:\n {}'.format(data))
 
 def map_nsx_esg_id(edge_service_gateways):
-	existingEsgResponse = client.get('/api/4.0/edges')
+	existingEsgResponse = client.get('/api/4.0/edges'+ '?&startindex=0&pagesize=100')
 	existingEsgResponseDoc = xmltodict.parse(existingEsgResponse.text)
 
 	matched_nsx_esgs = 0
@@ -625,7 +821,7 @@ def map_nsx_esg_id(edge_service_gateways):
 		if (num_nsx_esgs == matched_nsx_esgs):
 			break
 
-		for interested_Esg in  edge_service_gateways: 
+		for interested_Esg in  edge_service_gateways:
 			if (interested_Esg['name'] == existingEsg['name'] ):
 				interested_Esg['id'] = existingEsg['objectId']
 				++matched_nsx_esgs
@@ -635,6 +831,7 @@ def map_nsx_esg_id(edge_service_gateways):
 		if (interested_Esg.get('id') is None):
 			print('NSX ESG instance with name: {} does not exist anymore\n'.format(interested_Esg['name']))
 
+	print('Updated NSX ESG:{}'.format(edge_service_gateways))
 	return matched_nsx_esgs   
 
 def list_nsx_edge_gateways(context):
@@ -650,7 +847,7 @@ def list_nsx_edge_gateways(context):
 		edgeEntries = [ edgeSummaries ]
 
 	print_edge_service_gateways_available(edgeEntries)
-	
+
 def delete_nsx_edge_gateways(context):
 
 	edge_service_gateways = context['edge_service_gateways']
@@ -744,7 +941,13 @@ def cross_combine_lists(list1, list2):
 	edited_result =  [ ]
 	for pair in result:
 		if pair[0] != pair[1]:
-			# Ensure IsoZones talk to each other
+			
+			# Skip OSPF related communication
+			if ( 'OSPF' in pair[0]['given_name'].upper() 
+			   or 'OSPF' in pair[1]['given_name'].upper() ):
+			   continue
+
+			# Ensure IsoZones don't talk to each other
 			if not ( 'ISOZONE' in pair[0]['given_name'].upper() 
 				and 'ISOZONE' in pair[1]['given_name'].upper()): 
 				edited_result.append(pair)

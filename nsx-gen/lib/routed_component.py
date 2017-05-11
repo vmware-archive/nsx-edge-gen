@@ -32,6 +32,8 @@ CONFIG_FILE = "nsx_cloud_config.yml"
 LIB_PATH = os.path.dirname(os.path.realpath(__file__))
 REPO_PATH = os.path.realpath(os.path.join(LIB_PATH, '..'))
 
+DEFAULT_OSPF_CIDR = '172.16.100.10/24'
+
 KNOWN_LSWITCHES = {
 	'INFRA' : 'Infra',  
 	'ERT' : 'Ert',
@@ -93,33 +95,36 @@ KNOWN_ROUTED_COMPONENTS = [
 ]
 
 # Ensure the switch matches the entry in KNOWN_LSWITCHES
+# Ensure the offset for the non-external components are not overlapping or same
 DEFAULT_ROUTED_COMPONENT_LSWITCH_MAP = {
 	# Ensure the key matches the name entry
-	KNOWN_ROUTED_COMPONENTS[0]: { 'name': 'OPS', 'switch': 'INFRA',            
+	KNOWN_ROUTED_COMPONENTS[0]: { 'name': 'OPS', 'switch': 'INFRA', 'external': True,           
 									'useVIP': False, 'instances' : 1, 'offset' :  5  },
-	KNOWN_ROUTED_COMPONENTS[1]: { 'name': 'GO-ROUTER', 'switch': 'ERT',  
+	KNOWN_ROUTED_COMPONENTS[1]: { 'name': 'GO-ROUTER', 'switch': 'ERT', 'external': True, 
 							      	'useVIP': True, 'instances' : 4,  'offset' : 10  },
-	KNOWN_ROUTED_COMPONENTS[2]: { 'name': 'DIEGO', 'switch': 'ERT',      
+	KNOWN_ROUTED_COMPONENTS[2]: { 'name': 'DIEGO', 'switch': 'ERT', 'external': True,      
 									'useVIP': True, 'instances' : 3,  'offset' : 20  },
-	KNOWN_ROUTED_COMPONENTS[3]: { 'name': 'TCP-ROUTER', 'switch': 'ERT',  
+	KNOWN_ROUTED_COMPONENTS[3]: { 'name': 'TCP-ROUTER', 'switch': 'ERT', 'external': True,  
 									'useVIP': True, 'instances' : 4,  'offset' : 30  },
-	KNOWN_ROUTED_COMPONENTS[4]: { 'name': 'MYSQL-ERT', 'switch': 'ERT',
+	KNOWN_ROUTED_COMPONENTS[4]: { 'name': 'MYSQL-ERT', 'switch': 'ERT', 'external': False,
 									'useVIP': True, 'instances' : 3,  'offset' : 40  },
-	KNOWN_ROUTED_COMPONENTS[5]: { 'name': 'MYSQL-TILE', 'switch': 'PCF-TILES',
+	KNOWN_ROUTED_COMPONENTS[5]: { 'name': 'MYSQL-TILE', 'switch': 'PCF-TILES', 'external': False,
 									'useVIP': True, 'instances' : 3,  'offset' : 10  },								
-	KNOWN_ROUTED_COMPONENTS[6]: { 'name': 'RABBITMQ-TILE', 'switch': 'PCF-TILES',
+	KNOWN_ROUTED_COMPONENTS[6]: { 'name': 'RABBITMQ-TILE', 'switch': 'PCF-TILES', 'external': False,
 									'useVIP': True, 'instances' : 3,  'offset' : 30  },
-	KNOWN_ROUTED_COMPONENTS[7]: { 'name': 'GO-ROUTER-ISO', 'switch': 'ISOZONE',  
+	KNOWN_ROUTED_COMPONENTS[7]: { 'name': 'GO-ROUTER-ISO', 'switch': 'ISOZONE', 'external': True,  
 							      	'useVIP': True, 'instances' : 2,  'offset' : 10  },
-	KNOWN_ROUTED_COMPONENTS[8]: { 'name': 'TCP-ROUTER-ISO', 'switch': 'ISOZONE',  
+	KNOWN_ROUTED_COMPONENTS[8]: { 'name': 'TCP-ROUTER-ISO', 'switch': 'ISOZONE', 'external': True,  
 									'useVIP': True, 'instances' : 2,  'offset' : 30  }
 																											
 }
 
 # Ensure the monitor-id matches the ones in the MONITOR_MAP
+# Ensure the offset for the non-external components are not overlapping or same
+
 DEFAULT_ROUTED_COMPONENT_MAP = {
 	KNOWN_ROUTED_COMPONENTS[0]: { 
-				'name': 'OPS', 'switch': 'INFRA', 
+				'name': 'OPS', 'switch': 'INFRA', 'external': True,   
 				'useVIP': False, 'instances' : 1,  'offset' :  5, 'monitor_id' : 'monitor-3', 
 				'transport':	{
 					'ingress': { 'port': '443', 'protocol': 'https' },
@@ -127,7 +132,7 @@ DEFAULT_ROUTED_COMPONENT_MAP = {
 				}	 
 			},
 	KNOWN_ROUTED_COMPONENTS[1]: { 
-				'name': 'GO-ROUTER', 'switch': 'ERT', 
+				'name': 'GO-ROUTER', 'switch': 'ERT', 'external': True, 
 				'useVIP': True,  'instances' : 4,  'offset' : 10, 'monitor_id' : 'monitor-4', 	
 				'transport':	{
 					'ingress': { 'port': '443', 'protocol': 'https' },
@@ -135,7 +140,7 @@ DEFAULT_ROUTED_COMPONENT_MAP = {
 				 }
 			},
 	KNOWN_ROUTED_COMPONENTS[2]: { 
-				'name': 'DIEGO', 'switch': 'ERT', 
+				'name': 'DIEGO', 'switch': 'ERT', 'external': True,
 				'useVIP': True,  'instances' : 3,  'offset' : 20,  'monitor_id' : 'monitor-1',	
 				'transport':	{
 					'ingress': { 'port': '2222', 'protocol': 'tcp' },
@@ -143,7 +148,7 @@ DEFAULT_ROUTED_COMPONENT_MAP = {
 				}
 			},
 	KNOWN_ROUTED_COMPONENTS[3]: { 
-				'name': 'TCP-ROUTER', 'switch': 'ERT', 
+				'name': 'TCP-ROUTER', 'switch': 'ERT', 'external': True, 
 				'useVIP': True,  'instances' : 4,  'offset' : 30, 'monitor_id' : 'monitor-5',	
 				'transport':{
 					'ingress': { 'port': '5000', 'protocol': 'tcp' },
@@ -151,7 +156,7 @@ DEFAULT_ROUTED_COMPONENT_MAP = {
 				 }
 			},
 	KNOWN_ROUTED_COMPONENTS[4]: {
-				'name': 'MYSQL-ERT', 'switch': 'PCF-TILES', 
+				'name': 'MYSQL-ERT', 'switch': 'PCF-TILES', 'external': False, 
 				'useVIP': True,  'instances' : 3,  'offset' :  40,  'monitor_id' : 'monitor-6',	    
 				'transport':{
 					'ingress': { 'port': '3306', 'protocol': 'tcp' },
@@ -159,7 +164,7 @@ DEFAULT_ROUTED_COMPONENT_MAP = {
 				 }
 			},
 	KNOWN_ROUTED_COMPONENTS[5]: {
-				'name': 'MYSQL-TILE', 'switch': 'PCF-TILES', 
+				'name': 'MYSQL-TILE', 'switch': 'PCF-TILES', 'external': False, 
 				'useVIP': True,  'instances' : 3,  'offset' :  10,  'monitor_id' : 'monitor-6',	    
 				'transport':{
 					'ingress': { 'port': '3306', 'protocol': 'tcp' },
@@ -167,7 +172,7 @@ DEFAULT_ROUTED_COMPONENT_MAP = {
 				 }
 			},
 	KNOWN_ROUTED_COMPONENTS[6]: { 
-				'name': 'RABBITMQ-TILE', 'switch': 'PCF-TILES', 
+				'name': 'RABBITMQ-TILE', 'switch': 'PCF-TILES', 'external': False, 
 				'useVIP': True,  'instances' : 3,  'offset' :  20,  'monitor_id' : 'monitor-1',	    
 				'transport':{
 					'ingress': { 'port': '15672,5672,5671', 'protocol': 'tcp' },
@@ -175,7 +180,7 @@ DEFAULT_ROUTED_COMPONENT_MAP = {
 				 }
 			},
 	KNOWN_ROUTED_COMPONENTS[7]: { 
-				'name': 'GO-ROUTER-ISO', 'switch': 'ISOZONE', 
+				'name': 'GO-ROUTER-ISO', 'switch': 'ISOZONE', 'external': True, 
 				'useVIP': True,  'instances' : 2,  'offset' : 10, 'monitor_id' : 'monitor-4', 	
 				'transport':	{
 					'ingress': { 'port': '443', 'protocol': 'https' },
@@ -183,7 +188,7 @@ DEFAULT_ROUTED_COMPONENT_MAP = {
 				 }
 			},
 	KNOWN_ROUTED_COMPONENTS[8]: { 
-				'name': 'TCP-ROUTER-ISO', 'switch': 'ISOZONE', 
+				'name': 'TCP-ROUTER-ISO', 'switch': 'ISOZONE', 'external': True, 
 				'useVIP': True,  'instances' : 2,  'offset' : 30, 'monitor_id' : 'monitor-5',	
 				'transport':{
 					'ingress': { 'port': '5000', 'protocol': 'tcp' },
@@ -321,12 +326,13 @@ class UplinkDetails:
 
 class RoutedComponent:
 
-	def __init__(self, name, switchName, uplink_details, transport=None, useVIP=True, instances=3, offset=5):
+	def __init__(self, name, switchName, uplink_details, transport=None, useVIP=True, instances=3, offset=5, is_external=True ):
 
 		self.name = name
 		self.switch = None
 		self.switchName = switchName
 		self.switchTemplate = select_switch_template(name, switchName)
+		self.external = is_external		
 
 		self.uplink_details = uplink_details
 
@@ -375,14 +381,17 @@ class RoutedComponent:
 			raise ValueError('Unable to find matching switch for given component:{} ,\n\
 			 from any of the defined logical switches'.format(self.name))
 
+		templatedRoutedComp = select_templated_routed_component(self.name)
 		self.check_for_opsmgr()
 
 		if isinstance(self.uplink_details, basestring):
 			self.uplink_details = UplinkDetails(self.uplink_details)
+
+		if (templatedRoutedComp):
+			if not self.external:
+				self.external = templatedRoutedComp['external']
 		
-		if not self.transport:
-			templatedRoutedComp = select_templated_routed_component(self.name)
-			if (templatedRoutedComp):
+			if not self.transport:
 				self.useVIP = templatedRoutedComp['useVIP']
 				if not self.offset:
 					self.offset = templatedRoutedComp['offset']
@@ -392,6 +401,7 @@ class RoutedComponent:
 				
 				if not self.switchTemplate:
 					self.switchTemplate = templatedRoutedComp['switch']
+
 				
 				self.monitor_id = templatedRoutedComp['monitor_id']
 				self.transport = generate_transport(templatedRoutedComp, self.name)
@@ -399,8 +409,6 @@ class RoutedComponent:
 				if not self.transport:
 					raise ValueError('Unable to generate transport type for Routed Component:{}'.format( \
 							self.name))
-
-				
 				
 		self.wire_app_rules_and_profiles()
 		self.caclulate_routed_component_range()
@@ -435,6 +443,7 @@ class RoutedComponent:
 			self.useVIP = False
 			self.offset = 5
 			self.instances = 1 
+			self.external = True
 
 	def caclulate_routed_component_range(self):
 
@@ -456,6 +465,8 @@ class RoutedComponent:
 			return self.name
 		elif field == 'ips':
 			return self.ips	
+		elif field == 'external':
+			return self.external		
 		elif field == 'uplink_details':
 			return self.uplink_details
 		elif field == 'offset':
@@ -482,14 +493,19 @@ class RoutedComponent:
 	def __str__(self):
 		
 		return '{}: {{\n \
-		\'switch\': {}, \'useVIP\': {},  \'instances\' : {},  \'offset\' :  {},\n \
+		\'switch\': {}, \'external\': {}, \'useVIP\': {},\n \
+		\'instances\' : {},  \'offset\' :  {},\n \
 		\'uplink_details\': {}, \'ips\': {}\n \
 		\'app_rules\': {}\n \
 		\'app_profile\': {}\n \
 		\'monitor_id\': {}\n \
 		\'transport\': {}\n \
-		}}\n'.format(self.name, self.switch, self.useVIP, 
-						self.instances, self.offset,
+		}}\n'.format(self.name, 
+						self.switch,
+						self.external, 
+						self.useVIP, 
+						self.instances, 
+						self.offset,
 						self.uplink_details,
 						self.ips,  
 						self.app_rules,
@@ -498,6 +514,35 @@ class RoutedComponent:
 						self.transport
 						) 
 
+
+def parse_routing_component(routeComponentEntry, logical_switches):
+	print('Parsing Routed Component: {}'.format(routeComponentEntry))
+
+	instances = routeComponentEntry.get('instances')
+	offset = routeComponentEntry.get('offset')
+	switchName = routeComponentEntry.get('switch')
+	monitor_port = routeComponentEntry.get('switch')
+	external = routeComponentEntry.get('external')
+
+	routedTransportSpecified = None
+
+	transportEntry = generate_transport(routeComponentEntry, routeComponentEntry['name'])
+	new_uplink_details = generate_uplink(routeComponentEntry, routeComponentEntry['name']) 
+
+	# Create Routed Components and associated LBR/Pool/AppProfile/AppRules
+	routedComponent = RoutedComponent(routeComponentEntry['name'],
+										switchName,											
+										new_uplink_details,
+										transportEntry,
+										useVIP=True,
+										instances=instances,
+										offset=offset,
+										is_external=external
+									 )
+
+	routedComponent.map_to_switches(logical_switches)
+	routedComponent.validate_component()
+	return routedComponent
 
 def run_once(f):
     def wrapper(*args, **kwargs):
@@ -587,6 +632,7 @@ def generate_transport(routedComponentEntry, routedComponentName):
 def generate_uplink(routedComponentEntry, routedComponentName):
 	cidr = None
 	uplink_ip = None
+
 	uplink = routedComponentEntry.get('uplink_details')
 	if uplink:
 		uplink_ip = uplink.get('uplink_ip')
@@ -595,10 +641,26 @@ def generate_uplink(routedComponentEntry, routedComponentName):
 	else:
 		uplink_ip = routedComponentEntry.get('uplink_ip')
 
-	if not uplink_ip:
-		raise ValueError('No Uplink IP provided for Routed Component: {}'.format(routedComponentName))
+	templatedRoutedComp = select_templated_routed_component(routedComponentName)
 
-	return UplinkDetails(uplink_ip, cidr)
+	is_external = routedComponentEntry.get('external')
+	if not is_external:
+		is_external = templatedRoutedComp['external']
+
+
+	if is_external:
+		if not uplink_ip:
+			raise ValueError('No Uplink IP provided for Routed Component: {}'.format(routedComponentName))
+		return UplinkDetails(uplink_ip, cidr)
+
+	# For internal components, arrive at the uplink ip of the OSPF subnet
+	uplink_ip = calculate_ospf_uplink_ip(templatedRoutedComp['offset'])
+	return UplinkDetails(uplink_ip, DEFAULT_OSPF_CIDR)
+
+def calculate_ospf_uplink_ip( offset):
+		
+	addr_range = ipcalc.Network(DEFAULT_OSPF_CIDR)
+	return addr_range[offset]
 
 @run_once
 def validate_default_routed_components_map():

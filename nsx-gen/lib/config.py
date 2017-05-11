@@ -81,7 +81,8 @@ class Config(dict):
 		if self.nsxmanager is None:
 			raise ValueError('nsxmanager section not defined')
 		
-		fields = [ 'address', 'admin_user', 'admin_passwd', 'uplink_details']
+		fields = [ 'address', 'admin_user', 'admin_passwd', 
+					'distributed_port_switch', 'uplink_details']
 		for field in fields:
 			if self.nsxmanager[field] is None:
 				raise ValueError(field + ' field not set for nsxmanager')
@@ -143,7 +144,7 @@ class Config(dict):
 		for lswitch in self.logical_switches:
 			global_switches[lswitch['given_name'].upper()] = lswitch
 
-		fields = [ 'name', 'size', 'cli', 'routed_components', 'gateway_ip']
+		fields = [ 'name', 'size', 'cli', 'routed_components', 'gateway_ip', 'ospf_password']
 		for nsx_edge in self.nsx_edges:
 
 			for field in fields:
@@ -151,10 +152,13 @@ class Config(dict):
 					raise ValueError(field + ' field not set for nsx_edge')
 				
 				if field == 'size':
-					size = nsx_edge['size']
+					size = nsx_edge[field]
 					if not size or size not in [ 'xlarge', 'quadlarge', 'large', 'compact' ]:
 					    nsx_edge['size'] = 'large'
 
+				if field == 'ospf_password':
+					if len(nsx_edge[field]) > 8:
+						raise ValueError(field + ' field length more than 8 characters for nsx_edge')
 
 			nsx_edge['global_switches'] =  global_switches
 			nsx_edge['global_uplink_details'] = self.nsxmanager['uplink_details']
@@ -163,7 +167,7 @@ class Config(dict):
 
 			nsx_edge['routed_components'] = [ ]
 			for entry in routed_component_context:
-				routedComponent = self.parse_routing_component(entry)
+				routedComponent = parse_routing_component(entry, self.logical_switches)
 				print('Routed component: {}'.format(routedComponent))
 				nsx_edge['routed_components'].append(routedComponent)
 
@@ -175,32 +179,6 @@ class Config(dict):
 		print_edge_service_gateways_configured(self.nsx_edges)
 
 
-	def parse_routing_component(self, routeComponentEntry):
-		print('Parsing Routed Component: {}'.format(routeComponentEntry))
-
-		instances = routeComponentEntry.get('instances')
-		offset = routeComponentEntry.get('offset')
-		switchName = routeComponentEntry.get('switch')
-		monitor_port = routeComponentEntry.get('switch')
-
-		routedTransportSpecified = None
-
-		transportEntry = generate_transport(routeComponentEntry, routeComponentEntry['name'])
-		new_uplink_details = generate_uplink(routeComponentEntry, routeComponentEntry['name']) 
-
-		# Create Routed Components and associated LBR/Pool/AppProfile/AppRules
-		routedComponent = RoutedComponent(routeComponentEntry['name'],
-											switchName,											
-											new_uplink_details,
-											transportEntry,
-											useVIP=True,
-											instances=instances,
-											offset=offset
-										 )
-
-		routedComponent.map_to_switches(self.logical_switches)
-		routedComponent.validate_component()
-		return routedComponent
 
 	def read_config(self, input_config_file=CONFIG_FILE):
 		if os.path.isdir(input_config_file):

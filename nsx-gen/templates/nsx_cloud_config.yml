@@ -17,6 +17,11 @@ nsxmanager:
   uplink_details:
     primary_ip: 10.114.216.167
     uplink_port_switch: SampleUplinkPort # if not specified, would use VM Networks as default
+#  static_routes:
+#  - name: static-route-1
+#    subnet: 10.0.0.0/8
+#    gateway: 10.114.216.180
+#    hop: 1
 
 defaults:
   # placeholders, can be comma separated list
@@ -32,6 +37,7 @@ edge_service_gateways:
   cli:
     username: testuser
     password: Test$assword123456
+  ospf_password: P!votal #6-8 characters
   certs:
     name: Foundation1
     # cert_id: cert-11 # Uncomment and edit this in order to use an existing cert id
@@ -54,9 +60,11 @@ edge_service_gateways:
       country_code: US  # Default - US
       system_domain: pcf-sys-test.corp.local
       app_domain: pcf-app-test.corp.local  
+    
   routed_components:
   - name: opsmgr
     switch: Infra
+    external: true
     instances: 1
     offset: 5
     uplink_details:
@@ -73,6 +81,7 @@ edge_service_gateways:
       #  monitor_port: 443    
   - name: go-router
     switch: Ert
+    external: true
     instances: 4
     offset: 10
     uplink_details:
@@ -90,6 +99,7 @@ edge_service_gateways:
       #  url: /health
   - name: diego-brain
     switch: Ert
+    external: true
     instances: 3
     offset: 20
     uplink_details:
@@ -103,6 +113,7 @@ edge_service_gateways:
       #  protocol: tcp
   - name: tcp-router
     switch: Ert
+    external: true
     instances: 4
     offset: 30
     uplink_details:
@@ -119,6 +130,7 @@ edge_service_gateways:
       #  url: /health    
   - name: mysql-ert # Internal ERT MySQL proxy
     switch: Ert
+    external: false
     instances: 3
     offset: 40
     uplink_details:
@@ -136,6 +148,7 @@ edge_service_gateways:
 # Comment off if mysql and rabbitmq not needed
   - name: mysql-tile # MySQL Tile's proxy
     switch: PCF-Tiles
+    external: false
     instances: 3 # for 3 proxies in 3 AZs
     offset: 10
     uplink_details:
@@ -152,6 +165,7 @@ edge_service_gateways:
 
   - name: rabbitmq-tile # RabbitMQ Tile's proxy
     switch: PCF-Tiles
+    external: false
     instances: 3
     offset: 30
     uplink_details:
@@ -167,6 +181,7 @@ edge_service_gateways:
 
 #  - name: go-router-isozone-1
 #    switch: IsoZone-1
+#    external: true
 #    instances: 2
 #    offset: 10
 #    uplink_details:
@@ -184,6 +199,7 @@ edge_service_gateways:
       #  url: /health
 #  - name: tcp-router-isozone-1
 #    switch: IsoZone-1
+#    external: true
 #    instances: 2
 #    offset: 30
 #    uplink_details:
@@ -200,6 +216,7 @@ edge_service_gateways:
       #  url: /health    
   # - name: go-router-isozone-2
   #   switch: IsoZone-2
+  #   external: true
   #   instances: 2
   #   offset: 10
   #   uplink_details:
@@ -218,10 +235,12 @@ edge_service_gateways:
 
   ## Sample service entry
   # - name: test-service
-  #   uplink_ip: 10.193.99.41
   #   switch: PCF-Tiles
+  #   external: true
   #   instances: 4
   #   offset: 30
+  #   uplink_details:
+  #     uplink_ip: 10.193.99.41
   #   transport:
   #     #Use defaults - https/443 incoming, http/80 forward
   #     ingress:
@@ -232,6 +251,9 @@ edge_service_gateways:
   #       protocol: http
 
 logical_switches:
+- name: OSPF  
+  cidr: 172.16.100.10/24
+  primary_ip: 172.16.100.2
 - name: Infra  
   cidr: 192.168.10.0/26
   primary_ip: 192.168.10.2

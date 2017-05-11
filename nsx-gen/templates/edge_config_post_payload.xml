@@ -19,7 +19,7 @@
     
         <vnic>
             <index>0</index>
-            <label>vNic_0</label>
+            <label>vNic_Uplink</label>
             <name>Lif to Uplink</name>
             <type>uplink</type> 
             <portgroupId>{{ nsxmanager['uplink_details']['uplink_id']}}</portgroupId>
@@ -44,6 +44,7 @@
             <enableSendRedirects>true</enableSendRedirects>
             <isConnected>true</isConnected>
         </vnic>
+<!--
         {% for lswitch in logical_switches %}
         <vnic>
             <index>{{ loop.index }}</index>
@@ -82,6 +83,34 @@
             <enableSendRedirects>true</enableSendRedirects>
         </vnic>
         {% endfor %}
+
+    -->
+     <vnic>
+            <label>vNic_1</label>
+            <name>vnic_OSPF</name>
+            <addressGroups>
+                <addressGroup>
+                    <primaryAddress>172.16.100.1</primaryAddress>
+                    <secondaryAddresses>
+                    {% for lswitch in logical_switches %}
+                    {% for secondary_ip in lswitch['secondary_ips'] %} 
+                        <ipAddress>{{ secondary_ip }}</ipAddress>
+                    {% endfor %}
+                    {% endfor %}
+                    </secondaryAddresses>
+                    <subnetMask>255.255.255.0</subnetMask>
+                    <subnetPrefixLength>24</subnetPrefixLength>
+                </addressGroup>
+            </addressGroups>
+            <mtu>1500</mtu>
+            <type>internal</type>
+            <isConnected>true</isConnected>
+            <index>1</index>
+            <portgroupId>virtualwire-501</portgroupId>
+            <portgroupName>{{ ospfLogicalSwitch['name'] }}</portgroupName>
+            <enableProxyArp>false</enableProxyArp>
+            <enableSendRedirects>true</enableSendRedirects>
+        </vnic>
     </vnics>
     <cliSettings>
         <userName>{{edge['cli']['username']}}</userName>
@@ -275,6 +304,7 @@
                 {% endfor %}
 
                 {% for lswitch in logical_switches %}
+                {% if not 'OSPF' in lswitch['given_name'] %}
                 <firewallRule>
                     <id>1314{{loop.index}}</id>
                     <ruleTag>1314{{loop.index}}</ruleTag>
@@ -290,6 +320,7 @@
                         <ipAddress>{{lswitch['cidr']}}</ipAddress>
                     </source>
                 </firewallRule>
+                {% endif %}
                 {% endfor %}
 
                 <firewallRule>
@@ -461,7 +492,22 @@
                     <gatewayAddress>{{gateway_address}}</gatewayAddress>
                     <adminDistance>1</adminDistance>
                 </defaultRoute>
+                <staticRoutes>
+                    {% for static_route in static_routes %}
+                    <route>
+                        <mtu>1500</mtu>
+                        <description></description>
+                        <type>user</type>
+                        <vnic>0</vnic>
+                        <network>{{ static_route['subnet'] }}</network>
+                        <nextHop>{{ static_route['gateway'] }}</nextHop>
+                        <adminDistance>{{ static_route['hop'] }}</adminDistance>
+                    </route>
+                    {% endfor %}
+                </staticRoutes>
             </staticRouting>
+
+
         </routing>
 
         <nat>
