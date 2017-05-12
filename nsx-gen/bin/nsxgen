@@ -76,6 +76,7 @@ ATTRIBUTE_MAP_ARRAY = {
 		[ 'user', 'admin_user'],
 		[ 'pass', 'admin_passwd'],
 		[ 'tz', 'transportzone'],
+		[ 'dportswitch', 'distributed_port_switch'],
 		[ 'uplink_ip', 'uplink_ip'],
 		[ 'uplink_port', 'uplink_port_switch'],
 		[ 'sr_name', 'static_route_name'],
