@@ -485,6 +485,14 @@
 
         <routing>
             <enabled>true</enabled>
+            <routingGlobalConfig>
+                <routerId>10.193.99.160</routerId>
+                <ecmp>false</ecmp>
+                <logging>
+                    <enable>false</enable>
+                    <logLevel>info</logLevel>
+                </logging>
+            </routingGlobalConfig>
             <staticRouting>
                 <defaultRoute>
                     <vnic>0</vnic>
@@ -513,7 +521,8 @@
                         <areaId>51</areaId>
                         <type>normal</type>
                         <authentication>
-                            <type>none</type>
+                            <type>password</type>
+                            <value>{{ edge['ospf_password'] }} </value>
                         </authentication>
                     </ospfArea>
                     <ospfArea>

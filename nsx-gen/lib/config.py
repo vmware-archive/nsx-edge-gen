@@ -157,8 +157,8 @@ class Config(dict):
 					    nsx_edge['size'] = 'large'
 
 				if field == 'ospf_password':
-					if len(nsx_edge[field]) > 8:
-						raise ValueError(field + ' field length more than 8 characters for nsx_edge')
+					if len(nsx_edge[field]) > 7:
+						raise ValueError(field + ' field length more than 7 characters for nsx_edge')
 
 			nsx_edge['global_switches'] =  global_switches
 			nsx_edge['global_uplink_details'] = self.nsxmanager['uplink_details']
