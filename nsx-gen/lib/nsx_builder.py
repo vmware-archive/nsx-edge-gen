@@ -282,7 +282,7 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
 
 	if not defaultVdnScopeId:
 		defaultVdnScopeId = vdnScopes[0]['objectId']
-		print('Unable to find matching TZ, going with fist available TZ, VDN Scope id : {}\n'.format(defaultVdnScopeId))
+		print('Unable to find matching TZ, going with first available TZ, VDN Scope id : {}\n'.format(defaultVdnScopeId))
 
 	for lswitch in  context[type]: 
 

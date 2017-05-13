@@ -506,8 +506,54 @@
                     {% endfor %}
                 </staticRoutes>
             </staticRouting>
-
-
+            <ospf>
+                <enabled>true</enabled>
+                <ospfAreas>
+                    <ospfArea>
+                        <areaId>51</areaId>
+                        <type>normal</type>
+                        <authentication>
+                            <type>none</type>
+                        </authentication>
+                    </ospfArea>
+                    <ospfArea>
+                        <areaId>0</areaId>
+                        <type>normal</type>
+                        <authentication>
+                            <type>none</type>
+                        </authentication>
+                    </ospfArea>
+                </ospfAreas>
+                <ospfInterfaces>
+                    <ospfInterface>
+                        <vnic>1</vnic>
+                        <areaId>51</areaId>
+                        <helloInterval>10</helloInterval>
+                        <deadInterval>40</deadInterval>
+                        <priority>128</priority>
+                        <cost>1</cost>
+                        <mtuIgnore>false</mtuIgnore>
+                    </ospfInterface>
+                </ospfInterfaces>
+                <redistribution>
+                    <enabled>true</enabled>
+                    <rules>
+                        <rule>
+                            <id>0</id>
+                            <from>
+                                <isis>false</isis>
+                                <ospf>false</ospf>
+                                <bgp>false</bgp>
+                                <static>false</static>
+                                <connected>true</connected>
+                            </from>
+                            <action>permit</action>
+                        </rule>
+                    </rules>
+                </redistribution>
+                <gracefulRestart>false</gracefulRestart>
+                <defaultOriginate>false</defaultOriginate>
+            </ospf>
         </routing>
 
         <nat>

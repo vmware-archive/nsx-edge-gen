@@ -89,6 +89,7 @@ ATTRIBUTE_MAP_ARRAY = {
 		[ 'name', 'name'],
 		[ 'size', 'size'],
 		[ 'gateway', 'gateway_ip'],
+		[ 'ospf_password', 'ospf_password'],
 		[ 'cli_user', 'cli_username'],
 		[ 'cli_pass', 'cli_password'],
 		[ 'certs', 'certs_name'],

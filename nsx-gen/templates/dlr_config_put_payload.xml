@@ -103,7 +103,7 @@
                         </rule>
                     </rules>
                 </redistribution>
-                <gracefulRestart>true</gracefulRestart>
+                <gracefulRestart>false</gracefulRestart>
                 <defaultOriginate>false</defaultOriginate>
             </ospf>
         </routing>
