@@ -106,7 +106,7 @@
             <type>internal</type>
             <isConnected>true</isConnected>
             <index>1</index>
-            <portgroupId>virtualwire-501</portgroupId>
+            <portgroupId>{{ ospfLogicalSwitch['id'] }}</portgroupId>
             <portgroupName>{{ ospfLogicalSwitch['name'] }}</portgroupName>
             <enableProxyArp>false</enableProxyArp>
             <enableSendRedirects>true</enableSendRedirects>
