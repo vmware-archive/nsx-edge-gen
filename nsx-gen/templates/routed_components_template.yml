@@ -1,0 +1,171 @@
+---
+switches:
+- id: INFRA
+  name: Infra
+- id: ERT
+  name: Ert
+- id: PCF-TILES
+  name: PCF-Tiles
+- id: DYNAMIC-SERVICES
+  name: Dynamic-Services
+- id: ISOZONE
+  name: IsoZone
+    
+routed_components:
+- id: OPS 
+  name: OPS
+  switch: INFRA
+  external: true
+  useVIP: false
+  instances: 1
+  offset: 5
+  monitor_id: monitor-3
+  transport:
+    ingress:
+      port: '443'
+      protocol: https
+    egress:
+      port: '443'
+      protocol: https
+      monitor_port: '443'
+      url: "/"
+  
+- id: GO-ROUTER
+  name: GO-ROUTER
+  switch: ERT
+  external: true
+  useVIP: true
+  instances: 4
+  offset: 10
+  monitor_id: monitor-4
+  transport:
+    ingress:
+      port: '443'
+      protocol: https
+    egress:
+      port: '80'
+      protocol: http
+      monitor_port: '8080'
+      url: "/health"
+  
+- id: DIEGO
+  name: DIEGO
+  switch: ERT
+  external: true
+  useVIP: true
+  instances: 3
+  offset: 20
+  monitor_id: monitor-1
+  transport:
+    ingress:
+      port: '2222'
+      protocol: tcp
+    egress:
+      port: '2222'
+      protocol: tcp
+      monitor_port: '2222'
+  
+- id: TCP-ROUTER
+  name: TCP-ROUTER
+  switch: ERT
+  external: true
+  useVIP: true
+  instances: 4
+  offset: 30
+  monitor_id: monitor-5
+  transport:
+    ingress:
+      port: '5000'
+      protocol: tcp
+    egress:
+      port: '5000'
+      protocol: tcp
+      monitor_port: '80'
+      url: "/health"
+  
+- id: MYSQL-ERT 
+  name: MYSQL-ERT
+  switch: PCF-TILES
+  external: false
+  useVIP: true
+  instances: 3
+  offset: 40
+  monitor_id: monitor-6
+  transport:
+    ingress:
+      port: '3306'
+      protocol: tcp
+    egress:
+      port: '3306'
+      protocol: tcp
+      monitor_port: '1936'
+  
+  
+- id: MYSQL-TILE
+  name: MYSQL-TILE
+  switch: PCF-TILES
+  external: false
+  useVIP: true
+  instances: 3
+  offset: 10
+  monitor_id: monitor-6
+  transport:
+    ingress:
+      port: '3306'
+      protocol: tcp
+    egress:
+      port: '3306'
+      protocol: tcp
+      monitor_port: '1936'
+  
+- id: RABBITMQ-TILE
+  name: RABBITMQ-TILE
+  switch: PCF-TILES
+  external: false
+  useVIP: true
+  instances: 3
+  offset: 20
+  monitor_id: monitor-1
+  transport:
+    ingress:
+      port: '15672,5672,5671'
+      protocol: tcp
+    egress:
+      port: '15672,5672,5671'
+      protocol: tcp
+  
+- id: GO-ROUTER-ISO
+  name: GO-ROUTER-ISO
+  switch: ISOZONE
+  external: true
+  useVIP: true
+  instances: 2
+  offset: 10
+  monitor_id: monitor-4
+  transport:
+    ingress:
+      port: '443'
+      protocol: https
+    egress:
+      port: '80'
+      protocol: http
+      monitor_port: '8080'
+      url: "/health"
+  
+- id: TCP-ROUTER-ISO
+  name: TCP-ROUTER-ISO
+  switch: ISOZONE
+  external: true
+  useVIP: true
+  instances: 2
+  offset: 30
+  monitor_id: monitor-5
+  transport:
+    ingress:
+      port: '5000'
+      protocol: tcp
+    egress:
+      port: '5000'
+      protocol: tcp
+      monitor_port: '80'
+      url: "/health"

@@ -26,16 +26,17 @@ import re
 import ipcalc
 from print_util  import *
 
-from routed_component  import *
+from routed_components_handler  import *
+#from routed_component  import *
 
 CONFIG_FILE = "nsx_cloud_config.yml"
 LIB_PATH = os.path.dirname(os.path.realpath(__file__))
 REPO_PATH = os.path.realpath(os.path.join(LIB_PATH, '..'))
 
-class Config(dict):
+class NSXConfig(dict):
 
 	def __init__(self, *arg, **kw):
-		super(Config, self).__init__(*arg, **kw)
+		super(NSXConfig, self).__init__(*arg, **kw)
 
 	def validate(self):
 		self.name = self.get('name', 'nsx-pcf')

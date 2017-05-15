@@ -1,0 +1,115 @@
+---
+monitors:
+- monitor: tcp
+  id: monitor-1
+  type: tcp
+  name: default_tcp_monitor
+- monitor: http
+  id: monitor-2
+  type: http
+  name: default_http_monitor
+  url: "/"
+- monitor: https
+  id: monitor-3
+  type: https
+  name: default_https_monitor
+  url: "/"
+- monitor: go-router
+  id: monitor-4
+  type: http
+  name: goRouter_monitor
+  url: "/health"
+- monitor: tcp-router
+  id: monitor-5
+  type: http
+  name: tcpRouter_monitor
+  url: "/health"
+- monitor: mysql
+  id: monitor-6
+  type: tcp
+  name: mysql_monitor
+
+
+app_profiles:
+- profile: http:http
+  id: applicationProfile-1
+  name: HTTP2HTTP
+  ingress: HTTP
+  forward: HTTP
+  template: HTTP
+  sslPassthrough: 'false'
+  serverSslEnabled: 'false'
+- profile: http:tcp
+  id: applicationProfile-2
+  name: HTTP2TCP
+  ingress: HTTP
+  forward: TCP
+  template: HTTP
+  sslPassthrough: 'false'
+  serverSslEnabled: 'false'
+- profile: https:http
+  id: applicationProfile-3
+  name: HTTPS2HTTP
+  ingress: HTTPS
+  forward: HTTP
+  template: HTTPS
+  sslPassthrough: 'false'
+  serverSslEnabled: 'false'
+- profile: https:https
+  id: applicationProfile-4
+  name: HTTPS2HTTPS
+  ingress: HTTPS
+  forward: HTTPS
+  template: HTTPS
+  sslPassthrough: 'true'
+  serverSslEnabled: 'true'
+- profile: https:tcp
+  id: applicationProfile-5
+  name: HTTPS2TCP
+  ingress: HTTPS
+  forward: TCP
+  template: HTTP
+  sslPassthrough: 'false'
+  serverSslEnabled: 'false'
+- profile: tcp:tcp
+  id: applicationProfile-6
+  name: TCP2TCP
+  ingress: TCP
+  forward: TCP
+  template: TCP
+  sslPassthrough: 'false'
+  serverSslEnabled: 'false'
+- profile: tcps:tcp
+  id: applicationProfile-7
+  name: TCPS2TCP
+  ingress: TCPS
+  forward: TCP
+  template: TCP
+  sslPassthrough: 'false'
+  serverSslEnabled: 'false'
+- profile: tcps:tcps
+  id: applicationProfile-8
+  name: TCPS2TCPS
+  ingress: TCPS
+  forward: TCPS
+  template: TCP
+  sslPassthrough: 'true'
+  serverSslEnabled: 'true'
+
+app_rules:
+- app_rule: optionlog
+  id: applicationRule-1
+  name: option httplog
+  script: option httplog
+- app_rule: forwardfor
+  id: applicationRule-2
+  name: forwardfor
+  script: 'option forwardfor'
+- app_rule: X-Forwarded-Proto:http
+  id: applicationRule-3
+  name: X-Forwarded-Proto:http
+  script: 'reqadd X-Forwarded-Proto:\ http'
+- app_rule: X-Forwarded-Proto:https
+  id: applicationRule-4
+  name: X-Forwarded-Proto:https
+  script: 'reqadd X-Forwarded-Proto:\ https'

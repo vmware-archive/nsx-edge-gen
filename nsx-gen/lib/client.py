@@ -53,7 +53,7 @@ def get_context():
 	if get_context.context is not None:
 		return get_context.context
 	else:
-		raise Error(resourceType + ' config not loaded!!')
+		raise Error('config not loaded!!')
 
 get_context.context = None
 

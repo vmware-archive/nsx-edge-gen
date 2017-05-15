@@ -42,8 +42,9 @@ sys.path.append(os.path.join(PATH, os.path.join('..', 'lib')))
 import nsx_builder
 import config
 import template
-from config import Config
-from routed_component import *
+from routed_components_handler import *
+#from routed_component import *
+from nsx_config import NSXConfig
 
 LIB_PATH = os.path.dirname(os.path.realpath(__file__))
 REPO_PATH = os.path.realpath(os.path.join(LIB_PATH, '..'))
@@ -436,7 +437,8 @@ def init_cmd(configFile):
 	template.render(config.CONFIG_FILE, config.CONFIG_FILE, { 'name': name })
 
 def build_config(config_file):
-	file_cfg = Config().read(config_file)	
+	print 'NSXConfig file: ' + config_file
+	file_cfg = NSXConfig().read(config_file)	
 	merged_cfg = file_cfg
 	if bool(cli_config):
 		# If the user has provided their own set of edge_service_gateways
@@ -457,7 +459,7 @@ def build_config(config_file):
 		merged_cfg = deepupdate( cli_config, file_cfg)
 	
 		
-	merged_cfg = Config(merged_cfg).validate()
+	merged_cfg = NSXConfig(merged_cfg).validate()
 	print('\nEffective configuration to be used :\n{}\n\n'.format(merged_cfg))
 	print('Name of config:{}\n'.format(merged_cfg.get('name', '<unspecified>')))
 

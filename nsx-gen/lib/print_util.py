@@ -120,7 +120,7 @@ def print_edge_service_gateways_configured(esgs):
 	print
 	print('-'*200)
 	print('{:<80}{:<60}{:<10}'.format('', 'Edge Service Gateways (from configuration)', ''))
-	print("{:<30} | {:<30} | {:<50} | {:20} | {:10} | {:<50}".format('Name', 
+	print("{:<30} | {:<30} | {:<50} | {:20} | {:15} | {:<50}".format('Name', 
 																	'Moid', 
 																	'Routed Components', 
 																	'Uplink Port', 
@@ -128,19 +128,43 @@ def print_edge_service_gateways_configured(esgs):
 																	'Creds'))
 	print('-'*200) 
 	for esg in esgs:
-		routed_components = ','.join([routed_component['name'] for routed_component in esg['routed_components']])
+
+		index = 0
+		count = 0
+		value = None
+		size = len(esg['routed_components'])/3 + 1
+		routed_component_arr = []
+		for routed_component in esg['routed_components']:
+			count += 1 
+			if value:
+				value = ','.join([routed_component['name'], value])
+			else:
+				value = routed_component['name']
+
+			if (count % 3) == 0:
+				routed_component_arr.append(value)
+				value = None
+				index += 1 
+
+		#routed_components = ','.join([routed_component['name'] for routed_component in esg['routed_components']])
 		cli_creds = 'user={}, passwd={}'.format(esg['cli']['username'], esg['cli']['password'])
 		
-		print('{:<30} | {:<30} | {:<50} | {:20} | {:10} | {:<50}'.format(	esg['name'], 
+		print('{:<30} | {:<30} | {:<50} | {:20} | {:15} | {:<50}'.format(	esg['name'], 
 																		esg.get('id', ''),
-																		routed_components,
+																		routed_component_arr[0],
 																		esg['global_uplink_details']['uplink_port_switch'],
 																		esg['global_uplink_details']['uplink_ip'], 
 																		cli_creds))
+
+		line = 1
+		while (line < len(routed_component_arr)):
+			print('{:<30} | {:<30} | {:<50} | {:20} | {:15} | {:<50}'.format('', '', routed_component_arr[line], '', '', ''))
+			line += 1
+		
+		print('')
 		print('-'*200)
-		print 
 		print('{:<80}{:<60}{:<10}'.format('', 'Firewall (from configuration)', ''))
-		print("{:<40} | {:<20} | {:<80} | {:<80} ".format(	'Name', 
+		print("{:<40} | {:<20} | {:<80} | {:<60} ".format(	'Name', 
 															'Ingress/Egress',
 															'Source', 
 															'Destination'))
@@ -210,7 +234,7 @@ def print_edge_service_gateways_configured(esgs):
 															'Monitor Id',
 															'Ingress:Port',
 															'Egress:Port',
-															'Port:Monitor Url'
+															'Protocol:Monitor Url'
 															))
 		print('-'*215)
 
@@ -231,10 +255,10 @@ def print_edge_service_gateways_configured(esgs):
 			monitorCombo = ''
 			monitorPort = transport['egress']['monitorPort']
 			if monitorPort:
-				monitorCombo = ':' + str(monitorPort)
+				monitorCombo = str(monitorPort)
 				monitorUrl = transport['egress']['url']
 				if monitorUrl:
-					 monitorCombo = monitorCombo +  monitorUrl
+					 monitorCombo = monitorCombo + ':' +  monitorUrl
 
 			index = 0
 			ruleCount = len(entry['app_rules'])
