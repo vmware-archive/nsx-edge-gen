@@ -35,8 +35,8 @@
         <addressGroups/>
         <mtu>1500</mtu>
         <index>0</index>
-        <connectedToId>{{ nsxmanager['distributed_port_switch_id']}}</connectedToId>
-        <connectedToName>{{ nsxmanager['distributed_port_switch']}}</connectedToName>
+        <connectedToId>{{ nsxmanager['distributed_portgroup_id']}}</connectedToId>
+        <connectedToName>{{ nsxmanager['distributed_portgroup']}}</connectedToName>
     </mgmtInterface>
 
      <type>distributedRouter</type>

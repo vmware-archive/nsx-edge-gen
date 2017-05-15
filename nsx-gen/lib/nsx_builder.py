@@ -409,7 +409,7 @@ def build_nsx_dlrs(dir, context, alternate_template=None):
 		uplink_port_switch = 'VM Network'
 		nsxmanager['uplink_details']['uplink_port_switch'] = uplink_port_switch
 		
-	nsxmanager['distributed_port_switch_id'] =  mobclient.lookup_moid(nsxmanager['distributed_port_switch'])
+	nsxmanager['distributed_portgroup_id'] =  mobclient.lookup_moid(nsxmanager['distributed_portgroup'])
 		
 	# if use_port_switch is set to 'VM Network' or port switch id could not be retreived.
 	portSwitchId = mobclient.lookup_moid(uplink_port_switch) 

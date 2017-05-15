@@ -40,7 +40,6 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(PATH, os.path.join('..', 'lib')))
 
 import nsx_builder
-import config
 import template
 from routed_components_handler import *
 #from routed_component import *
@@ -77,7 +76,7 @@ ATTRIBUTE_MAP_ARRAY = {
 		[ 'user', 'admin_user'],
 		[ 'pass', 'admin_passwd'],
 		[ 'tz', 'transportzone'],
-		[ 'dportswitch', 'distributed_port_switch'],
+		[ 'dportgroup', 'distributed_portgroup'],
 		[ 'uplink_ip', 'uplink_ip'],
 		[ 'uplink_port', 'uplink_port_switch'],
 		[ 'sr_name', 'static_route_name'],

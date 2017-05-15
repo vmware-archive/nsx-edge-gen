@@ -83,7 +83,7 @@ class NSXConfig(dict):
 			raise ValueError('nsxmanager section not defined')
 		
 		fields = [ 'address', 'admin_user', 'admin_passwd', 
-					'distributed_port_switch', 'uplink_details']
+					'distributed_portgroup', 'uplink_details']
 		for field in fields:
 			if self.nsxmanager[field] is None:
 				raise ValueError(field + ' field not set for nsxmanager')
