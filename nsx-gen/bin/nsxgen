@@ -43,6 +43,7 @@ import nsx_builder
 import template
 from routed_components_handler import *
 #from routed_component import *
+import nsx_config
 from nsx_config import NSXConfig
 
 LIB_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -425,7 +426,7 @@ def init_cmd(configFile):
 	if isinstance(configFile, list):
 		name = configFile[0]
 
-	if os.path.isfile(config.CONFIG_FILE):
+	if os.path.isfile(nsx_config.CONFIG_FILE):
 		print >> sys.stderr, 'Already initialized.'
 		sys.exit(0)
 	if name is not None:
@@ -433,7 +434,7 @@ def init_cmd(configFile):
 		os.chdir(name)
 	name = os.path.basename(os.getcwd())
 	root_dir = os.getcwd()
-	template.render(config.CONFIG_FILE, config.CONFIG_FILE, { 'name': name })
+	template.render(nsx_config.CONFIG_FILE, nsx_config.CONFIG_FILE, { 'name': name })
 
 def build_config(config_file):
 	print 'NSXConfig file: ' + config_file
