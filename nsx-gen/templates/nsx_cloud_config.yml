@@ -267,10 +267,10 @@ logical_switches:
 - name: Dynamic-Services
   cidr: 192.168.28.0/22
   primary_ip: 192.168.28.2
-#- name: IsoZone-1
+#- name: IsoZone-01
 #  cidr: 192.168.32.0/22
 #  primary_ip: 192.168.32.2
-# - name: IsoZone-2
+# - name: IsoZone-02
 #   cidr: 192.168.36.0/22
 #   primary_ip: 192.168.36.2
 
