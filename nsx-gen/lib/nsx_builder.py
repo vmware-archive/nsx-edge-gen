@@ -594,13 +594,17 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 
 
 		for routed_component in nsx_edge['routed_components']:
-			if 'OPS' in routed_component['name'].upper():
+			routed_component_name_upper = routed_component['name'].upper()
+
+			if 'OPS' in routed_component_name_upper:
 				opsmgr_routed_component = routed_component
-			elif 'GO-ROUTER' in routed_component['name'].upper():
+			elif 'GO-ROUTER' in routed_component_name_upper \
+				and 'ISOZONE' not in routed_component_name_upper:
 				ert_routed_component = routed_component
-			elif 'DIEGO' in routed_component['name'].upper():
+			elif 'DIEGO' in routed_component_name_upper:
 				diego_routed_component = routed_component
-			elif 'TCP-ROUTER' in routed_component['name'].upper():
+			elif 'TCP-ROUTER' in routed_component_name_upper \
+				and 'ISOZONE' not in routed_component_name_upper:
 				tcp_routed_component = routed_component
 
 		ertLogicalSwitch = {}
@@ -608,11 +612,12 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		ospfLogicalSwitch = {}
 
 		for name, lswitch in nsx_edge['global_switches'].iteritems():
-			if 'ERT' in name.upper():
+			switch_name_upper = name.upper()
+			if 'ERT' in switch_name_upper:
 				ertLogicalSwitch = lswitch
-			elif 'INFRA' in name.upper():
+			elif 'INFRA' in switch_name_upper:
 				infraLogicalSwitch = lswitch
-			elif 'OSPF' in name.upper():
+			elif 'OSPF' in switch_name_upper:
 				ospfLogicalSwitch = lswitch				
 
 		vcenter_ctx = context['vcenter']
@@ -679,7 +684,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		if True:
 		"""
 		print('Creating NSX Edge instance: {}\n\n'.format(nsx_edge['name']))
-
+		
 		post_response = client.post_xml(NSX_URLS['esg']['all'] , 
 								os.path.join(nsx_edges_dir, nsx_edge['name'] + '_post_payload.xml'), 
 								check=False)
