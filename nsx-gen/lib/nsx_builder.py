@@ -688,7 +688,6 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		if True:
 		"""
 		print('Creating NSX Edge instance: {}\n\n'.format(nsx_edge['name']))
-		exit()
 		post_response = client.post_xml(NSX_URLS['esg']['all'] , 
 								os.path.join(nsx_edges_dir, nsx_edge['name'] + '_post_payload.xml'), 
 								check=False)
