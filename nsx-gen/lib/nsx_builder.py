@@ -592,20 +592,23 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		diego_routed_component  = nsx_edge['routed_components'][2]
 		tcp_routed_component    = nsx_edge['routed_components'][3]
 
+		isozone_routed_components = []
+
 
 		for routed_component in nsx_edge['routed_components']:
 			routed_component_name_upper = routed_component['name'].upper()
 
-			if 'OPS' in routed_component_name_upper:
-				opsmgr_routed_component = routed_component
-			elif 'GO-ROUTER' in routed_component_name_upper \
-				and 'ISOZONE' not in routed_component_name_upper:
-				ert_routed_component = routed_component
-			elif 'DIEGO' in routed_component_name_upper:
-				diego_routed_component = routed_component
-			elif 'TCP-ROUTER' in routed_component_name_upper \
-				and 'ISOZONE' not in routed_component_name_upper:
-				tcp_routed_component = routed_component
+			if 'ISOZONE' in routed_component_name_upper:
+				isozone_routed_components.append(routed_component)
+			else:
+				if 'OPS' in routed_component_name_upper:
+					opsmgr_routed_component = routed_component
+				elif 'GO-ROUTER' in routed_component_name_upper:
+					ert_routed_component = routed_component
+				elif 'DIEGO' in routed_component_name_upper:
+					diego_routed_component = routed_component
+				elif 'TCP-ROUTER' in routed_component_name_upper:
+					tcp_routed_component = routed_component
 
 		ertLogicalSwitch = {}
 		infraLogicalSwitch = {}
@@ -668,6 +671,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 			'ert_routed_component': ert_routed_component,
 			'diego_routed_component': diego_routed_component,
 			'tcp_routed_component': tcp_routed_component,
+			'isozone_routed_components': isozone_routed_components,
 			'cross_network_cidr': cross_network_cidr,
 			'cross_logical_network_combo': cross_logical_network_combo,
 			'gateway_address': gateway_address,
@@ -684,7 +688,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		if True:
 		"""
 		print('Creating NSX Edge instance: {}\n\n'.format(nsx_edge['name']))
-		
+		exit()
 		post_response = client.post_xml(NSX_URLS['esg']['all'] , 
 								os.path.join(nsx_edges_dir, nsx_edge['name'] + '_post_payload.xml'), 
 								check=False)

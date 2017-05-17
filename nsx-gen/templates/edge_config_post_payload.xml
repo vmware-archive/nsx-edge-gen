@@ -278,6 +278,36 @@
                     </source>
                 </firewallRule>
                 -->
+                {% for isozone_routed_comp in isozone_routed_components %}
+                <firewallRule>
+                    <id>1311{{loop.index}}</id>
+                    <ruleTag>1311{{loop.index}}</ruleTag>
+                    <name>Allow Ingress -&gt; {{ isozone_routed_comp['name'] }}</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <destination>
+                        <exclude>false</exclude>                       
+                        <ipAddress>{{ isozone_routed_comp['uplink_details']['uplink_ip'] }}</ipAddress>
+                    </destination>
+                    <application>
+                        <service>
+                            <protocol>tcp</protocol>
+                            {% if 'TCP' in isozone_routed_comp['name'].upper() %}
+                            <port>5000</port>
+                            {% else %}
+                            <port>80</port>
+                            <port>443</port>
+                            <port>4443</port>
+                            {% endif %}
+                            <sourcePort>any</sourcePort>
+                    </service>
+                    </application>
+                </firewallRule>
+                {% endfor %}
 
                 {% for pair in cross_logical_network_combo %}
                 {% set pair0 = pair[0] %}
