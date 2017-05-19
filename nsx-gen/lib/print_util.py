@@ -317,7 +317,7 @@ def print_edge_service_gateways_configured(esgs):
 		print('-'*160)
 
 		print('{:<10}{:<80}{:<15}{:<10}'.format('', 'Routed Component Static IPs Assignment (from configuration) for Edge Instance: ',esg['name'], ''))
-		print("{:<20} | {:<22} | {:<12} | {:<15}| {:<80} ".format( \
+		print("{:<22} | {:<22} | {:<12} | {:<15}| {:<80} ".format( \
 															'Header ',
 															'Name',
 															'Switch',
@@ -329,7 +329,7 @@ def print_edge_service_gateways_configured(esgs):
 		for entry in esg['routed_components']:	
 			uplink_ip = entry['uplink_details']['uplink_ip']
 
-			print("{:<20} | {:<22} | {:<12} | {:<15}| {:<80}".format( \
+			print("{:<22} | {:<22} | {:<12} | {:<15}| {:<80}".format( \
 													'static ips assignment',
 													entry['name'],
 													entry['switchName'],

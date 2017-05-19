@@ -94,7 +94,7 @@ def lookupVCenterMoid(context, field, moidMap):
 	
 	raise ValueError('Cannot lookup Moid for provided Datastore:{}'.format(vcenter_context[field]))
 
-def  mapVcenterResources(context, moidMap):
+def mapVcenterResources(context, moidMap):
 	vcenter_context = context['vcenter']
 
 	lookupVCenterMoid(context, 'datacenter', moidMap)
