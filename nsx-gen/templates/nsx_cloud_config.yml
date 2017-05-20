@@ -33,7 +33,7 @@ defaults:
 
 edge_service_gateways:
 - name: {{ name }}
-  size: large
+  size: compact
   gateway_ip: 10.114.216.1
   cli:
     username: testuser

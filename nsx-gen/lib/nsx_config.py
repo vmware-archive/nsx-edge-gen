@@ -151,15 +151,14 @@ class NSXConfig(dict):
 			for field in fields:
 				if nsx_edge[field] is None:
 					raise ValueError(field + ' field not set for nsx_edge')
-				
-				if field == 'size':
-					size = nsx_edge[field]
-					if not size or size not in [ 'xlarge', 'quadlarge', 'large', 'compact' ]:
-					    nsx_edge['size'] = 'large'
-
+	
 				if field == 'ospf_password':
 					if len(nsx_edge[field]) > 7:
 						raise ValueError(field + ' field length more than 7 characters for nsx_edge')
+
+			size = nsx_edge['size']
+			if not size or size not in [ 'xlarge', 'quadlarge', 'large', 'compact' ]:
+				nsx_edge['size'] = 'large'
 
 			nsx_edge['global_switches'] =  global_switches
 			nsx_edge['global_uplink_details'] = self.nsxmanager['uplink_details']

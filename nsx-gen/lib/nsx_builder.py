@@ -123,6 +123,10 @@ def delete(context, verbose=False):
 	delete_nsx_dlr_gateways(context)      
 	delete_logical_switches(context, 'logical_switches')
 
+	# Run delete once more for hte logical switches just to be safe... 
+	# Sometimes they stay around
+	delete_logical_switches(context, 'logical_switches')
+
 def list(context, verbose=False):
 	client.set_context(context, 'nsxmanager')
 	moidMap = refresh_moid_map(context)
@@ -151,8 +155,8 @@ def map_logical_switches_id(logical_switches):
 		if (num_lswitches == matched_lswitches):
 			break
 
-		for interested_lswitch in  logical_switches: 
-			if existingLSwitch['name'] == interested_lswitch['name']:
+		for interested_lswitch in logical_switches: 
+			if interested_lswitch['name'] == existingLSwitch['name']:
 				interested_lswitch['id'] = existingLSwitch['objectId']
 
 				++matched_lswitches
@@ -161,10 +165,10 @@ def map_logical_switches_id(logical_switches):
 	if len(logical_switches) > 0:
 			print_logical_switches_available(logical_switches)
 
-	for interested_lswitch in  logical_switches: 
+	for interested_lswitch in logical_switches: 
 		if (interested_lswitch.get('id') is None):
-			print('Logical Switch instance with name: {}'  \
-				+ ' does not exist, possibly deleted already'.format(interested_lswitch['name']))
+			print('Logical Switch instance with name: {} does not exist, possibly deleted already'\
+			.format(interested_lswitch['name']))
 
 def check_logical_switch_exists(vcenterMobMap, lswitchName):
 
@@ -361,25 +365,27 @@ def delete_logical_switches(context, type = 'logical_switches'):
 		if  lswitch.get('id') is None:
 			continue
 
-		retry = True
-		while (retry):
+		retry = 0
+		while (retry < 3):
 			
-			retry = False
 			delete_response = client.delete(NSX_URLS['lswitch']['all'] + '/' +
 					 lswitch['id'])
 			data = delete_response.text
 
 			if DEBUG:
-				print('NSX Logical Switch Deletion response:{}\n'.format(data))
+				print('NSX Logical Switch {} Deletion response:{}\n'.format(lswitch['name'], data))
 
 			if delete_response.status_code < 400: 
 				print('Deleted NSX Logical Switch:{}\n'.format(lswitch['name']))
+				break
 
+			print('Deletion of NSX Logical Switch {} failed, details: {}\n'.format(lswitch['name'], data))
+			if 'resource is still in use' in str(data):
+				retry += 1
+				print('Going to retry deletion again... for Logical Switch:{}\n'.format(lswitch['name']))
 			else:
-				print('Deletion of NSX Logical Switch failed, details: {}\n'.format(data))
-				if 'resource is still in use' in str(data):
-					retry = True 
-					print('Going to retry deletion again... for Logical Switch:{}\n'.format(lswitch['name']))
+				print('Cannot retry deletion..., skipping delete for Logical Switch:{}\n'.format(lswitch['name']))
+				break
 
 def build_nsx_dlrs(dir, context, alternate_template=None):
 	nsx_dlrs_dir = os.path.realpath(os.path.join(dir ))
