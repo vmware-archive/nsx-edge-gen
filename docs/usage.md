@@ -14,6 +14,7 @@ usage: nsxgen [-h] [-i INIT] [-c NSX_CONF]
               [-isozone_switch_cidr_5 ISOZONE_SWITCH_CIDR_5]
               [-esg_name_1 ESG_NAME_1] [-esg_size_1 ESG_SIZE_1]
               [-esg_gateway_1 ESG_GATEWAY_IP_1]
+              [-esg_ospf_password_1 ESG_OSPF_PASSWORD_1]
               [-esg_cli_user_1 ESG_CLI_USERNAME_1]
               [-esg_cli_pass_1 ESG_CLI_PASSWORD_1]
               [-esg_certs_1 ESG_CERTS_NAME_1]
@@ -91,6 +92,7 @@ usage: nsxgen [-h] [-i INIT] [-c NSX_CONF]
               [-esg_tcp_router_isozone_5_off_1 ESG_TCP_ROUTER_ISOZONE_5_OFFSET_1]
               [-esg_name_2 ESG_NAME_2] [-esg_size_2 ESG_SIZE_2]
               [-esg_gateway_2 ESG_GATEWAY_IP_2]
+              [-esg_ospf_password_2 ESG_OSPF_PASSWORD_2]
               [-esg_cli_user_2 ESG_CLI_USERNAME_2]
               [-esg_cli_pass_2 ESG_CLI_PASSWORD_2]
               [-esg_certs_2 ESG_CERTS_NAME_2]
@@ -167,12 +169,18 @@ usage: nsxgen [-h] [-i INIT] [-c NSX_CONF]
               [-esg_tcp_router_isozone_5_inst_2 ESG_TCP_ROUTER_ISOZONE_5_INSTANCES_2]
               [-esg_tcp_router_isozone_5_off_2 ESG_TCP_ROUTER_ISOZONE_5_OFFSET_2]
               [-nsxmanager_addr NSXMANAGER_ADDRESS]
+              [-nsxmanager_en_dlr NSXMANAGER_ENABLE_DLR]
               [-nsxmanager_user NSXMANAGER_ADMIN_USER]
               [-nsxmanager_pass NSXMANAGER_ADMIN_PASSWD]
               [-nsxmanager_tz NSXMANAGER_TRANSPORTZONE]
+              [-nsxmanager_dportgroup NSXMANAGER_DISTRIBUTED_PORTGROUP]
               [-nsxmanager_uplink_ip NSXMANAGER_UPLINK_IP]
               [-nsxmanager_uplink_port NSXMANAGER_UPLINK_PORT_SWITCH]
-              [-ntp NTP_IPS] [-dns DNS_IPS] [-log SYSLOG_IPS] [-ldap LDAP_IPS]
+              [-nsxmanager_sr_name NSXMANAGER_STATIC_ROUTE_NAME]
+              [-nsxmanager_sr_subnet NSXMANAGER_STATIC_ROUTE_SUBNET]
+              [-nsxmanager_sr_gateway NSXMANAGER_STATIC_ROUTE_GATEWAY]
+              [-nsxmanager_sr_hop NSXMANAGER_STATIC_ROUTE_HOP] [-ntp NTP_IPS]
+              [-dns DNS_IPS] [-log SYSLOG_IPS] [-ldap LDAP_IPS]
               [-vcenter_addr VCENTER_ADDRESS]
               [-vcenter_user VCENTER_ADMIN_USER]
               [-vcenter_pass VCENTER_ADMIN_PASSWD]
@@ -218,6 +226,8 @@ optional arguments:
                         esg instance 1 size
   -esg_gateway_1 ESG_GATEWAY_IP_1, --esg_gateway_ip_1 ESG_GATEWAY_IP_1
                         esg instance 1 gateway ip
+  -esg_ospf_password_1 ESG_OSPF_PASSWORD_1, --esg_ospf_password_1 ESG_OSPF_PASSWORD_1
+                        esg instance 1 ospf password
   -esg_cli_user_1 ESG_CLI_USERNAME_1, --esg_cli_username_1 ESG_CLI_USERNAME_1
                         esg instance 1 cli username
   -esg_cli_pass_1 ESG_CLI_PASSWORD_1, --esg_cli_password_1 ESG_CLI_PASSWORD_1
@@ -374,6 +384,8 @@ optional arguments:
                         esg instance 2 size
   -esg_gateway_2 ESG_GATEWAY_IP_2, --esg_gateway_ip_2 ESG_GATEWAY_IP_2
                         esg instance 2 gateway ip
+  -esg_ospf_password_2 ESG_OSPF_PASSWORD_2, --esg_ospf_password_2 ESG_OSPF_PASSWORD_2
+                        esg instance 2 ospf password
   -esg_cli_user_2 ESG_CLI_USERNAME_2, --esg_cli_username_2 ESG_CLI_USERNAME_2
                         esg instance 2 cli username
   -esg_cli_pass_2 ESG_CLI_PASSWORD_2, --esg_cli_password_2 ESG_CLI_PASSWORD_2
@@ -526,16 +538,28 @@ optional arguments:
                         esg instance 2 routed tcp_router_isozone_5 offset
   -nsxmanager_addr NSXMANAGER_ADDRESS, --nsxmanager_address NSXMANAGER_ADDRESS
                         nsxmanager address
+  -nsxmanager_en_dlr NSXMANAGER_ENABLE_DLR, --nsxmanager_enable_dlr NSXMANAGER_ENABLE_DLR
+                        nsxmanager enable dlr
   -nsxmanager_user NSXMANAGER_ADMIN_USER, --nsxmanager_admin_user NSXMANAGER_ADMIN_USER
                         nsxmanager admin user
   -nsxmanager_pass NSXMANAGER_ADMIN_PASSWD, --nsxmanager_admin_passwd NSXMANAGER_ADMIN_PASSWD
                         nsxmanager admin passwd
   -nsxmanager_tz NSXMANAGER_TRANSPORTZONE, --nsxmanager_transportzone NSXMANAGER_TRANSPORTZONE
                         nsxmanager transportzone
+  -nsxmanager_dportgroup NSXMANAGER_DISTRIBUTED_PORTGROUP, --nsxmanager_distributed_portgroup NSXMANAGER_DISTRIBUTED_PORTGROUP
+                        nsxmanager distributed portgroup
   -nsxmanager_uplink_ip NSXMANAGER_UPLINK_IP, --nsxmanager_uplink_ip NSXMANAGER_UPLINK_IP
                         nsxmanager uplink ip
   -nsxmanager_uplink_port NSXMANAGER_UPLINK_PORT_SWITCH, --nsxmanager_uplink_port_switch NSXMANAGER_UPLINK_PORT_SWITCH
                         nsxmanager uplink port switch
+  -nsxmanager_sr_name NSXMANAGER_STATIC_ROUTE_NAME, --nsxmanager_static_route_name NSXMANAGER_STATIC_ROUTE_NAME
+                        nsxmanager static route name
+  -nsxmanager_sr_subnet NSXMANAGER_STATIC_ROUTE_SUBNET, --nsxmanager_static_route_subnet NSXMANAGER_STATIC_ROUTE_SUBNET
+                        nsxmanager static route subnet
+  -nsxmanager_sr_gateway NSXMANAGER_STATIC_ROUTE_GATEWAY, --nsxmanager_static_route_gateway NSXMANAGER_STATIC_ROUTE_GATEWAY
+                        nsxmanager static route gateway
+  -nsxmanager_sr_hop NSXMANAGER_STATIC_ROUTE_HOP, --nsxmanager_static_route_hop NSXMANAGER_STATIC_ROUTE_HOP
+                        nsxmanager static route hop
   -ntp NTP_IPS, --ntp_ips NTP_IPS
                         default ntp ips
   -dns DNS_IPS, --dns_ips DNS_IPS

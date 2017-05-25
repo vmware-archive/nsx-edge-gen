@@ -15,6 +15,7 @@ nsxmanager:
   admin_passwd: passwd
   transport_zone: TZ # Specified TransportZone should exist
   distributed_portgroup: TestDistributedPortGroup
+  enable_dlr: true
   uplink_details:
     primary_ip: 10.114.216.167
     uplink_port_switch: SampleUplinkPort # if not specified, would use VM Networks as default

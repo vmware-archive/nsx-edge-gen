@@ -44,8 +44,9 @@
             <enableSendRedirects>true</enableSendRedirects>
             <isConnected>true</isConnected>
         </vnic>
-<!--
-        {% for lswitch in logical_switches %}
+
+    {% if not enable_dlr %}
+        {% for lswitch in logical_switches if not 'OSPF' in lswitch['name'] %}
         <vnic>
             <index>{{ loop.index }}</index>
             <label>vNic_{{ loop.index}}</label>
@@ -84,7 +85,7 @@
         </vnic>
         {% endfor %}
 
-    -->
+    {% else %}
      <vnic>
             <label>vNic_1</label>
             <name>vnic_OSPF</name>
@@ -111,6 +112,8 @@
             <enableProxyArp>false</enableProxyArp>
             <enableSendRedirects>true</enableSendRedirects>
         </vnic>
+    {% endif %}
+
     </vnics>
     <cliSettings>
         <userName>{{edge['cli']['username']}}</userName>
@@ -544,6 +547,8 @@
                     {% endfor %}
                 </staticRoutes>
             </staticRouting>
+
+            {% if enable_dlr %}
             <ospf>
                 <enabled>true</enabled>
                 <ospfAreas>
@@ -593,6 +598,8 @@
                 <gracefulRestart>false</gracefulRestart>
                 <defaultOriginate>false</defaultOriginate>
             </ospf>
+            {% endif %}
+
         </routing>
 
         <nat>

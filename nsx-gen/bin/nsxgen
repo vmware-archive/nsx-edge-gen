@@ -74,6 +74,7 @@ ATTRIBUTE_MAP_ARRAY = {
 
 	'nsxmanager': [
 		[ 'addr', 'address'],
+		[ 'en_dlr', 'enable_dlr'],
 		[ 'user', 'admin_user'],
 		[ 'pass', 'admin_passwd'],
 		[ 'tz', 'transportzone'],
@@ -271,6 +272,7 @@ def construct_config(args):
 			staticRoute = { 'name' : 'default_static_route'}
 
 			cliConfig['nsxmanager']['uplink_details'] = { }
+			cliConfig['nsxmanager']['enable_dlr'] = False
 
 			for field in ATTRIBUTE_MAP_ARRAY[section]:
 				key = '{}_{}'.format(prefix, field[1])
@@ -461,7 +463,7 @@ def build_config(config_file):
 		
 	merged_cfg = NSXConfig(merged_cfg).validate()
 	print('\nEffective configuration to be used :\n{}\n\n'.format(merged_cfg))
-	print('Name of config:{}\n'.format(merged_cfg.get('name', '<unspecified>')))
+	print('Name of config: {}\n'.format(merged_cfg.get('name', '<unspecified>')))
 
 	return merged_cfg
 
@@ -476,12 +478,10 @@ def build_cmd(config_file=CONFIG_FILE):
 
 def list_cmd(config_file=CONFIG_FILE):
 	finalCfg = build_config(config_file)
-
 	nsx_builder.list(finalCfg)
 
 def delete_cmd(config_file=CONFIG_FILE):
 	finalCfg = build_config(config_file)
-
 	nsx_builder.delete(finalCfg)
 
 	print('Done with delete...\nNow listing running config..\n\n')

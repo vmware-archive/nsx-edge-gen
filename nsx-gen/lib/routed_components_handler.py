@@ -358,7 +358,13 @@ class RoutedComponent:
  					as there are multiple IsoZone related logical switches.\n\
  					Specify the associated switch name'.format(self.name))
 
-			if keywordToMatch.upper().replace('-','') in logical_switch['given_name'].upper().replace('-',''):
+			given_name = logical_switch.get('given_name')
+			if given_name:
+				given_name = given_name.upper()
+			else:
+				given_name = logical_switch['name'].upper()
+
+			if keywordToMatch.upper().replace('-','') in given_name.replace('-',''):
 				self.switch = logical_switch
 				return
 		
@@ -534,7 +540,7 @@ def locate_with_key(arr, field, key):
 	return None
 
 
-def parse_routing_component(routeComponentEntry, logical_switches):
+def parse_routing_component(routeComponentEntry, logical_switches, dlr_enabled):
 	print('Parsing Routed Component: {}'.format(routeComponentEntry))
 
 	instances = routeComponentEntry.get('instances')
@@ -546,7 +552,7 @@ def parse_routing_component(routeComponentEntry, logical_switches):
 	routedTransportSpecified = None
 
 	transportEntry = generate_transport(routeComponentEntry, routeComponentEntry['name'])
-	new_uplink_details = generate_uplink(routeComponentEntry, routeComponentEntry['name']) 
+	new_uplink_details = generate_uplink(routeComponentEntry, routeComponentEntry['name'], dlr_enabled) 
 
 	# Create Routed Components and associated LBR/Pool/AppProfile/AppRules
 	routedComponent = RoutedComponent(routeComponentEntry['name'],
@@ -654,7 +660,7 @@ def generate_transport(routedComponentEntry, routedComponentName):
 
 		return RoutedComponentTransport(ingressTransport, egressTransport)
 
-def generate_uplink(routedComponentEntry, routedComponentName):
+def generate_uplink(routedComponentEntry, routedComponentName, dlr_enabled):
 	cidr = None
 	uplink_ip = None
 
@@ -678,8 +684,11 @@ def generate_uplink(routedComponentEntry, routedComponentName):
 			raise ValueError('No Uplink IP provided for Routed Component: {}'.format(routedComponentName))
 		return UplinkDetails(uplink_ip, cidr)
 
-	# For internal components, arrive at the uplink ip of the OSPF subnet
-	uplink_ip = calculate_ospf_uplink_ip(templatedRoutedComp['offset'])
+
+	if dlr_enabled:
+		# For internal components, arrive at the uplink ip of the OSPF subnet
+		uplink_ip = calculate_ospf_uplink_ip(templatedRoutedComp['offset'])
+	
 	return UplinkDetails(uplink_ip, DEFAULT_OSPF_CIDR)
 
 def calculate_ospf_uplink_ip( offset):

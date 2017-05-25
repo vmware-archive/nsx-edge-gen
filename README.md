@@ -8,7 +8,30 @@ Install the required python libraries using `pip install -r requirements.txt`
 
 ## NSX + PCF Architecture 
 
+The generated NSX instance can have logical switches can be linked directly to it or via a DLR (Distributed Logical Router) using OSPF. 
+Note: DLR is disabled by default. 
+
+### Without DLR (direct connection from NSX Edge instance to Logical switches)
   ![](docs/overview-4-2017.png)
+
+
+### With DLR Enabled (indirect connection from NSX Edge instance to Logical switches via DLR)
+  ![](docs/overview-dlr-5-2017.png)
+
+To enable DLR use the following flag: ` --nsxmanager_enable_dlr <true|false>`
+Set `--nsxmanager_enable_dlr true ` or  ` -nsxmanager_en_dlr true ` in command line to nsx-gen or via the nsx_cloud_config.yml file (specified under nsxmanager section).
+```
+nsxmanager:
+  address: 12.1.1.1
+  ...
+  transport_zone: TZ # Specified TransportZone should exist
+  distributed_portgroup: TestDistributedPortGroup
+  enable_dlr: true
+```
+Using a DLR does requires specifying a Distributed PortGroup as well as a password for the OSPF user.
+
+This is more optimal architecture to avoid load on the NSX Edge instance for east-west traffic.
+The firewall also would be defined on the DFW (Distributed firewall) when DLR is enabled
 
 # Generating initial config
 Create a new config from template using nsx-gen init. The config file used to drive nsxgen is nsx_cloud_config.yml.
@@ -40,6 +63,8 @@ Note: There can be additional logical switches per isolation segment as shown in
 
 Avoid editing the default set of logical switches names or subnet. 
 Additional logical switches with their own subnets can be added if necessary.
+
+All of these logical switches can be linked directly to the NSX Edge instance or via a DLR (Distributed Logical Router) using OSPF. This can be controlled by following flag: `--nsxmanager_enable_dlr true ` either at command line or via the nsx_cloud_config.yml file.
 
 ## Edge Service Gateways
 For every instance of edge service gateway to be created, specify its name, cli credentials, its gateway ip (can be the same for all instances) as well as certs needed to generate.
@@ -184,6 +209,8 @@ RUN_CMD=build
   -esg_size_1 compact \
   -esg_cli_user_1 admin \
   -esg_cli_pass_1 'P1v0t4l!P1v0t4l!' \
+  -nsxmanager_dportgroup DPortGroupTest \
+  -nsxmanager_en_dlr true \
   -esg_certs_1 autogen \
   -esg_certs_config_sysd_1 sys2.test.pez.pivotal.io \
   -esg_certs_config_appd_1 apps2.test.pez.pivotal.io \

@@ -62,7 +62,7 @@ def print_logical_switches_configured(switches):
 	for switch in switches:
 		print('{:<60} | {:<20} | {:20}'.format(switch['name'], 
 												switch.get('cidr'), 
-												switch['primary_ip']))
+												switch.get('primary_ip')))
 	print('-'*150)
 	print  	
 

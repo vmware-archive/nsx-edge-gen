@@ -58,7 +58,7 @@ def initMoidMap(context):
 	
 		moidMap = mobclient.lookup_vsphere_config()
 		context['vmware_mob_moid_map'] = moidMap
-
+	
 	mapVcenterResources(context, moidMap)
 	return context['vmware_mob_moid_map']
 
@@ -165,10 +165,11 @@ def map_logical_switches_id(logical_switches):
 	if len(logical_switches) > 0:
 			print_logical_switches_available(logical_switches)
 
-	for interested_lswitch in logical_switches: 
-		if (interested_lswitch.get('id') is None):
-			print('Logical Switch instance with name: {} does not exist, possibly deleted already'\
-			.format(interested_lswitch['name']))
+	if DEBUG:
+		for interested_lswitch in logical_switches: 
+			if (interested_lswitch.get('id') is None):
+				print('Logical Switch instance with name: {} does not exist, possibly deleted already'\
+				.format(interested_lswitch['name']))
 
 def check_logical_switch_exists(vcenterMobMap, lswitchName):
 
@@ -192,11 +193,13 @@ def reconcile_uplinks(context):
 	logicalSwitches = context['logical_switches']
 	esgInstances = context['edge_service_gateways']
 
+	enable_dlr = context['nsxmanager']['enable_dlr']
 
 	ospfLogicalSwitch = None
-	for logicalSwitch in logicalSwitches:
-		if 'OSPF' in logicalSwitch['name'].upper():
-			ospfLogicalSwitch = logicalSwitch
+	if enable_dlr:
+		for logicalSwitch in logicalSwitches:
+			if 'OSPF' in logicalSwitch['name'].upper():
+				ospfLogicalSwitch = logicalSwitch
 
 	for esgInstance in esgInstances:
 		for routedComponent in esgInstance['routed_components']:
@@ -233,7 +236,8 @@ def reconcile_uplinks(context):
 			# Can happen in case of VIP exposed on OSPF but the component is on a internal logical switch like for PCF-Tiles
 			if isExternalUplink and not routedComponent['external']:
 				isExternalUplink = False
-				ospfLogicalSwitch['secondary_ips'].append(routedComponentUplinkIp)
+				if enable_dlr:
+					ospfLogicalSwitch['secondary_ips'].append(routedComponentUplinkIp)
 				#print 'Routed component {} added to secondary for lswitch: {}'.format(\
 				# routedComponent['name'], ospfLogicalSwitch['name'])
 			
@@ -275,6 +279,7 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
 	
 	defaultVdnScopeId = None
 	transportZone = context['nsxmanager']['transport_zone']
+	enable_dlr = context['nsxmanager']['enable_dlr']
 
 	for entry in vdnScopes:
 		if DEBUG:
@@ -289,6 +294,10 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
 		print('Unable to find matching TZ, going with first available TZ, VDN Scope id : {}\n'.format(defaultVdnScopeId))
 
 	for lswitch in  context[type]: 
+
+		# Skip if DLR is disabled and OSPF is in the switch name
+		if not enable_dlr and 'OSPF' in lswitch['name']:
+			continue
 
 		if check_logical_switch_exists(vcenterMobMap, lswitch['name']):
 			print('\tSkipping creation of Logical Switch: {} !!'.format(lswitch['name']))			
@@ -369,7 +378,7 @@ def delete_logical_switches(context, type = 'logical_switches'):
 		while (retry < 3):
 			
 			delete_response = client.delete(NSX_URLS['lswitch']['all'] + '/' +
-					 lswitch['id'])
+					 lswitch['id'], False)
 			data = delete_response.text
 
 			if DEBUG:
@@ -409,13 +418,15 @@ def build_nsx_dlrs(dir, context, alternate_template=None):
 
 	# Go with the VM Network for default uplink
 	nsxmanager = context['nsxmanager']
+	enable_dlr = nsxmanager['enable_dlr']
+	if enable_dlr:
+		nsxmanager['distributed_portgroup_id'] =  mobclient.lookup_moid(nsxmanager['distributed_portgroup'])
 
 	uplink_port_switch = nsxmanager['uplink_details'].get('uplink_port_switch')
 	if uplink_port_switch is None:
 		uplink_port_switch = 'VM Network'
 		nsxmanager['uplink_details']['uplink_port_switch'] = uplink_port_switch
 		
-	nsxmanager['distributed_portgroup_id'] =  mobclient.lookup_moid(nsxmanager['distributed_portgroup'])
 		
 	# if use_port_switch is set to 'VM Network' or port switch id could not be retreived.
 	portSwitchId = mobclient.lookup_moid(uplink_port_switch) 
@@ -429,6 +440,11 @@ def build_nsx_dlrs(dir, context, alternate_template=None):
 	
 	for nsx_edge in  context['edge_service_gateways']:
 	
+		enable_dlr = nsx_edge['enable_dlr']
+		if not enable_dlr:
+			print('DLR disabled!! Not creating DLR for NSX Edge: ' + nsx_edge['name'])
+			continue
+
 		nsx_dlr = copy.deepcopy(nsx_edge)
 
 		vcenter_ctx = context['vcenter']
@@ -666,6 +682,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 			'nsxmanager': context['nsxmanager'],
 			'static_routes': context['nsxmanager']['static_routes'],
 			'edge': nsx_edge,
+			'enable_dlr': nsx_edge['enable_dlr'],
 			'logical_switches': logical_switches,
 			'empty_logical_switches': empty_logical_switches,
 			'global_switches': nsx_edge['global_switches'],

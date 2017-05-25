@@ -18,6 +18,7 @@
 
 __author__ = 'Sabha Parameswaran'
 
+import copy
 import os.path
 import string
 import sys
@@ -38,6 +39,22 @@ class NSXConfig(dict):
 	def __init__(self, *arg, **kw):
 		super(NSXConfig, self).__init__(*arg, **kw)
 
+	"""
+	def __setitem__(self, field, val):
+		if field == 'defaults':
+			self.defaults = val
+		elif field == 'vcenter':
+			self.vcenter = val
+		elif field == 'nsxmanager':
+			self.nsxmanager = val
+		elif field == 'edge_service_gateways':
+			self.nsx_edges = val
+		elif field == 'logical_switches':
+			self.logical_switches = val
+		else:
+			print('Unknown field..' + field)
+	"""
+
 	def validate(self):
 		self.name = self.get('name', 'nsx-pcf')
 
@@ -46,7 +63,6 @@ class NSXConfig(dict):
 		self.validate_nsxmanager()
 		self.validate_logical_switches()
 		self.validate_nsx_edges()
-
 		return self
 		
 	def validate_vcenter(self):
@@ -83,20 +99,31 @@ class NSXConfig(dict):
 			raise ValueError('nsxmanager section not defined')
 		
 		fields = [ 'address', 'admin_user', 'admin_passwd', 
-					'distributed_portgroup', 'uplink_details']
+					'uplink_details']
 		for field in fields:
 			if self.nsxmanager[field] is None:
 				raise ValueError(field + ' field not set for nsxmanager')
 		
 		self.nsxmanager['url'] = 'https://' + self.nsxmanager['address']
 
+		enable_dlr = self.nsxmanager['enable_dlr']
+		if not enable_dlr or enable_dlr == 'false':
+			self.nsxmanager['enable_dlr'] = False
+			print('DLR disabled, won\'t create OSPF Logical switch or DLR!!')
+		else:
+			self.nsxmanager['enable_dlr'] = True
+			print('DLR enabled, will create OSPF Logical switch and DLR!!')
+			# If DLR is enabled, then it needs distributed portgroup defined
+			distributed_portgroup = self.nsxmanager['distributed_portgroup']
+			if not distributed_portgroup:
+				raise ValueError('distributed_portgroup field not set for nsxmanager')
+	
 		uplink_details = self.nsxmanager['uplink_details']
 		if uplink_details.get('uplink_ip') is None:
 			raise ValueError('uplink ip field not set for nsxmanager->uplink_details')
 
 		if uplink_details.get('cidr') is None:
 			uplink_details['cidr'] = uplink_details['uplink_ip'] + '/24'
-
 
 		addr_range = ipcalc.Network(uplink_details['cidr'])
 		uplink_details['subnet_mask'] = addr_range.netmask()
@@ -109,12 +136,16 @@ class NSXConfig(dict):
 		if self.logical_switches is None:
 			raise ValueError('logical_switches section not defined')		
 		
+		enable_dlr = self.get('nsxmanager')['enable_dlr']
+		
 		fields = [ 'name',  'cidr'] #, 'primary_ip', 'secondary_ips']
+		given_logical_switches = copy.deepcopy(self.logical_switches)
+		#self.logical_switches = [ ]
 		for lswitch in self.logical_switches:
 			for field in fields:
 				if lswitch[field] is None:
-					raise ValueError(field + ' field not set for logical_switch')		
-
+					raise ValueError(field + ' field not set for logical_switch')
+			
 			# Go with default cidr of 22 (limit it to 1024 ips)
 			addr, cidr = lswitch['cidr'].split('/')		
 			if cidr < 22:
@@ -132,18 +163,33 @@ class NSXConfig(dict):
 
 			# This will be filled in later once we have parsed the routed components
 			lswitch['secondary_ips'] = []		
+			#print('Logical Switch Entry:', lswitch)
 			
-			print('Logical Switch Entry:', lswitch)
- 		print_logical_switches_configured(self.logical_switches)
-
+			# Skip OSPF Switch if DLR not enabled
+			#if not (lswitch['given_name'] == 'OSPF' and not enable_dlr):
+			#	filtered_logical_switches.append(lswitch)				
+		
+		#self.logical_switches = filtered_logical_switches	
+		print_logical_switches_configured(self.logical_switches)
+		
 	def validate_nsx_edges(self):
 		self.nsx_edges = self.get('edge_service_gateways')
 		if self.nsx_edges is None:
 			raise ValueError('edge_service_gateways section not defined')
 		
+		self.nsxmanager = self.get('nsxmanager')
+		enable_dlr = self.nsxmanager['enable_dlr']
+
 		global_switches =  { }
 		for lswitch in self.logical_switches:
-			global_switches[lswitch['given_name'].upper()] = lswitch
+			if not enable_dlr and 'OSPF' in lswitch['name']:
+				continue
+
+			if lswitch.get('given_name'):
+				given_name = lswitch['given_name'].upper()
+			else:
+				given_name = lswitch['name'].upper()
+			global_switches[given_name] = lswitch
 
 		fields = [ 'name', 'size', 'cli', 'routed_components', 'gateway_ip', 'ospf_password']
 		for nsx_edge in self.nsx_edges:
@@ -151,14 +197,19 @@ class NSXConfig(dict):
 			for field in fields:
 				if nsx_edge[field] is None:
 					raise ValueError(field + ' field not set for nsx_edge')
-	
-				if field == 'ospf_password':
-					if len(nsx_edge[field]) > 7:
-						raise ValueError(field + ' field length more than 7 characters for nsx_edge')
-
+		
 			size = nsx_edge['size']
 			if not size or size not in [ 'xlarge', 'quadlarge', 'large', 'compact' ]:
 				nsx_edge['size'] = 'large'
+
+			# If DLR is enabled, then it needs ospf password defined
+			nsx_edge['enable_dlr'] = enable_dlr
+			if enable_dlr:
+				ospf_password = nsx_edge['ospf_password']
+				if not ospf_password:
+					raise ValueError('ospf_password field not set for nsx_edge')
+				elif len(ospf_password) > 7:
+					raise ValueError('ospf_password field length more than 7 characters for nsx_edge')
 
 			nsx_edge['global_switches'] =  global_switches
 			nsx_edge['global_uplink_details'] = self.nsxmanager['uplink_details']
@@ -167,7 +218,7 @@ class NSXConfig(dict):
 
 			nsx_edge['routed_components'] = [ ]
 			for entry in routed_component_context:
-				routedComponent = parse_routing_component(entry, self.logical_switches)
+				routedComponent = parse_routing_component(entry, self.logical_switches, enable_dlr)
 				print('Routed component: {}'.format(routedComponent))
 				nsx_edge['routed_components'].append(routedComponent)
 

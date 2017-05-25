@@ -1,0 +1,152 @@
+<!-- from https://10.193.99.20/api/4.0/firewall/globalroot-0/config -->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<firewallConfiguration timestamp="1484599450096">
+    <contextId>globalroot-0</contextId>
+    <layer3Sections>
+        <section id="1003" name="Default Section Layer3" generationNumber="1495659937401" timestamp="1495659937401" type="LAYER3">
+            <rule id="1005" disabled="false" logged="false">
+                <action>allow</action>
+                <appliedToList>
+                    <appliedTo>
+                        <name>DISTRIBUTED_FIREWALL</name>
+                        <value>DISTRIBUTED_FIREWALL</value>
+                        <type>DISTRIBUTED_FIREWALL</type>
+                        <isValid>true</isValid>
+                    </appliedTo>
+                </appliedToList>
+                <sectionId>1003</sectionId>
+                <direction>inout</direction>
+                <packetType>any</packetType>
+            </rule>
+            <rule id="1003" disabled="false" logged="false">
+                <name>Default Rule NDP</name>
+                <action>allow</action>
+                <appliedToList>
+                    <appliedTo>
+                        <name>DISTRIBUTED_FIREWALL</name>
+                        <value>DISTRIBUTED_FIREWALL</value>
+                        <type>DISTRIBUTED_FIREWALL</type>
+                        <isValid>true</isValid>
+                    </appliedTo>
+                </appliedToList>
+                <sectionId>1003</sectionId>
+                <services>
+                    <service>
+                        <name>IPv6-ICMP Neighbor Advertisement</name>
+                        <value>application-31</value>
+                        <type>Application</type>
+                        <isValid>true</isValid>
+                    </service>
+                    <service>
+                        <name>IPv6-ICMP Neighbor Solicitation</name>
+                        <value>application-328</value>
+                        <type>Application</type>
+                        <isValid>true</isValid>
+                    </service>
+                </services>
+                <direction>inout</direction>
+                <packetType>any</packetType>
+            </rule>
+            <rule id="1006" disabled="false" logged="false">
+                <name> Test</name>
+                <action>allow</action>
+                <appliedToList>
+                    <appliedTo>
+                        <name>DISTRIBUTED_FIREWALL</name>
+                        <value>DISTRIBUTED_FIREWALL</value>
+                        <type>DISTRIBUTED_FIREWALL</type>
+                        <isValid>true</isValid>
+                    </appliedTo>
+                </appliedToList>
+                <sectionId>1003</sectionId>
+                <sources excluded="false">
+                    <source>
+                        <value>192.168.10.5</value>
+                        <type>Ipv4Address</type>
+                        <isValid>true</isValid>
+                    </source>
+                </sources>
+                <destinations excluded="false">
+                    <destination>
+                        <name>10.193.99.162</name>
+                        <value>ipset-3</value>
+                        <type>IPSet</type>
+                        <isValid>true</isValid>
+                    </destination>
+                </destinations>
+                <direction>inout</direction>
+                <packetType>any</packetType>
+            </rule>
+            <rule id="1002" disabled="false" logged="false">
+                <name>Default Rule DHCP</name>
+                <action>allow</action>
+                <appliedToList>
+                    <appliedTo>
+                        <name>DISTRIBUTED_FIREWALL</name>
+                        <value>DISTRIBUTED_FIREWALL</value>
+                        <type>DISTRIBUTED_FIREWALL</type>
+                        <isValid>true</isValid>
+                    </appliedTo>
+                </appliedToList>
+                <sectionId>1003</sectionId>
+                <services>
+                    <service>
+                        <name>DHCP-Client</name>
+                        <value>application-23</value>
+                        <type>Application</type>
+                        <isValid>true</isValid>
+                    </service>
+                    <service>
+                        <name>DHCP-Server</name>
+                        <value>application-299</value>
+                        <type>Application</type>
+                        <isValid>true</isValid>
+                    </service>
+                </services>
+                <direction>inout</direction>
+                <packetType>any</packetType>
+            </rule>
+            <rule id="1001" disabled="false" logged="false">
+                <name>Default Rule</name>
+                <action>allow</action>
+                <appliedToList>
+                    <appliedTo>
+                        <name>DISTRIBUTED_FIREWALL</name>
+                        <value>DISTRIBUTED_FIREWALL</value>
+                        <type>DISTRIBUTED_FIREWALL</type>
+                        <isValid>true</isValid>
+                    </appliedTo>
+                </appliedToList>
+                <sectionId>1003</sectionId>
+                <precedence>default</precedence>
+                <direction>inout</direction>
+                <packetType>any</packetType>
+            </rule>
+        </section>
+    </layer3Sections>
+    <layer2Sections>
+        <section id="1001" name="Default Section Layer2" generationNumber="1484599450096" timestamp="1484599450096" type="LAYER2">
+            <rule id="1004" disabled="false" logged="false">
+                <name>Default Rule</name>
+                <action>allow</action>
+                <appliedToList>
+                    <appliedTo>
+                        <name>DISTRIBUTED_FIREWALL</name>
+                        <value>DISTRIBUTED_FIREWALL</value>
+                        <type>DISTRIBUTED_FIREWALL</type>
+                        <isValid>true</isValid>
+                    </appliedTo>
+                </appliedToList>
+                <sectionId>1001</sectionId>
+                <precedence>default</precedence>
+                <direction>inout</direction>
+                <packetType>any</packetType>
+            </rule>
+        </section>
+    </layer2Sections>
+    <layer3RedirectSections>
+        <section id="1002" name="Default Section" generationNumber="1484599450096" timestamp="1484599450096" type="L3REDIRECT"/>
+    </layer3RedirectSections>
+    <generationNumber>1495659937401</generationNumber>
+</firewallConfiguration>
