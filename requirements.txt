@@ -1,4 +1,5 @@
 xmltodict
+dicttoxml
 ipcalc
 pprint
 PyQuery>=1.2.17

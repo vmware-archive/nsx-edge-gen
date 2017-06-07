@@ -18,6 +18,7 @@
 
 import click
 import errno
+import re
 import shutil
 import stat
 import sys
@@ -94,11 +95,46 @@ ATTRIBUTE_MAP_ARRAY = {
 		[ 'ospf_password', 'ospf_password'],
 		[ 'cli_user', 'cli_username'],
 		[ 'cli_pass', 'cli_password'],
-		[ 'certs', 'certs_name'],
-		[ 'certs_config_ou', 'certs_config_orgunit'],
-		[ 'certs_config_cc', 'certs_config_country'],
-		[ 'certs_config_sysd', 'certs_config_systemdomain'],
-		[ 'certs_config_appd', 'certs_config_appdomain'],
+		[ 'ert_certs', 'ert_certs_name'],
+		[ 'ert_certs_cert_id', 'ert_certs_cert_id'],
+		[ 'ert_certs_key', 'ert_certs_key'],
+		[ 'ert_certs_cert', 'ert_certs_cert'],
+		[ 'ert_certs_config_ou', 'ert_certs_config_org_unit'],
+		[ 'ert_certs_config_cc', 'ert_certs_config_country'],
+		[ 'ert_certs_config_sysd', 'ert_certs_config_systemdomain'],
+		[ 'ert_certs_config_appd', 'ert_certs_config_appdomain'],
+		[ 'iso_certs_1', 'iso_certs_name_1'],
+		[ 'iso_certs_cert_id_1', 'iso_certs_cert_id_1'],
+		[ 'iso_certs_key_1', 'iso_certs_key_1'],
+		[ 'iso_certs_cert_1', 'iso_certs_cert_1'],
+		[ 'iso_certs_config_switch_1', 'iso_certs_config_switch_1'],
+		[ 'iso_certs_config_ou_1', 'iso_certs_config_org_unit_1'],
+		[ 'iso_certs_config_cc_1', 'iso_certs_config_country_1'],
+		[ 'iso_certs_config_domains_1', 'iso_certs_config_domains_1'],
+		[ 'iso_certs_2', 'iso_certs_name_2'],
+		[ 'iso_certs_cert_id_2', 'iso_certs_cert_id_2'],
+		[ 'iso_certs_key_2', 'iso_certs_key_2'],
+		[ 'iso_certs_cert_2', 'iso_certs_cert_2'],
+		[ 'iso_certs_config_switch_2', 'iso_certs_config_switch_2'],
+		[ 'iso_certs_config_ou_2', 'iso_certs_config_org_unit_2'],
+		[ 'iso_certs_config_cc_2', 'iso_certs_config_country_2'],
+		[ 'iso_certs_config_domains_2', 'iso_certs_config_domains_2'],
+		[ 'iso_certs_3', 'iso_certs_name_3'],
+		[ 'iso_certs_cert_id_3', 'iso_certs_cert_id_3'],
+		[ 'iso_certs_key_3', 'iso_certs_key_3'],
+		[ 'iso_certs_cert_3', 'iso_certs_cert_3'],
+		[ 'iso_certs_config_switch_3', 'iso_certs_config_switch_3'],
+		[ 'iso_certs_config_ou_3', 'iso_certs_config_org_unit_3'],
+		[ 'iso_certs_config_cc_3', 'iso_certs_config_country_3'],
+		[ 'iso_certs_config_domains_3', 'iso_certs_config_domains_3'],
+		[ 'iso_certs_4', 'iso_certs_name_4'],
+		[ 'iso_certs_cert_id_4', 'iso_certs_cert_id_4'],
+		[ 'iso_certs_key_4', 'iso_certs_key_4'],
+		[ 'iso_certs_cert_4', 'iso_certs_cert_4'],
+		[ 'iso_certs_config_switch_4', 'iso_certs_config_switch_4'],
+		[ 'iso_certs_config_ou_4', 'iso_certs_config_org_unit_4'],
+		[ 'iso_certs_config_cc_4', 'iso_certs_config_country_4'],
+		[ 'iso_certs_config_domains_4', 'iso_certs_config_domains_4'],
 	],
 
 	'routed_components':  [
@@ -135,6 +171,7 @@ def contruct_parser(parser):
 	build:   build a new Edge Service Gateway
 	delete:  delete a Edge Service Gateway
 	list:    return a list of all Edge Service Gateways
+	export:   return the firewall rules of a Edge Service Gateway
 	init:    create a new nsx cloud config file
 	"""))
 
@@ -196,7 +233,7 @@ def contruct_parser(parser):
 
 		elif section == 'esg': 
 			# There can be n number of esg entries
-			for index in xrange(1, 3): 
+			for index in xrange(1, 2): 
 				
 				# flatten nested dict structures to flat structure, each suffixed with index
 				for field in ATTRIBUTE_MAP_ARRAY[section]:
@@ -314,12 +351,19 @@ def construct_config(args):
 			cliConfig['edge_service_gateways'] = [ ]
 
 
-			for index in xrange(1, 4): 
+			for index in xrange(1, 2): 
 				esgEntry = {  }
 				esgEntry['routed_components'] = { }
-				esgEntry['certs'] = {}
-				esgEntry['certs']['config'] = { }
+				esgEntry['ert_certs'] = {}
+				esgEntry['ert_certs']['config'] = { }
 				esgEntry['cli'] = {}
+
+				# Supporting atmost 4 iso segments per edge instance
+				esgEntry['iso_certs'] = [ {}, {}, {}, {}]
+				esgEntry['iso_certs'][0]['config'] = {}
+				esgEntry['iso_certs'][1]['config'] = {}
+				esgEntry['iso_certs'][2]['config'] = {}
+				esgEntry['iso_certs'][3]['config'] = {}
 
 				key = '{}_{}_{}'.format(prefix, 'name', index)
 				
@@ -334,20 +378,37 @@ def construct_config(args):
 					val =  argDict[key]
 					if val:
 						# build certs_config to certs.config dict structure
-						if 'certs_config' in key:
-							field[1] =  field[1].replace('certs_config_', '').replace('domain', '_domain')							
-							esgEntry['certs']['config'][field[1]] = val
+						if 'iso_certs_config' in key:
+							field[1] =  field[1].replace('iso_certs_config_', '').replace('country', 'country_code')
+							iso_index = int(re.sub("\D", "", field[1]))
+							field[1] =  field[1].replace('_'+str(iso_index), '')
+							esgEntry['iso_certs'][iso_index - 1]['config'][field[1]] = val
+						elif 'iso_certs_' in key:
+							field[1] =  field[1].replace('iso_certs_', '')
+							iso_index = int(re.sub("\D", "", field[1]))
+							field[1] =  field[1].replace('_'+str(iso_index), '')
+							esgEntry['iso_certs'][iso_index - 1]['name'] = val
+						elif 'ert_certs_config' in key:
+							field[1] =  field[1].replace('ert_certs_config_', '').replace('domain', '_domain')							
+							esgEntry['ert_certs']['config'][field[1]] = val
 						# build certs_ to certs dict structure
 						elif 'certs' in key:
-							field[1] =  field[1].replace('certs_', '')
-							esgEntry['certs'][field[1]] = val
+							field[1] =  field[1].replace('ert_certs_', '')
+							esgEntry['ert_certs'][field[1]] = val
 						# build cli_ to cli dict structure
 						elif 'cli_' in key:	
 							field[1] =  field[1].replace('cli_', '')							
 							esgEntry['cli'][field[1]] = val
 						else:
 							esgEntry[field[1]] = val 
-								
+				
+				# Remove empty iso_cert sections
+				iso_certs = [ ]
+				for iso_index in range(0, 4):
+					if bool(esgEntry['iso_certs'][iso_index]['config']):
+						iso_certs.append(esgEntry['iso_certs'][iso_index])
+				esgEntry['iso_certs'] = iso_certs
+
 				esgEntry['routed_components'] = [ ]
 
 				for component in ROUTED_COMPONENTS:
@@ -406,6 +467,8 @@ def _nsx_gen_main(args):
 			'list': list_cmd,
 			'delete': delete_cmd,
 			'build': build_cmd,
+			'export': export_cmd,
+			'import': import_cmd,
 			}
 		command_selector[args.command](config_file=args.nsx_conf)
 	except KeyError as e:
@@ -488,12 +551,20 @@ def delete_cmd(config_file=CONFIG_FILE):
 	nsx_builder.list(finalCfg)
 	print('Exiting...\n')
 
+def export_cmd(config_file=CONFIG_FILE):
+	finalCfg = build_config(config_file)
+	nsx_builder.export_firewall_rules(finalCfg)
+
+def import_cmd(config_file=CONFIG_FILE):
+	finalCfg = build_config(config_file)
+	nsx_builder.import_firewall_rules(finalCfg)
+
 def deepupdate(original, update):
 	"""
 	Recursively update a dict.
-	Subdict's won't be overwritten but also updated.
+	Subdict's won't just be overwritten but also updated.
 	"""
-	if isinstance(original, dict) and isinstance(original, dict):
+	if isinstance(original, dict) and isinstance(update, dict):
 
 		for key, value in original.iteritems():
 			if (key not in update) or (not isinstance(value, (dict, list))):

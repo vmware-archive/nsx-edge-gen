@@ -69,7 +69,8 @@ All of these logical switches can be linked directly to the NSX Edge instance or
 ## Edge Service Gateways
 For every instance of edge service gateway to be created, specify its name, cli credentials, its gateway ip (can be the same for all instances) as well as certs needed to generate.
 
-Based on the certs section within each edge gateway entry, self-signed certs can be generated for the specified system and org domains (under esg -> certs -> config). If certs already exist, then insert the key and cert contents under certs section to be loaded into the loadbalancers. Or if a global cert is already available on the NSX, specify the cert id associated with the cert.
+Based on the certs section within each edge gateway entry, self-signed certs can be generated for the specified system and org domains (under esg -> ert_certs -> config). If certs already exist, then insert the key and cert contents under certs section to be loaded into the loadbalancers. Or if a global cert is already available on the NSX, specify the cert id associated with the cert.
+Similarly, certs can be generated for individual isolation segments (check for iso_certs in below snippet). If no config section is present under individual iso_certs section, then the ert certs would be used for those isolation segments.
 
 Example:
 ```
@@ -80,7 +81,7 @@ edge_service_gateways:
   cli:
     username: testuser
     password: Test$assword123456
-  certs:
+  ert_certs:
     name: Foundation1
     # cert_id: cert-11 # Uncomment and edit this in order to use an existing cert id
     # # Uncomment and edit below in order to use an existing cert and private key
@@ -101,7 +102,15 @@ edge_service_gateways:
       org_unit: Pivotal
       country_code: US  # Default - US
       system_domain: pcf-sys-test.corp.local
-      app_domain: pcf-app-test.corp.local  
+      app_domain: pcf-app1-test.corp.local,pcf-app2-test.corp.local # comma separated list
+  iso_certs:
+  # Array of isolation zones and their cert config
+  - name: IsoZone1
+    switch: IsoZone-1
+    config:
+      org_unit: Pivotal
+      country_code: US  # Default - US
+      domains: pcf-zone1-prod-app-test.corp.local,pcf-zone1-test-app-test.corp.local # comma separated list 
 ```
 
 ### Routed Components
@@ -122,6 +131,7 @@ Example:
     switch: Ert.    # Belong to Ert logical switch
     instances: 4    # 4 instances of go-router
     offset: 10
+    external: true
     uplink_details:
       uplink_ip: 10.114.216.172 # This gets exposed outside
     #transport:
@@ -140,6 +150,7 @@ Example:
     switch: PCF-Tiles # Belong to PCF-Tiles logical switch
     instances: 3      # for 3 proxies in 3 AZs
     offset: 10
+    external: false
     uplink_details:
       uplink_ip: 192.168.27.250 # This should be on the PCF-Tiles network, not external facing
     transport:
@@ -211,9 +222,9 @@ RUN_CMD=build
   -esg_cli_pass_1 'P1v0t4l!P1v0t4l!' \
   -nsxmanager_dportgroup DPortGroupTest \
   -nsxmanager_en_dlr true \
-  -esg_certs_1 autogen \
-  -esg_certs_config_sysd_1 sys2.test.pez.pivotal.io \
-  -esg_certs_config_appd_1 apps2.test.pez.pivotal.io \
+  -esg_ert_certs_1 autogen \
+  -esg_ert_certs_config_sysd_1 sys2.test.pez.pivotal.io \
+  -esg_ert_certs_config_appd_1 apps2.test.pez.pivotal.io \
   -esg_opsmgr_uplink_ip_1 10.13.92.171 \
   -esg_go_router_uplink_ip_1 10.13.92.172 \
   -esg_diego_brain_uplink_ip_1 10.13.92.173 \
@@ -271,6 +282,7 @@ Sample Entry in template:
  uplink_ip: 10.193.99.41
  switch: PCF-Tiles
  instances: 4
+ external: true # Allow external access
  offset: 30
  transport:
    #Use defaults - https/443 incoming, http/80 forward

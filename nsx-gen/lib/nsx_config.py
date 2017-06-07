@@ -214,11 +214,48 @@ class NSXConfig(dict):
 			nsx_edge['global_switches'] =  global_switches
 			nsx_edge['global_uplink_details'] = self.nsxmanager['uplink_details']
 
+
+			nsx_edge['monitor_list'] = get_default_monitors()
+			nsx_edge['app_rules'] = get_default_app_rules()
+			if DEBUG:
+				print 'App Rules: {}'.format(nsx_edge['app_rules'])	
+				print 'Monitor List: {}'.format(nsx_edge['monitor_list'])	
+		
+			default_app_profiles = get_default_app_profiles()
+			app_profiles = copy.copy(default_app_profiles)
+			
+			index = 1
+			for builtin_app_profile in default_app_profiles:
+				
+				# Create new app profiles only for those that require ssl/cert handling
+				if builtin_app_profile['requires_cert'] != 'true':
+					continue
+
+				index = 1
+				for lswitch in self.logical_switches:
+
+					lswitch_name_upper = lswitch['given_name'].upper()
+					# Skip non-ert and non-isozone switches from any associated app profiles
+					if not ('ISOZONE' in lswitch_name_upper):# or 'ERT' in lswitch_name_upper):
+						continue
+
+					new_app_profile = copy.copy(builtin_app_profile)
+					new_app_profile['id'] = builtin_app_profile['id'] + str(index)
+					new_app_profile['switch'] = lswitch['given_name']
+					new_app_profile['name'] = builtin_app_profile['name'] + '-' + lswitch['given_name']
+					app_profiles.append(new_app_profile)
+					index += 1
+				
+			nsx_edge['app_profiles'] = app_profiles
+			if DEBUG:
+				print 'All App Profiles: {}'.format(app_profiles)
+			
 			routed_component_context = nsx_edge['routed_components']
 
 			nsx_edge['routed_components'] = [ ]
 			for entry in routed_component_context:
-				routedComponent = parse_routing_component(entry, self.logical_switches, enable_dlr)
+				routedComponent = parse_routing_component(entry, self.logical_switches, 
+														app_profiles, enable_dlr)
 				print('Routed component: {}'.format(routedComponent))
 				nsx_edge['routed_components'].append(routedComponent)
 
@@ -228,8 +265,6 @@ class NSXConfig(dict):
 			nsx_edge['name'] = name
 			
 		print_edge_service_gateways_configured(self.nsx_edges)
-
-
 
 	def read_config(self, input_config_file=CONFIG_FILE):
 		if os.path.isdir(input_config_file):

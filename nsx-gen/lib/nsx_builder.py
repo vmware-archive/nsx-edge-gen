@@ -33,6 +33,11 @@ import glob
 import mobclient
 import subprocess
 import xmltodict
+import dicttoxml
+
+from collections import OrderedDict
+from yaml.dumper import Dumper
+from yaml.representer import SafeRepresenter
 from pprint import pprint
 
 LIB_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -41,11 +46,9 @@ REPO_PATH = os.path.realpath(os.path.join(LIB_PATH, '..'))
 sys.path.append(os.path.join(LIB_PATH, os.path.join('../..')))
 
 from util import *
-from routed_component import *
+from print_util import *
+from routed_components_handler import *
 from nsx_urls import *
-
-import argparse
-from print_util  import *
 
 DEBUG = False
 
@@ -136,6 +139,14 @@ def list(context, verbose=False):
 	reconcile_uplinks(context)
 	list_logical_switches(context)
 	list_nsx_edge_gateways(context)    
+
+def export_firewall_rules(context, verbose=False):
+	client.set_context(context, 'nsxmanager')
+	moidMap = refresh_moid_map(context)
+	if DEBUG:
+		pprint(moidMap)    
+
+	export_nsx_edge_gateway_firewall_rules(context)  
 
 def map_logical_switches_id(logical_switches):
 	existinglSwitchesResponse = client.get(NSX_URLS['lswitch']['all'] + '?&startindex=0&pagesize=100')
@@ -615,6 +626,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		tcp_routed_component    = nsx_edge['routed_components'][3]
 
 		isozone_routed_components = []
+		iso_zones = []
 
 
 		for routed_component in nsx_edge['routed_components']:
@@ -622,6 +634,10 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 
 			if 'ISOZONE' in routed_component_name_upper:
 				isozone_routed_components.append(routed_component)
+				iso_zone = { 'name' : routed_component['switch']['given_name'] }
+
+				if iso_zone not in iso_zones:
+					iso_zones.append(iso_zone)
 			else:
 				if 'OPS' in routed_component_name_upper:
 					opsmgr_routed_component = routed_component
@@ -631,6 +647,8 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 					diego_routed_component = routed_component
 				elif 'TCP-ROUTER' in routed_component_name_upper:
 					tcp_routed_component = routed_component
+
+		nsx_edge['iso_zones'] = iso_zones
 
 		ertLogicalSwitch = {}
 		infraLogicalSwitch = {}
@@ -656,10 +674,6 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		
 		# TODO: Ignore the vm folder for now...
 		#nsx_edge['vmFolder_id'] = mobclient.lookup_moid(vcenter_ctx['vmFolder']) 
-
-		nsx_edge['monitorMap'] = MONITOR_MAP
-		nsx_edge['appRuleMap'] = APP_RULE_MAP
-		nsx_edge['appProfileMap'] = APP_PROFILE_MAP
 
 		# Get a large cidr (like 16) that would allow all networks to talk to each other
 		cross_network_cidr = calculate_cross_network_cidr(infraLogicalSwitch)
@@ -717,57 +731,55 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 		data = post_response.text
 		
 		if post_response.status_code < 400: 
-			print('Created NSX Edge :{}\n'.format(nsx_edge['name']))
-			certId = add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge)
-			print('Got cert id: {}\n'.format(nsx_edge['cert_id']))
-			print('Now updating LBR config!!')
+			print('Success!! Created NSX Edge :{}\n'.format(nsx_edge['name']))
+			add_ert_certs_to_nsx_edge(nsx_edges_dir, nsx_edge)
+			add_iso_certs_to_nsx_edge(nsx_edges_dir, nsx_edge)
+			print('Finished adding certs to NSX Edge :{}!!\n'.format(nsx_edge['name']))
+
+			print('Updating LBR config!!')
 			add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge)
-			print('Success!! Finished creation of NSX Edge instance: {}\n\n'.format(nsx_edge['name']))
+			print('Success!! Finished complete creation of NSX Edge instance: {}\n\n'.format(nsx_edge['name']))
 		else:
 			print('Creation of NSX Edge failed, details:\n{}\n'.format(data))
 			raise Exception('Creation of NSX Edge failed, details:\n {}'.format(data))			
 
-def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
+
+def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge, cert_section):
 
 	map_nsx_esg_id( [ nsx_edge ] )
 
-	if not nsx_edge.get('certs'):
-		print('No certs section to use an available cert or generate cert was specified for edge instance: {}'.\
-					format( nsx_edge['name']))
+	cert_config = cert_section.get('config')
+	if not cert_config:
+		print('No certs section to use an available cert or generate cert was specified for cert: {} for edge instance: {}'.\
+					format( cert_section['name'], nsx_edge['name']))
 		raise Exception('Creation of NSX Edge failed, no certs section was provided')	
 
-	if nsx_edge['certs'].get('cert_id'):
-		print('Going to use available cert id: {} for edge instance: {}'.\
-					format(nsx_edge['cert_id'], nsx_edge['name']))
+	if cert_config.get('cert_id'):
+		print('Going to use available cert id: {} from its cert_config for edge instance: {}'.\
+					format(cert_config['cert_id'], nsx_edge['name']))
 		return
 
 	
-	if nsx_edge['certs'].get('key') and nsx_edge['certs'].get('cert'):
+	if cert_config.get('key') and cert_config.get('cert'):
 		print('Using the provided certs and key for associating with NSX Edge instance: {}'.format(nsx_edge['name']))
-		nsx_edge['certs']['key'] = nsx_edge['certs'].get('key').strip() + '\n'
-		nsx_edge['certs']['cert'] = nsx_edge['certs'].get('cert').strip() + '\n'
+		cert_config['key'] = cert_config.get('key').strip() + '\n'
+		cert_config['cert'] = cert_config.get('cert').strip() + '\n'
 	else:
-		cert_config = nsx_edge['certs'].get('config')
-		if not cert_config:
-			print('No cert config was specified for edge instance: {}'.\
-						format( nsx_edge['name']))
-			raise Exception('Creation of NSX Edge failed, no cert config to associate/generate certs was provided')	
-
 		# Try to generate certs if key and cert are not provided
-		generate_certs(nsx_edge)
+		generate_certs(cert_section)
 	
-	certPayloadFile = os.path.join(nsx_edges_dir, nsx_edge['name'] + '_cert_post_payload.xml')
+	certPayloadFile = os.path.join(nsx_edges_dir, cert_section['name'] + '_cert_post_payload.xml')
 
 	template_dir = '.'
-	nsx_edges_context = {
-		'nsx_edge': nsx_edge,
+	nsx_cert_context = {
+		'certs': cert_section,
 		'files': []
 	}    
 
 	template.render(
 		certPayloadFile,
 		os.path.join(template_dir, 'edge_cert_post_payload.xml' ),
-		nsx_edges_context
+		nsx_cert_context
 	)
 
 	retry = True
@@ -779,32 +791,149 @@ def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 		data = post_response.text
 
 		if DEBUG:
-			print('NSX Edge Cert Addition response:\{}\n'.format(data))
+			print('NSX Edge Cert {} addition response:\{}\n'.format(cert_section['name'], data))
 
 		if post_response.status_code < 400: 
-			print('Added NSX Edge Cert to {}\n'.format(nsx_edge['name']))
 			certPostResponseDoc = xmltodict.parse(data)
 
 			certId = certPostResponseDoc['certificates']['certificate']['objectId']
-			nsx_edge['cert_id'] = certId
+			cert_section['cert_id'] = certId
+			print('Added `{}` cert with id: `{}` to NSX Edge: `{}`\n'.format(cert_section['name'], cert_section['cert_id'], nsx_edge['name']))
+			return certId
 
 		elif post_response.status_code == 404: 
-			print('NSX Edge not yet up, retrying')
+			print('NSX Edge {} not yet up, retrying!!'.format(nsx_edge['name']))
 			retry = True 
-			print('Going to retry addition of cert again... for NSX Edge: {}\n'.format(nsx_edge['name']))
+			print('Going to retry addition of cert {} again... for NSX Edge: {}\n'.format(cert_section['name'], nsx_edge['name']))
 		else:
-			print('Addition of NSX Edge Cert failed, details:{}\n'.format(data))
-			raise Exception('Addition of NSX Edge failed, details:\n {}'.format(data))
+			print('Addition of NSX Edge Cert {} failed, details:{}\n'.format(cert_section['name'], data))
+			raise Exception('Addition of NSX Edge Cert `{}` failed, details:\n {}'.format(cert_section['name'], data))
+
+
+def add_ert_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
+
+	ert_cert_section = nsx_edge['ert_certs']
+	if not ert_cert_section:
+		print('No Ert certs section defined to use an available cert or generate cert was specified for cert: {} for edge instance: {}'.\
+					format( cert_section['name'], nsx_edge['name']))
+		raise Exception('Creation of NSX Edge failed, no ert certs section was provided')	
+
+	if ert_cert_section.get('cert_id'):
+		# Use the available cert id, nothing to do
+		nsx_edge['cert_id'] = ert_cert_section['cert_id']
+		return
+
+	if ert_cert_section.get('key') and ert_cert_section.get('cert'):
+		# Use the available key & cert
+		ert_cert_id = add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge, ert_cert_section)
+		nsx_edge['cert_id'] = ert_cert_id
+		return
+
+	sys_domain = ert_cert_section['config'].get('system_domain')
+	app_domain = ert_cert_section['config'].get('app_domain')
+
+	if not sys_domain and not app_domain:
+		print('No system or app domain defined was specified for Ert Cert generation for edge instance: {}'.\
+					format( nsx_edge['name']))
+		raise Exception('Creation of NSX Edge failed, no domains was provided')	
+
+	sys_domain = sys_domain.replace(' ', '')
+	app_domain = app_domain.replace(' ', '')
+	complete_domain = '{},login.{},uaa.{},{}'.format(sys_domain, sys_domain, sys_domain, app_domain)
+
+	ert_cert_section['config']['domains'] = complete_domain
+	ert_cert_id = add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge, ert_cert_section)
+	nsx_edge['cert_id'] = ert_cert_id
+
+def add_iso_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
+
+	ert_certs_section = nsx_edge['ert_certs']
+	iso_certs_section = nsx_edge['iso_certs']
+
+	if not iso_certs_section:
+		print('No Iso certs section defined to use an available cert or generate cert , going to reuse ERT cert id for edge instance: {}'.\
+					format( cert_section['name'], nsx_edge['name']))
+		return	
+
+	iso_zones = nsx_edge['iso_zones']
+
+	# Generate or directly add cert for each iso segment specified
+	index = 0
+	for iso_cert in iso_certs_section:
+
+		# Use the available cert id				
+		if iso_cert.get('cert_id'):
+			certId = iso_cert['cert_id']		
+		elif iso_cert.get('key') and iso_cert.get('cert'):			
+			add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge, iso_cert)
+		else:
+			if not iso_cert.get('config') or not iso_cert.get('config').get('domains'):
+				print('No domains defined for Iso Zone {} cert generation for edge instance: {}'.\
+							format( iso_cert.get('name'), nsx_edge['name']))
+				continue
+				#raise Exception('Creation of NSX Edge failed, no domains were provided for iso zone:{}'.format(iso_cert['name']))	
+
+
+			certId = add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge, iso_cert)
+
+		found_iso_zone = False
+		certId = iso_cert['cert_id']
+		
+		for iso_zone in iso_zones:
+			if (iso_zone['name'] == iso_cert.get('switch')):
+				found_iso_zone = True
+				iso_zone['cert_id'] = certId
+				break
+
+		# If the switch name is not matching, just go by the index 
+		# hoping the user specified the right cert in the same order as the logical switch
+		if not found_iso_zone:
+			try:
+				iso_zone = iso_zones[index]
+				iso_zone['cert_id'] = certId
+			except IndexError:
+				raise Exception('Unable to find matching switch for specified iso cert, details:\n {}'.format(iso_cert))
+
+		index += 1
+
+	# Ensure every iso zone has some cert_id associated with it,
+	# use the ERT cert id for those missing certs
+	ert_cert_id = nsx_edge['cert_id']
+	for iso_zone in iso_zones:
+		if not iso_zone.get('cert_id'):
+			iso_zone['cert_id'] = ert_cert_id
 
 def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 	
 	template_dir = '.'
-	
+
+	iso_zones = nsx_edge['iso_zones']
+	app_profiles = nsx_edge['app_profiles']
+	ert_certId = nsx_edge['cert_id']
+
+	# Link the iso cert id against the corresponding app profiles, 
+	# if they are using any ssl/secure protocol and are associated 
+	# with Ert or IsoZone switches
+	for app_profile in app_profiles:
+		switch_name = app_profile.get('switch')
+		app_profile_name = app_profile['name']
+
+		if app_profile['requires_cert']:
+			if switch_name and 'ISOZONE' in switch_name.upper():
+				for iso_zone in iso_zones:
+					if switch_name == iso_zone['name']:
+						app_profile['cert_id'] = iso_zone['cert_id']
+						continue
+			# Use the same ert cert id for those not associated with any switches too
+			else: #if not switch_name or (switch_name and 'ERT' in switch_name.upper()):
+				app_profile['cert_id'] = ert_certId
+				continue
+			
 	nsx_edges_context = {
 		'nsx_edge': nsx_edge,
-		'appProfileMap': nsx_edge['appProfileMap'],
-		'appRuleMap': nsx_edge['appRuleMap'],
-		'monitorMap': nsx_edge['monitorMap'],
+		'app_profiles': app_profiles,
+		'app_rules': nsx_edge['app_rules'],
+		'monitor_list': nsx_edge['monitor_list'],
 		'routed_components':  nsx_edge['routed_components'],
 		'files': []
 	}    
@@ -813,8 +942,7 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
 		os.path.join(nsx_edges_dir, nsx_edge['name'] + '_lbr_config_put_payload.xml'),
 		os.path.join(template_dir, 'edge_lbr_config_put_payload.xml' ),
 		nsx_edges_context
-	)	
-	#exit()
+	)
 
 	put_response = client.put_xml(NSX_URLS['esg']['all'] 
 									+ '/' + nsx_edge['id']
@@ -862,7 +990,8 @@ def map_nsx_esg_id(edge_service_gateways):
 		if (interested_Esg.get('id') is None):
 			print('NSX ESG instance with name: {} does not exist anymore\n'.format(interested_Esg['name']))
 
-	print('Updated NSX ESG:{}'.format(edge_service_gateways))
+	if DEBUG:
+		print('Updated NSX ESG:{}'.format(edge_service_gateways))
 	return matched_nsx_esgs   
 
 def list_nsx_edge_gateways(context):
@@ -901,6 +1030,82 @@ def delete_nsx_edge_gateways(context):
 		else:
 			print('Deletion of NSX ESG failed, details:{}\n'.format(data +'\n'))    
 
+def represent_ordereddict(dumper, data):
+    value = []
+
+    for item_key, item_value in data.items():
+        node_key = dumper.represent_data(item_key)
+        node_value = dumper.represent_data(item_value)
+
+        value.append((node_key, node_value))
+
+    return yaml.nodes.MappingNode(u'tag:yaml.org,2002:map', value)
+
+def represent_odict(dump, tag, mapping, flow_style=None):
+    """Like BaseRepresenter.represent_mapping, but does not issue the sort().
+    """
+    value = []
+    node = yaml.MappingNode(tag, value, flow_style=flow_style)
+    if dump.alias_key is not None:
+        dump.represented_objects[dump.alias_key] = node
+    best_style = True
+    if hasattr(mapping, 'items'):
+        mapping = mapping.items()
+    for item_key, item_value in mapping:
+        node_key = dump.represent_data(item_key)
+        node_value = dump.represent_data(item_value)
+        if not (isinstance(node_key, yaml.ScalarNode) and not node_key.style):
+            best_style = False
+        if not (isinstance(node_value, yaml.ScalarNode) and not node_value.style):
+            best_style = False
+        value.append((node_key, node_value))
+    if flow_style is None:
+        if dump.default_flow_style is not None:
+            node.flow_style = dump.default_flow_style
+        else:
+            node.flow_style = best_style
+    return node
+
+
+def export_nsx_edge_gateway_firewall_rules(context):
+
+	edge_service_gateways = context['edge_service_gateways']
+	map_nsx_esg_id( edge_service_gateways )
+	
+	for nsx_esg in edge_service_gateways:
+
+		if  nsx_esg.get('id') is None:
+			continue
+
+		get_response = client.get(NSX_URLS['esg']['all'] + '/' +
+				nsx_esg['id'])
+		data = get_response.text
+		existingEsgResponseDoc = xmltodict.parse(data)
+
+		if DEBUG:
+			print('NSX ESG Get response:{}\n'.format(data))
+
+		if get_response.status_code < 400: 
+			firewall_dict = existingEsgResponseDoc['edge']['features']['firewall']['firewallRules']
+			firewall_rules_xml =  dicttoxml.dicttoxml(
+									firewall_dict,
+									custom_root='firewallRules')
+
+			#print('Retrieved NSX ESG {}: {}\n'.format(nsx_esg['name'], existingEsgResponseDoc))
+			print('Retrieved NSX ESG instance \'{}\' firewall rules as XML:\n{}\n'.format(nsx_esg['name'], 
+														firewall_rules_xml))
+
+			yaml.SafeDumper.add_representer(OrderedDict,
+				    lambda dumper, value: represent_odict(dumper, u'tag:yaml.org,2002:map', value))
+
+			yaml_content = yaml.safe_dump(firewall_dict, allow_unicode = True, encoding = None, default_flow_style=False) 
+
+			print('Retrieved NSX ESG instance \'{}\' firewall rules as YAML:\n{}\n'.format(nsx_esg['name'], yaml_content))
+			with open('data.yml', 'w') as outfile:
+				outfile.write(yaml_content) 
+		else:
+			print('Retrieval of NSX ESG failed, details:{}\n'.format(data +'\n'))    
+
 
 def check_cert_config(nsx_context):
 
@@ -914,31 +1119,26 @@ def check_cert_config(nsx_context):
 					format( nsx_edge['name']))
 		raise Exception('Creation of NSX Edge failed, neither cert_id nor config to generate certs was provided')	
 
-def generate_certs(nsx_context):
+def generate_certs(cert_section):
+	output_dir = './' + cert_section['name']	
+	cert_config = cert_section.get('config')
 
-	output_dir = './' + nsx_context['certs']['name']
-	cert_config = nsx_context['certs'].get('gen_config')
-	if not cert_config:
-		cert_config = nsx_context['certs'].get('config')
- 
-	org_unit = cert_config['org_unit']
-	country = cert_config['country_code']
+	org_unit = cert_config.get('org_unit', 'Pivotal')
+	country = cert_config.get('country_code', 'US')
 
 	subprocess.call(
 					[ 
 						'./certGen.sh', 
-						cert_config['system_domain'], 
-						cert_config['app_domain'], 
+						cert_config['domains'], 
 						output_dir, 
 						org_unit, 
 						country 
 					]
 				)
 
-	nsx_context['certs']['key'] = readFileContent(output_dir + '/*.key')
-	nsx_context['certs']['cert'] = readFileContent(output_dir + '/*.crt')
-	nsx_context['certs']['name'] = 'Cert for ' + nsx_context['certs']['name']
-	nsx_context['certs']['description'] = nsx_context['certs']['name'] + '-' + nsx_context['certs']['config']['system_domain']
+	cert_section['key'] = readFileContent(output_dir + '/*.key')
+	cert_section['cert'] = readFileContent(output_dir + '/*.crt')
+	cert_section['description'] = 'Cert for ' + cert_section['name']
 
 def readFileContent(filePath):
 	txt = glob.glob(filePath)
@@ -979,7 +1179,7 @@ def cross_combine_lists(list1, list2):
 			   continue
 
 			# Ensure IsoZones don't talk to each other
-			if not ( 'ISOZONE' in pair[0]['given_name'].upper() 
+			if not ('ISOZONE' in pair[0]['given_name'].upper() 
 				and 'ISOZONE' in pair[1]['given_name'].upper()): 
 				edited_result.append(pair)
 

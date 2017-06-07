@@ -22,6 +22,7 @@ import os.path
 import string
 import sys
 #import traceback
+import copy
 import re
 import ipcalc
 import yaml
@@ -29,8 +30,6 @@ import json
 from nsx_lbr_config  import *
 from routed_components_config  import *
 
-
-#CONFIG_FILE = "nsx_cloud_config.yml"
 LIB_PATH = os.path.dirname(os.path.realpath(__file__))
 REPO_PATH = os.path.realpath(os.path.join(LIB_PATH, '..'))
 
@@ -38,155 +37,11 @@ DEFAULT_OSPF_CIDR = '172.16.100.10/24'
 
 DEBUG = False
 
-MONITOR_MAP             = 'MONITOR_MAP'
-APP_RULE_MAP            = 'APP_RULE_MAP'
-APP_PROFILE_MAP         = 'APP_PROFILE_MAP'
-KNOWN_LSWITCHES         = 'KNOWN_LSWITCHES'
-KNOWN_ROUTED_COMPONENTS = 'KNOWN_ROUTED_COMPONENTS'
-
-"""
-
-# Ensure changes to the monitor-id in MONITOR_MAP matches the ones in DEFAULT_ROUTED_COMPONENT_MAP
-MONITOR_MAP = {
-	'tcp': 	      { 'id': 'monitor-1', 'type': 'tcp',   'name': 'default_tcp_monitor' },   
-	'http':       { 'id': 'monitor-2', 'type': 'http',  'name': 'default_http_monitor', 'url': '/' },
-	'https':      { 'id': 'monitor-3', 'type': 'https', 'name': 'default_https_monitor', 'url': '/' },
-	'go-router':  { 'id': 'monitor-4', 'type': 'http',  'name': 'goRouter_monitor', 'url': '/health' },
-	'tcp-router': { 'id': 'monitor-5', 'type': 'http',  'name': 'tcpRouter_monitor', 'url': '/health' },
-	'mysql':      { 'id': 'monitor-6', 'type': 'tcp',   'name': 'mysql_monitor' },
-}
-
-APP_PROFILE_MAP = {
-	'http:http': 	{ 'id': 'applicationProfile-1', 'name': 'HTTP2HTTP', 'ingress' : 'HTTP',  'forward' : 'HTTP',
-		'template': 'HTTP', 'sslPassthrough': 'false', 'serverSslEnabled' : 'false' },
-	'http:tcp':     { 'id': 'applicationProfile-2', 'name': 'HTTP2TCP', 'ingress' : 'HTTP',  'forward' : 'TCP' ,
-		'template': 'HTTP', 'sslPassthrough': 'false', 'serverSslEnabled' : 'false' },
-	'https:http':   { 'id': 'applicationProfile-3', 'name': 'HTTPS2HTTP', 'ingress' : 'HTTPS', 'forward' : 'HTTP' ,
-		'template': 'HTTPS', 'sslPassthrough': 'false', 'serverSslEnabled' : 'false' },
-	'https:https':  { 'id': 'applicationProfile-4', 'name': 'HTTPS2HTTPS', 'ingress' : 'HTTPS', 'forward' : 'HTTPS' ,
-		'template': 'HTTPS', 'sslPassthrough': 'true', 'serverSslEnabled' : 'true' },
-	'https:tcp':    { 'id': 'applicationProfile-5', 'name': 'HTTPS2TCP', 'ingress' : 'HTTPS', 'forward' : 'TCP' ,
-		'template': 'HTTP', 'sslPassthrough': 'false', 'serverSslEnabled' : 'false' },
-	'tcp:tcp':      { 'id': 'applicationProfile-6', 'name': 'TCP2TCP', 'ingress' : 'TCP',   'forward' : 'TCP' ,
-		'template': 'TCP', 'sslPassthrough': 'false', 'serverSslEnabled' : 'false' },
-	'tcps:tcp':     { 'id': 'applicationProfile-7', 'name': 'TCPS2TCP', 'ingress' : 'TCPS',  'forward' : 'TCP' ,
-		'template': 'TCP', 'sslPassthrough': 'false', 'serverSslEnabled' : 'false' },
-	'tcps:tcps':    { 'id': 'applicationProfile-8', 'name': 'TCPS2TCPS', 'ingress' : 'TCPS',  'forward' : 'TCPS' ,
-		'template': 'TCP', 'sslPassthrough': 'true', 'serverSslEnabled' : 'true' },   	
-}
-
-# Dont change order of first two entries or their ids -- they should stay constant..
-APP_RULE_MAP = {
-	'optionlog': 	           { 'id': 'applicationRule-1', 'name': 'option httplog', 'script' : 'option httplog' },
-	'forwardfor': 	           { 'id': 'applicationRule-2', 'name': 'forwardfor', 'script' : 'option forwardfor' },
-	'X-Forwarded-Proto:http':  { 'id': 'applicationRule-3', 'name': 'X-Forwarded-Proto:http', 'script' : 'reqadd X-Forwarded-Proto:\ http' },
-	'X-Forwarded-Proto:https': { 'id': 'applicationRule-4', 'name': 'X-Forwarded-Proto:https', 'script' : 'reqadd X-Forwarded-Proto:\ https' },	
-}
-
-
-# Ensure the switch matches the entry in KNOWN_LSWITCHES
-# Ensure the offset for the non-external components are not overlapping or same
-DEFAULT_ROUTED_COMPONENT_LSWITCH_MAP = {
-	# Ensure the key matches the name entry
-	KNOWN_ROUTED_COMPONENTS[0]: { 'name': 'OPS', 'switch': 'INFRA', 'external': True,           
-									'useVIP': False, 'instances' : 1, 'offset' :  5  },
-	KNOWN_ROUTED_COMPONENTS[1]: { 'name': 'GO-ROUTER', 'switch': 'ERT', 'external': True, 
-							      	'useVIP': True, 'instances' : 4,  'offset' : 10  },
-	KNOWN_ROUTED_COMPONENTS[2]: { 'name': 'DIEGO', 'switch': 'ERT', 'external': True,      
-									'useVIP': True, 'instances' : 3,  'offset' : 20  },
-	KNOWN_ROUTED_COMPONENTS[3]: { 'name': 'TCP-ROUTER', 'switch': 'ERT', 'external': True,  
-									'useVIP': True, 'instances' : 4,  'offset' : 30  },
-	KNOWN_ROUTED_COMPONENTS[4]: { 'name': 'MYSQL-ERT', 'switch': 'ERT', 'external': False,
-									'useVIP': True, 'instances' : 3,  'offset' : 40  },
-	KNOWN_ROUTED_COMPONENTS[5]: { 'name': 'MYSQL-TILE', 'switch': 'PCF-TILES', 'external': False,
-									'useVIP': True, 'instances' : 3,  'offset' : 10  },								
-	KNOWN_ROUTED_COMPONENTS[6]: { 'name': 'RABBITMQ-TILE', 'switch': 'PCF-TILES', 'external': False,
-									'useVIP': True, 'instances' : 3,  'offset' : 30  },
-	KNOWN_ROUTED_COMPONENTS[7]: { 'name': 'GO-ROUTER-ISO', 'switch': 'ISOZONE', 'external': True,  
-							      	'useVIP': True, 'instances' : 2,  'offset' : 10  },
-	KNOWN_ROUTED_COMPONENTS[8]: { 'name': 'TCP-ROUTER-ISO', 'switch': 'ISOZONE', 'external': True,  
-									'useVIP': True, 'instances' : 2,  'offset' : 30  }
-																											
-}
-
-# Ensure the monitor-id matches the ones in the MONITOR_MAP
-# Ensure the offset for the non-external components are not overlapping or same
-
-DEFAULT_ROUTED_COMPONENT_MAP = {
-	KNOWN_ROUTED_COMPONENTS[0]: { 
-				'name': 'OPS', 'switch': 'INFRA', 'external': True,   
-				'useVIP': False, 'instances' : 1,  'offset' :  5, 'monitor_id' : 'monitor-3', 
-				'transport':	{
-					'ingress': { 'port': '443', 'protocol': 'https' },
-					'egress': { 'port': '443', 'protocol': 'https', 'monitor_port' : '443',  'url' :  '/' },
-				}	 
-			},
-	KNOWN_ROUTED_COMPONENTS[1]: { 
-				'name': 'GO-ROUTER', 'switch': 'ERT', 'external': True, 
-				'useVIP': True,  'instances' : 4,  'offset' : 10, 'monitor_id' : 'monitor-4', 	
-				'transport':	{
-					'ingress': { 'port': '443', 'protocol': 'https' },
-					'egress': { 'port': '80', 'protocol': 'http', 'monitor_port' : '8080',  'url' :  '/health' },
-				 }
-			},
-	KNOWN_ROUTED_COMPONENTS[2]: { 
-				'name': 'DIEGO', 'switch': 'ERT', 'external': True,
-				'useVIP': True,  'instances' : 3,  'offset' : 20,  'monitor_id' : 'monitor-1',	
-				'transport':	{
-					'ingress': { 'port': '2222', 'protocol': 'tcp' },
-					'egress': { 'port': '2222', 'protocol': 'tcp', 'monitor_port' : '2222' },
-				}
-			},
-	KNOWN_ROUTED_COMPONENTS[3]: { 
-				'name': 'TCP-ROUTER', 'switch': 'ERT', 'external': True, 
-				'useVIP': True,  'instances' : 4,  'offset' : 30, 'monitor_id' : 'monitor-5',	
-				'transport':{
-					'ingress': { 'port': '5000', 'protocol': 'tcp' },
-					'egress': { 'port': '5000', 'protocol': 'tcp', 'monitor_port' : '80', 'url' :  '/health' },
-				 }
-			},
-	KNOWN_ROUTED_COMPONENTS[4]: {
-				'name': 'MYSQL-ERT', 'switch': 'PCF-TILES', 'external': False, 
-				'useVIP': True,  'instances' : 3,  'offset' :  40,  'monitor_id' : 'monitor-6',	    
-				'transport':{
-					'ingress': { 'port': '3306', 'protocol': 'tcp' },
-					'egress': { 'port': '3306', 'protocol': 'tcp', 'monitor_port' : '1936' },
-				 }
-			},
-	KNOWN_ROUTED_COMPONENTS[5]: {
-				'name': 'MYSQL-TILE', 'switch': 'PCF-TILES', 'external': False, 
-				'useVIP': True,  'instances' : 3,  'offset' :  10,  'monitor_id' : 'monitor-6',	    
-				'transport':{
-					'ingress': { 'port': '3306', 'protocol': 'tcp' },
-					'egress': { 'port': '3306', 'protocol': 'tcp', 'monitor_port' : '1936' },
-				 }
-			},
-	KNOWN_ROUTED_COMPONENTS[6]: { 
-				'name': 'RABBITMQ-TILE', 'switch': 'PCF-TILES', 'external': False, 
-				'useVIP': True,  'instances' : 3,  'offset' :  20,  'monitor_id' : 'monitor-1',	    
-				'transport':{
-					'ingress': { 'port': '15672,5672,5671', 'protocol': 'tcp' },
-					'egress': { 'port': '15672,5672,5671', 'protocol': 'tcp' },
-				 }
-			},
-	KNOWN_ROUTED_COMPONENTS[7]: { 
-				'name': 'GO-ROUTER-ISO', 'switch': 'ISOZONE', 'external': True, 
-				'useVIP': True,  'instances' : 2,  'offset' : 10, 'monitor_id' : 'monitor-4', 	
-				'transport':	{
-					'ingress': { 'port': '443', 'protocol': 'https' },
-					'egress': { 'port': '80', 'protocol': 'http', 'monitor_port' : '8080',  'url' :  '/health' },
-				 }
-			},
-	KNOWN_ROUTED_COMPONENTS[8]: { 
-				'name': 'TCP-ROUTER-ISO', 'switch': 'ISOZONE', 'external': True, 
-				'useVIP': True,  'instances' : 2,  'offset' : 30, 'monitor_id' : 'monitor-5',	
-				'transport':{
-					'ingress': { 'port': '5000', 'protocol': 'tcp' },
-					'egress': { 'port': '5000', 'protocol': 'tcp', 'monitor_port' : '80', 'url' :  '/health' },
-				 }
-			}
-}
-"""
+MONITOR_LIST             = 'MONITOR_LIST'
+APP_RULE_LIST            = 'APP_RULE_LIST'
+DEFAULT_APP_PROFILE_LIST = 'APP_PROFILE_LIST'
+KNOWN_LSWITCHES          = 'KNOWN_LSWITCHES'
+KNOWN_ROUTED_COMPONENTS  = 'KNOWN_ROUTED_COMPONENTS'
 
 class TransportScheme:
 
@@ -373,7 +228,7 @@ class RoutedComponent:
  				from any of the defined logical switches'.format(self.name))
 
 
-	def validate_component(self):
+	def validate_component(self, app_profiles):
 		if not self.switch:
 			raise ValueError('Unable to find matching switch for given component:{} ,\n\
 			 from any of the defined logical switches'.format(self.name))
@@ -407,32 +262,34 @@ class RoutedComponent:
 					raise ValueError('Unable to generate transport type for Routed Component:{}'.format( \
 							self.name))
 				
-		self.wire_app_rules_and_profiles()
+		self.wire_app_rules_and_profiles(app_profiles)
 		self.caclulate_routed_component_range()
 
-	def wire_app_rules_and_profiles(self):
+	# Pass the update app_profiles as we duplicate app profile per Ert/Iso switch
+	def wire_app_rules_and_profiles(self, app_profiles):
 		ingressProtocol = self.transport['ingress']['protocol']
 		egressProtocol = self.transport['egress']['protocol']
 
 		protocolMap = ingressProtocol +':' + egressProtocol
 
 		routed_comps_config_context = get_context()
-		default_app_profiles = routed_comps_config_context[APP_PROFILE_MAP]
-
-		appProfile = locate_with_key(default_app_profiles, 'profile', protocolMap.lower())
-		if not appProfile:
-			appProfile = locate_with_key(default_app_profiles,'profile', 'tcp:tcp')
-
-		self.app_profile = appProfile
 		
-		default_monitors = routed_comps_config_context[MONITOR_MAP]
+		self.app_profile = locate_app_profile(app_profiles, self.switchName, 'profile', protocolMap.lower())
+		# if 'ISOZONE' in self.switchName.upper():
+		# 	print 'Switch name: ' + self.switchName
+		# 	switchIndex = self.switchName.upper().replace('ISOZONE', '').replace('-', '')
+		# 	self.app_profile['name'] = self.app_profile['name'] + '-' + self.switchName
+		# 	self.app_profile['id'] = self.app_profile['id'] + switchIndex  
+		# 	print 'New App profile: {}'.format(self.app_profile)
+		
+		default_monitors = routed_comps_config_context[MONITOR_LIST]
 		if not self.monitor_id:
-			self.monitor_id = locate_with_key(default_monitors, 'monitor', egressProtocol.lower())['id']
+			self.monitor_id = locate_entry_in_list(default_monitors, 'monitor', egressProtocol.lower())['id']
 
 		# Always go with defaults of AppRule1 and 2 so they are in beginning
 		self.app_rules = [ "applicationRule-1", "applicationRule-2"  ]
 
-		default_app_rules = routed_comps_config_context[APP_RULE_MAP]
+		default_app_rules = routed_comps_config_context[APP_RULE_LIST]
 
 		for appRule in default_app_rules:
 			
@@ -532,15 +389,32 @@ def set_context(context):
 	get_context.context = context
 
 
-def locate_with_key(arr, field, key):
+def locate_entry_in_list(arr, field, value):
 	for entry in arr:
-		if entry[field] == key:
+		if entry[field] == value:
 			return entry
 
 	return None
 
+def locate_app_profile(app_profiles, lswitchName, field, value):
+	# First see if the app profiles that are specific to a switch (ERT or ISOZONE)
+	for entry in app_profiles:
+		associated_switch = entry.get('switch')
+		if associated_switch and associated_switch != '':
+			if entry[field] == value and associated_switch.upper() == lswitchName.upper():
+				return entry
 
-def parse_routing_component(routeComponentEntry, logical_switches, dlr_enabled):
+	# Fall back for those app profiles that are not specific to any switch
+	# Like http2http, tcp2tcp
+	for entry in app_profiles:
+		associated_switch = entry.get('switch')
+		if not associated_switch or associated_switch == '':
+			if entry[field] == value:
+				return entry
+
+	return None
+
+def parse_routing_component(routeComponentEntry, logical_switches, app_profiles, dlr_enabled):
 	print('Parsing Routed Component: {}'.format(routeComponentEntry))
 
 	instances = routeComponentEntry.get('instances')
@@ -566,7 +440,7 @@ def parse_routing_component(routeComponentEntry, logical_switches, dlr_enabled):
 									 )
 
 	routedComponent.map_to_switches(logical_switches)
-	routedComponent.validate_component()
+	routedComponent.validate_component(app_profiles)
 	return routedComponent
 
 def run_once(f):
@@ -576,6 +450,18 @@ def run_once(f):
             return f(*args, **kwargs)
     wrapper.has_run = False
     return wrapper
+
+def get_default_app_profiles():
+	routed_comps_config_context = get_context()
+	return routed_comps_config_context[DEFAULT_APP_PROFILE_LIST]
+
+def get_default_app_rules():
+	routed_comps_config_context = get_context()
+	return routed_comps_config_context[APP_RULE_LIST]
+
+def get_default_monitors():
+	routed_comps_config_context = get_context()
+	return routed_comps_config_context[MONITOR_LIST]
 
 def select_templated_routed_component(routedComponentName):
 	routedComponentNameUpper = routedComponentName.upper()
@@ -587,7 +473,7 @@ def select_templated_routed_component(routedComponentName):
 	default_routed_component_names = sorted(routed_comps_names, key=len, reverse=True)
 	
 	if routedComponentNameUpper in default_routed_component_names:
-		return locate_with_key(routed_comps_map, 'id', routedComponentNameUpper)
+		return locate_entry_in_list(routed_comps_map, 'id', routedComponentNameUpper)
 
 	# for routedComponent in DEFAULT_ROUTED_COMPONENT_TRANSPORT_MAP:
 	# 	if any( token for token in routedComponent.split('-') if token in routedComponentNameUpper):
@@ -596,7 +482,7 @@ def select_templated_routed_component(routedComponentName):
 	routedComponent = None
 	for key in default_routed_component_names: #DEFAULT_ROUTED_COMPONENT_MAP:
 		if key in routedComponentNameUpper or routedComponentNameUpper in key:
-			routedComponent = locate_with_key(routed_comps_map, 'id', key)
+			routedComponent = locate_entry_in_list(routed_comps_map, 'id', key)
 			return routedComponent
 
 	 
@@ -604,7 +490,7 @@ def select_templated_routed_component(routedComponentName):
 	for routedEntryName in default_routed_component_names: #DEFAULT_ROUTED_COMPONENT_MAP.keys():
 		name = routedEntryName.replace('-', '')
 		if name in routedComponentNameUpper or routedComponentNameUpper in name:
-			routedComponent = locate_with_key(routed_comps_map, 'id', routedEntryName)
+			routedComponent = locate_entry_in_list(routed_comps_map, 'id', routedEntryName)
 			return routedComponent
 
 
@@ -621,7 +507,7 @@ def select_switch_template(routedComponentName, switchName):
 	routed_comps_config_context = get_context()
 	known_switches = routed_comps_config_context[KNOWN_LSWITCHES]
 	if switchUpper in [ switch['id'] for switch in known_switches]:
-		return locate_with_key(known_switches, 'id', switchUpper)['id']
+		return locate_entry_in_list(known_switches, 'id', switchUpper)['id']
 
 	for switch in known_switches:
 		if any( token for token in switch['id'].split('-') if token in switchUpper):
@@ -705,9 +591,11 @@ def validate_default_routed_components_map():
 	routed_comps_config_context[KNOWN_LSWITCHES]         = routed_comps_config['switches']
 	routed_comps_config_context[KNOWN_ROUTED_COMPONENTS] = routed_comps_config['routed_components']
 
-	routed_comps_config_context[MONITOR_MAP]     = nsx_lbr_config['monitors']
-	routed_comps_config_context[APP_RULE_MAP]    = nsx_lbr_config['app_rules']
-	routed_comps_config_context[APP_PROFILE_MAP] = nsx_lbr_config['app_profiles']
+	routed_comps_config_context[MONITOR_LIST]     = nsx_lbr_config['monitors']
+	routed_comps_config_context[APP_RULE_LIST]    = nsx_lbr_config['app_rules']
+
+	default_app_profiles = nsx_lbr_config['app_profiles']
+	routed_comps_config_context[DEFAULT_APP_PROFILE_LIST] = nsx_lbr_config['app_profiles']
 
 	if DEBUG:
 		print('Routed comps config:{}'.format(routed_comps_config_context))

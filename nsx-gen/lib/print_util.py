@@ -221,7 +221,7 @@ def print_edge_service_gateways_configured(esgs):
 		print('-'*215)
 
 		print('{:<80}{:<40}{:<15}{:<10}'.format('', 'Routed Component (from configuration) for Edge Instance: ',esg['name'], ''))
-		print("{:<22} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} |  {:<15} |{:<10}| {:<20} | {:<20} | {:<20} ".format( \
+		print("{:<22} | {:<12} |{:<5}|{:<5}|{:<6}| {:<15}| {:<15}| {:<25} |  {:<15} |{:<10}| {:<20} | {:<20} | {:<20} ".format( \
 															'Name',
 															'Switch',
 															'VIP',
@@ -229,8 +229,8 @@ def print_edge_service_gateways_configured(esgs):
 															'Offset',
 															'Uplink IP',
 															'IPs', 
-															'App Rules',
-															'App Profile', 
+															'App Profile',
+															'App Rules', 
 															'Monitor Id',
 															'Ingress:Port',
 															'Egress:Port',
@@ -247,6 +247,7 @@ def print_edge_service_gateways_configured(esgs):
 
 			ips = entry['ips'].split(',')
 			#appRule = entry['app_rules']
+
 			appProfile = entry['app_profile']['id']
 			monitorId = entry['monitor_id']
 			ingressCombo = transport['ingress']['protocol'] + ':' + str(transport['ingress']['port'])
@@ -280,7 +281,7 @@ def print_edge_service_gateways_configured(esgs):
 					ip = ips[index]
 
 				if (index == 0):
-					print("{:<22} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} | {:<15} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
+					print("{:<22} | {:<12} |{:<5}|{:<5}|{:<6}| {:<15}| {:<15}| {:<25} | {:<15} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
 															entry['name'],
 															entry['switchName'],
 															useVip,
@@ -296,7 +297,7 @@ def print_edge_service_gateways_configured(esgs):
 															monitorCombo ))
 
 				else:
-					print("{:<22} | {:<12} |{:<5}|{:<5}|{:<5}| {:<15}| {:<15}| {:<25} | {:<17} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
+					print("{:<22} | {:<12} |{:<5}|{:<5}|{:<6}| {:<15}| {:<15}| {:<25} | {:<17} |{:<10}|{:<22}|{:<22}|{:<22}".format( \
 															'',
 															'',
 															'',

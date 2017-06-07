@@ -39,6 +39,7 @@ app_profiles:
   template: HTTP
   sslPassthrough: 'false'
   serverSslEnabled: 'false'
+  requires_cert: 'false'
 - profile: http:tcp
   id: applicationProfile-2
   name: HTTP2TCP
@@ -47,6 +48,7 @@ app_profiles:
   template: HTTP
   sslPassthrough: 'false'
   serverSslEnabled: 'false'
+  requires_cert: 'false'
 - profile: https:http
   id: applicationProfile-3
   name: HTTPS2HTTP
@@ -55,6 +57,7 @@ app_profiles:
   template: HTTPS
   sslPassthrough: 'false'
   serverSslEnabled: 'false'
+  requires_cert: 'true'
 - profile: https:https
   id: applicationProfile-4
   name: HTTPS2HTTPS
@@ -63,6 +66,7 @@ app_profiles:
   template: HTTPS
   sslPassthrough: 'true'
   serverSslEnabled: 'true'
+  requires_cert: 'true'
 - profile: https:tcp
   id: applicationProfile-5
   name: HTTPS2TCP
@@ -71,6 +75,7 @@ app_profiles:
   template: HTTP
   sslPassthrough: 'false'
   serverSslEnabled: 'false'
+  requires_cert: 'true'
 - profile: tcp:tcp
   id: applicationProfile-6
   name: TCP2TCP
@@ -79,6 +84,7 @@ app_profiles:
   template: TCP
   sslPassthrough: 'false'
   serverSslEnabled: 'false'
+  requires_cert: 'false'
 - profile: tcps:tcp
   id: applicationProfile-7
   name: TCPS2TCP
@@ -87,6 +93,7 @@ app_profiles:
   template: TCP
   sslPassthrough: 'false'
   serverSslEnabled: 'false'
+  requires_cert: 'true'
 - profile: tcps:tcps
   id: applicationProfile-8
   name: TCPS2TCPS
@@ -95,6 +102,7 @@ app_profiles:
   template: TCP
   sslPassthrough: 'true'
   serverSslEnabled: 'true'
+  requires_cert: 'true'
 
 app_rules:
 - app_rule: optionlog

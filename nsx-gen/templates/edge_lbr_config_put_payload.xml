@@ -33,11 +33,13 @@
    </pool> 
     {% endfor %}
    {% endfor %}   
-   
-   {% for appProfile in appProfileMap.values() %}
+
+<!--
+   {% for iso_zone in nsx_edge['iso_zones'] %}
+   {% for appProfile in nsx_edge['app_profiles'] %}
    <applicationProfile>
-      <applicationProfileId>{{ appProfile['id'] }}</applicationProfileId>
-      <name>{{ appProfile['name'] }}</name>
+      <applicationProfileId>{{ appProfile['id']}}{{iso_zone['name'].upper().replace('ISOZONE', '').replace('-', '')}}</applicationProfileId>
+      <name>{{appProfile['name']}}-{{iso_zone['name']}}</name>
       <insertXForwardedFor>true</insertXForwardedFor>
       <sslPassthrough>{{ appProfile['sslPassthrough'] }}</sslPassthrough>
       <template>{{ appProfile['template'] }}</template>
@@ -45,13 +47,34 @@
         <clientSsl>
             <ciphers>DEFAULT</ciphers>
             <clientAuth>ignore</clientAuth>
-            <serviceCertificate>{{ nsx_edge['cert_id'] }}</serviceCertificate>
+            <serviceCertificate>{{ iso_zone['cert_id'] }}</serviceCertificate>
         </clientSsl>
       {% endif %}
       <serverSslEnabled>{{ appProfile['serverSslEnabled'] }}</serverSslEnabled>
    </applicationProfile>
    {% endfor %}
-   {% for monitor in monitorMap.values() %}           
+   {% endfor %}
+ -->
+
+   {% for appProfile in app_profiles %}
+   <applicationProfile>
+      <applicationProfileId>{{ appProfile['id']}}</applicationProfileId>
+      <name>{{appProfile['name']}}</name>
+      <insertXForwardedFor>true</insertXForwardedFor>
+      <sslPassthrough>{{ appProfile['sslPassthrough'] }}</sslPassthrough>
+      <template>{{ appProfile['template'] }}</template>
+      {% if 'HTTPS' in appProfile['name'] or 'TCPS' in appProfile['name'] %}
+        <clientSsl>
+            <ciphers>DEFAULT</ciphers>
+            <clientAuth>ignore</clientAuth>
+            <serviceCertificate>{{ appProfile['cert_id'] }}</serviceCertificate>
+        </clientSsl>
+      {% endif %}
+      <serverSslEnabled>{{ appProfile['serverSslEnabled'] }}</serverSslEnabled>
+   </applicationProfile>
+   {% endfor %}
+
+   {% for monitor in monitor_list %}           
    <monitor>
       <monitorId>{{monitor['id']}}</monitorId>
       <type>{{monitor['type']}}</type>
@@ -65,13 +88,15 @@
       <name>{{monitor['name']}}</name>
    </monitor>
    {% endfor %}
-   {% for name, appRule in appRuleMap.iteritems() %}
+   
+   {% for appRule in app_rules %}
    <applicationRule>
         <applicationRuleId>{{ appRule['id'] }}</applicationRuleId>
-        <name>{{ name }}</name>
+        <name>{{ appRule['name'] }}</name>
         <script>{{ appRule['script']  }}</script>
     </applicationRule>
    {% endfor %}
+
    {% for virtServer in routed_components if virtServer['name'] != 'opsmgr'%}
    
      {% set outer_index = loop.index %}    

@@ -40,7 +40,7 @@ edge_service_gateways:
     username: testuser
     password: Test$assword123456
   ospf_password: P!votal #6-8 characters
-  certs:
+  ert_certs:
     name: Foundation1
     # cert_id: cert-11 # Uncomment and edit this in order to use an existing cert id
     # # Uncomment and edit below in order to use an existing cert and private key
@@ -61,8 +61,29 @@ edge_service_gateways:
       org_unit: Pivotal
       country_code: US  # Default - US
       system_domain: pcf-sys-test.corp.local
-      app_domain: pcf-app-test.corp.local  
-    
+      app_domain: pcf-app1-test.corp.local,pcf-app2-test.corp.local # comma separated list 
+  # iso_certs:
+  # - name: Iso1
+  #   # cert_id: cert-11 # Uncomment and edit this in order to use an existing cert id
+  #   # # Uncomment and edit below in order to use an existing cert and private key
+  #   # # Ensure the alignment is correct and no extra newlines in either beginning or end of the entry
+  #   # key: |+ # PEM encoded private key 
+  #   #   -----BEGIN RSA PRIVATE KEY-----
+  #   #   MIIEoQIBAAKCAQEAxFT4ktPgj8sBMumiK4nVXGC6UGqXgQkZly/7xC+c5T8pdsvl
+  #   #   ..........................
+  #   #   KdnT9tJIN80VMPkbsNPn2hxx3K7Wbb/tzvRtjCUkqP7/fnVXIQ==
+  #   #   -----END RSA PRIVATE KEY-----
+  #   # cert: |+ # PEM encoded cert 
+  #   #   -----BEGIN CERTIFICATE-----
+  #   #   MIIDwjCCAqqgAwIBAgIJAOx8KRhUILhrMA0GCSqGSIb3DQEBBQUAMEcxJjAkBgNV
+  #   #   ...........
+  #   #   TAvqkR+T
+  #   #   -----END CERTIFICATE-----    
+  #   switch: IsoZone-01 # Should match the logical switch
+  #   config:
+  #     org_unit: Pivotal
+  #     country_code: US  # Default - US
+  #     domains: zone1-app.corp.local,zone2-app.corp.local  # comma separated list 
   routed_components:
   - name: opsmgr
     switch: Infra
@@ -85,7 +106,7 @@ edge_service_gateways:
     switch: Ert
     external: true
     instances: 4
-    offset: 10
+    offset: 200
     uplink_details:
       uplink_ip: 10.114.216.172 # This gets exposed outside
     #transport:
@@ -103,7 +124,7 @@ edge_service_gateways:
     switch: Ert
     external: true
     instances: 3
-    offset: 20
+    offset: 180
     uplink_details:
       uplink_ip: 10.193.99.173 # This gets exposed outside  
     #transport:
@@ -117,7 +138,7 @@ edge_service_gateways:
     switch: Ert
     external: true
     instances: 4
-    offset: 30
+    offset: 300
     uplink_details:
       uplink_ip: 10.193.99.174 # This gets exposed outside
     #transport:
@@ -134,7 +155,7 @@ edge_service_gateways:
     switch: Ert
     external: false
     instances: 3
-    offset: 40
+    offset: 340
     uplink_details:
       uplink_ip: 192.168.23.250 # This should be on the Ert network, not external facing
     # transport:
@@ -152,7 +173,7 @@ edge_service_gateways:
     switch: PCF-Tiles
     external: false
     instances: 3 # for 3 proxies in 3 AZs
-    offset: 10
+    offset: 100
     uplink_details:
       uplink_ip: 192.168.27.250 # This should be on the PCF-Tiles network, not external facing
     transport:
@@ -169,7 +190,7 @@ edge_service_gateways:
     switch: PCF-Tiles
     external: false
     instances: 3
-    offset: 30
+    offset: 200
     uplink_details:
       uplink_ip: 192.168.27.251 # This should be on the PCF-Tiles network, not external facing
     transport:
