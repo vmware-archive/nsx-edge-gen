@@ -41,6 +41,7 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(PATH, os.path.join('..', 'lib')))
 
 import nsx_builder
+import nsx_exporter
 import template
 from routed_components_handler import *
 #from routed_component import *
@@ -184,6 +185,15 @@ def contruct_parser(parser):
 						nargs=1,
 						help="name for nsx config directory on init",
 						default="nsx-pcf")
+
+	parser.add_argument("-nsxedge_names",
+						"--nsxedge_names",
+						help="export nsx instance state")
+
+	parser.add_argument("-export_dir",
+						"--export_directory",
+						help="export nsx content into directory",
+						default="./edge-output")
 
 	parser.add_argument("-c",
 						"--nsx_conf",
@@ -446,7 +456,16 @@ def construct_config(args):
 					if not isEmpty:
 						esgEntry['routed_components'].append(componentEntry)
 				cliConfig['edge_service_gateways'].append(esgEntry) 
-		
+	
+	cliConfig['export'] = { }
+	print 'Args incoming:{}'.format(argDict)
+	if 'nsxedge_names' in argDict:
+		cliConfig['export'] = { }
+		cliConfig['export']['nsxedge_names'] = argDict.get('nsxedge_names')
+		cliConfig['export']['export_directory'] = argDict.get('export_directory', './edge-output')
+
+		print 'nsx edge names: {}'.format(argDict.get('nsxedge_names'))
+		print 'export dir: {}'.format(argDict.get('export_directory'))
 	print('\n{}\n{:<80}Command Line Args Mapped\n{}\n{}\n'.format('-'*200, ' ', '-'*200, cliConfig))
 	return cliConfig
 
@@ -553,7 +572,7 @@ def delete_cmd(config_file=CONFIG_FILE):
 
 def export_cmd(config_file=CONFIG_FILE):
 	finalCfg = build_config(config_file)
-	nsx_builder.export_firewall_rules(finalCfg)
+	nsx_exporter.export_firewall_rules(finalCfg)
 
 def import_cmd(config_file=CONFIG_FILE):
 	finalCfg = build_config(config_file)

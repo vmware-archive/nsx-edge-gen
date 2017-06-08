@@ -182,8 +182,68 @@ Example:
 ./nsx-gen/bin/nsxgen build            (if nsx_cloud_config.yml available in current folder)
 ./nsx-gen/bin/nsxgen -c nsx-pcf build (if init as used and nsx_cloud_config.yml file is under nsx-pcf)
 
+# Export ESG Configuration
+Export existing ESG instance configurations using the export command as arg to nsxgen
+```
+ ./nsx-gen/bin/nsxgen -c nsx-pcf \
+   -nsxedge_names esg-test1,esg-test2,... \
+   -export_dir exported-config-output \
+   ..other_args.. \
+   export 
+```
+This would export the entire esg instance configuration (in xml), as well as the firewall rules (in both xml & yml)
+
+Sample output:
+```
+Full export section: {'nsxedge_names': 'esg-sabha-test,esg-sabha6', 'export_directory': 'export-output'}, Export dir: export-output
+....
+
+NSX Edge 'esg-sabha-test' (id: edge-396) exported!!
+
+Saved NSX Edge 'esg-sabha-test' full payload (xml) : export-output/esg-sabha-test.xml
+Saved NSX Edge 'esg-sabha-test' firewall rules (xml) : export-output/esg-sabha-test-firewall-rules.xml
+Saved NSX Edge 'esg-sabha-test' firewall rules (yml) : export-output/esg-sabha-test-firewall-rules.yml
+
+NSX Edge 'esg-sabha6' (id: edge-467) exported!!
+
+Saved NSX Edge 'esg-sabha6' full payload (xml) : export-output/esg-sabha6.xml
+Saved NSX Edge 'esg-sabha6' firewall rules (xml) : export-output/esg-sabha6-firewall-rules.xml
+Saved NSX Edge 'esg-sabha6' firewall rules (yml) : export-output/esg-sabha6-firewall-rules.yml
+```
+
+nsxgen would also auto-update the firewall config to translate/transform any ip-sets or application sets to actual the real ips or ranges or ports/protocols during the export so the rules can be reused later across envs and instances.
+
+Example:
+```
+Change from:
+    <source>
+        <groupingObjectId>ipset-7</groupingObjectId>
+    </source>
+Change to:
+    <source>
+        <ipAddress>192.168.10.0-192.168.10.100</ipAddress>
+    </source>
+
+Change from:
+    <application>
+        <applicationId>application-352</applicationId>
+        <applicationId>application-370</applicationId>
+    </application>
+Change to:
+    <application>
+        <service>
+            <protocol>tcp</protocol>
+            <port>80</port>
+        </service>
+        <service>
+            <protocol>tcp</protocol>
+            <port>443</port>        
+        </service>
+    </application>
+```
+
 ## Command line args
-Build/Delete config can be overriden using command line args.
+Build/Export/Delete config can be overriden using command line args.
 
 Built-in templated routed components can be overridden by using command line args.
 Known routed component templates include opsmgr, go-router, tcp-router, diego-brain, mysql-ert, mysql-tile, rabbitmq-tile

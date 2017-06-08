@@ -27,4 +27,6 @@ NSX_URLS = {
 	'virtservers':       { 'all': '/loadbalancer/config/virtualservers'},
 	'lbrPool':           { 'all': '/loadbalancer/config/pools'},
 	'cert':              { 'all': '/api/2.0/services/truststore/certificate'},
+	'ipsets':            { 'all': '/api/2.0/services/ipset/scope/globalroot-0'},
+	'applicationsets':   { 'all': '/api/2.0/services/application/scope/globalroot-0'},
 }
