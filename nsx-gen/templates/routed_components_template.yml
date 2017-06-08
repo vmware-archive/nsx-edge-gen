@@ -89,7 +89,7 @@ routed_components:
   external: false
   useVIP: true
   instances: 3
-  offset: 340
+  offset: 100
   monitor_id: monitor-6
   transport:
     ingress:
@@ -107,7 +107,7 @@ routed_components:
   external: false
   useVIP: true
   instances: 3
-  offset: 100
+  offset: 150
   monitor_id: monitor-6
   transport:
     ingress:

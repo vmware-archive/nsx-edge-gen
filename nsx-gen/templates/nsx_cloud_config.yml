@@ -155,7 +155,7 @@ edge_service_gateways:
     switch: Ert
     external: false
     instances: 3
-    offset: 340
+    offset: 100
     uplink_details:
       uplink_ip: 192.168.23.250 # This should be on the Ert network, not external facing
     # transport:
@@ -173,7 +173,7 @@ edge_service_gateways:
     switch: PCF-Tiles
     external: false
     instances: 3 # for 3 proxies in 3 AZs
-    offset: 100
+    offset: 150
     uplink_details:
       uplink_ip: 192.168.27.250 # This should be on the PCF-Tiles network, not external facing
     transport:
