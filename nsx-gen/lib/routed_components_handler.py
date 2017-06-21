@@ -581,7 +581,7 @@ def calculate_ospf_uplink_ip( offset):
 		
 	addr_range = ipcalc.Network(DEFAULT_OSPF_CIDR)
 	if offset > 250:
-		offset -= 210
+		offset %= 210
 	return addr_range[offset]
 
 @run_once
