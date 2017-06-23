@@ -13,6 +13,9 @@
     <algorithm>round-robin</algorithm>
     <transparent>false</transparent>
     <monitorId>{{ pool['monitor_id']}}</monitorId>
+
+    {% if nsx_edge['bosh_nsx_enabled'] == False %}
+
      {% for ip in pool['ips'].split(',') %}
     <member>
        <memberId>member-{{outer_index}}{{port_index}}{{loop.index}}</memberId>
@@ -30,6 +33,7 @@
        <name>{{ pool['name']}}-member-{{outer_index}}{{port_index}}{{loop.index}}</name>
     </member>
     {% endfor %}
+   {% endif %}
    </pool> 
     {% endfor %}
    {% endfor %}   

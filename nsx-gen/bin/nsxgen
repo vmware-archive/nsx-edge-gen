@@ -77,6 +77,7 @@ ATTRIBUTE_MAP_ARRAY = {
 	'nsxmanager': [
 		[ 'addr', 'address'],
 		[ 'en_dlr', 'enable_dlr'],
+		[ 'bosh_nsx_enabled', 'bosh_nsx_enabled'],
 		[ 'user', 'admin_user'],
 		[ 'pass', 'admin_passwd'],
 		[ 'tz', 'transportzone'],
@@ -320,6 +321,7 @@ def construct_config(args):
 
 			cliConfig['nsxmanager']['uplink_details'] = { }
 			cliConfig['nsxmanager']['enable_dlr'] = False
+			cliConfig['nsxmanager']['bosh_nsx_enabled'] = False
 
 			for field in ATTRIBUTE_MAP_ARRAY[section]:
 				key = '{}_{}'.format(prefix, field[1])

@@ -127,6 +127,7 @@ $ python ./nsx-gen/bin/nsxgen -h
               [-esg_tcp_router_isozone_5_off_1 ESG_TCP_ROUTER_ISOZONE_5_OFFSET_1]
               [-nsxmanager_addr NSXMANAGER_ADDRESS]
               [-nsxmanager_en_dlr NSXMANAGER_ENABLE_DLR]
+              [-nsxmanager_bosh_nsx_enabled NSXMANAGER_BOSH_NSX_ENABLED]
               [-nsxmanager_user NSXMANAGER_ADMIN_USER]
               [-nsxmanager_pass NSXMANAGER_ADMIN_PASSWD]
               [-nsxmanager_tz NSXMANAGER_TRANSPORTZONE]
@@ -407,6 +408,8 @@ optional arguments:
                         nsxmanager address
   -nsxmanager_en_dlr NSXMANAGER_ENABLE_DLR, --nsxmanager_enable_dlr NSXMANAGER_ENABLE_DLR
                         nsxmanager enable dlr
+  -nsxmanager_bosh_nsx_enabled NSXMANAGER_BOSH_NSX_ENABLED, --nsxmanager_bosh_nsx_enabled NSXMANAGER_BOSH_NSX_ENABLED
+                        nsxmanager bosh nsx enabled
   -nsxmanager_user NSXMANAGER_ADMIN_USER, --nsxmanager_admin_user NSXMANAGER_ADMIN_USER
                         nsxmanager admin user
   -nsxmanager_pass NSXMANAGER_ADMIN_PASSWD, --nsxmanager_admin_passwd NSXMANAGER_ADMIN_PASSWD

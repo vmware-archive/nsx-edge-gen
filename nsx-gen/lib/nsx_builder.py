@@ -435,8 +435,7 @@ def build_nsx_dlrs(dir, context, alternate_template=None):
     if uplink_port_switch is None:
         uplink_port_switch = 'VM Network'
         nsxmanager['uplink_details']['uplink_port_switch'] = uplink_port_switch
-        
-        
+    
     # if use_port_switch is set to 'VM Network' or port switch id could not be retreived.
     portSwitchId = mobclient.lookup_moid(uplink_port_switch) 
     if (portSwitchId is None):
@@ -600,6 +599,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 
     # Go with the VM Network for default uplink
     nsxmanager = context['nsxmanager']
+    bosh_nsx_enabled = nsxmanager['bosh_nsx_enabled']
 
     uplink_port_switch = nsxmanager['uplink_details'].get('uplink_port_switch')
     if uplink_port_switch is None:
@@ -660,6 +660,8 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
                 infraLogicalSwitch = lswitch
             elif 'OSPF' in switch_name_upper:
                 ospfLogicalSwitch = lswitch             
+
+        nsx_edge['bosh_nsx_enabled'] = bosh_nsx_enabled
 
         vcenter_ctx = context['vcenter']
 

@@ -33,6 +33,16 @@ Using a DLR does requires specifying a Distributed PortGroup as well as a passwo
 This is more optimal architecture to avoid load on the NSX Edge instance for east-west traffic.
 The firewall also would be defined on the DFW (Distributed firewall) when DLR is enabled
 
+### With PCF 1.11 that has NSX integration 
+
+If the tool is used against PCF1.11 that has nsx integration builtin, then its best to avoid binding ips to the loadbalancer pools in NSX, as PCF Ops Mgr 1.11+ and Bosh would handle registration of specific job types to pools using security groups. For PCF 1.10 and older releases, there is no such integration, and its best to just allow the nsx-edge-gen to do the member population inside the pools.
+
+To denote PCF1.11 nsx integration or not, use the following flag: ` --nsxmanager_bosh_nsx_enabled <true|false>`
+Set `--nsxmanager_bosh_nsx_enabled true ` or  ` -nsxmanager_bosh_nsx_enabled true ` in command line to nsx-gen or via the nsx_cloud_config.yml file (specified under nsxmanager section).
+
+Setting it to true indicates there is bosh nsx integration and pool members wont be assigned any static ips
+Setting it to false indicates there is no bosh nsx integration and pool members would be assigned static ips determined by nsx-edge-gen
+
 # Generating initial config
 Create a new config from template using nsx-gen init. The config file used to drive nsxgen is nsx_cloud_config.yml.
 
