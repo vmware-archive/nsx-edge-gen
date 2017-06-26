@@ -341,14 +341,15 @@ def print_edge_service_gateways_configured(esgs):
         print 
         print('-'*200)     
         print('{:<10}{:<60}{:<15}{:<40}'.format('', 'Routed Component LBR Assignment (from configuration) for Edge Instance: ',esg['name'], ''))
-        print("{:<15} | {:<20} | {:<20} | {:<20} | {:<40} | {:<40} | {:10} ".format( \
+        print("{:<15} | {:<20} | {:<20} | {:<20} | {:<40} | {:<40} | {:10} | {:10}".format( \
                                                             'Header',
                                                             'Name',
                                                             'ESG',
                                                             'Switch',
                                                             'Loadbalancer name',
                                                             'Pool name',
-                                                            'Port'
+                                                            'Port',
+                                                            'Monitor Port'
                                                             ))
 
         print('-'*200)
@@ -360,14 +361,15 @@ def print_edge_service_gateways_configured(esgs):
             outer_index += 1
             port_index = 1
             for port in entry['transport']['egress']['port'].split(','):
-                print("{:<15} | {:<20} | {:<20} | {:<20} | {:<40} | {:<40} | {:<10} ".format( \
+                print("{:<15} | {:<20} | {:<20} | {:<20} | {:<40} | {:<40} | {:<10} | {:10}".format( \
                                                         'lbr assignment',
                                                         entry['name'],
                                                         esg['name'],
                                                         entry['switchName'],
                                                         'VIP-{}-{}-{}{}'.format(entry['name'], entry['transport']['ingress']['protocol'], outer_index, port_index),
                                                         '{}{}{}-Pool'.format(entry['name'],outer_index, port_index),
-                                                         port
+                                                        port,
+                                                        entry['transport']['egress']['monitor_port']
                                                     ))
                 port_index += 1
                                                                         
