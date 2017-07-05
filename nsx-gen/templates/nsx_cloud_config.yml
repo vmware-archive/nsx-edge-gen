@@ -117,10 +117,9 @@ edge_service_gateways:
       #  protocol: https
       # Default egress scheme is http/8080 for ert
       #egress: 
-      #  port: 8080
-      #  protocol: http
-      #  monitor_port: 80
-      #  url: /health
+      #  port: 80
+      #  protocol: tcp
+      #  monitor_port: 80      
   - name: diego-brain
     switch: Ert
     external: true
@@ -151,7 +150,6 @@ edge_service_gateways:
       #  port: 5000
       #  protocol: tcp
       #  monitor_port: 80
-      #  url: /health    
   - name: mysql-ert # Internal ERT MySQL proxy
     switch: Ert
     external: false
@@ -217,10 +215,9 @@ edge_service_gateways:
       #  protocol: https
       # Default egress scheme is http/8080 for ert
       #egress: 
-      #  port: 8080
+      #  port: 80
       #  protocol: http
       #  monitor_port: 80
-      #  url: /health
 #  - name: tcp-router-isozone-1
 #    switch: IsoZone-1
 #    external: true
@@ -237,7 +234,6 @@ edge_service_gateways:
       #  port: 5000
       #  protocol: tcp
       #  monitor_port: 80
-      #  url: /health    
   # - name: go-router-isozone-2
   #   switch: IsoZone-2
   #   external: true
@@ -252,11 +248,10 @@ edge_service_gateways:
   #     #  protocol: https
   #     # Default egress scheme is http/8080 for ert
   #     #egress: 
-  #     #  port: 8080
-  #     #  protocol: http
+  #     #  port: 80
+  #     #  protocol: tcp
   #     #  monitor_port: 80
-  #     #  url: /health
-
+  
   ## Sample service entry
   # - name: test-service
   #   switch: PCF-Tiles

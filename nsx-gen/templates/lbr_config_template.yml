@@ -16,14 +16,16 @@ monitors:
   url: "/"
 - monitor: go-router
   id: monitor-4
-  type: http
+  type: tcp
   name: goRouter_monitor
-  url: "/health"
+  #type: http
+  #url: "/health"
 - monitor: tcp-router
   id: monitor-5
-  type: http
   name: tcpRouter_monitor
-  url: "/health"
+  type: tcp
+  #type: http
+  #url: "/health"
 - monitor: mysql
   id: monitor-6
   type: tcp
