@@ -151,8 +151,10 @@ routed_components:
     egress:
       port: '80'
       protocol: tcp
-      #monitor_port: '80'
-      #url: "/health"
+      monitor_port: '80'
+      # protocol: http
+      # monitor_port: '8080'
+      # url: "/health"
   
 - id: TCP-ROUTER-ISO
   name: TCP-ROUTER-ISO
@@ -169,5 +171,7 @@ routed_components:
     egress:
       port: '5000'
       protocol: tcp
-      #monitor_port: '80'
-      #url: "/health"
+      monitor_port: '5000'
+      # protocol: http
+      # monitor_port: '8080'
+      # url: "/health"
