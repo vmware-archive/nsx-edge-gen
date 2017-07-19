@@ -311,6 +311,7 @@ def construct_config(args):
 
 				val =  argDict[key]
 				if val:
+					val = unescape_value(val)
 					cliConfig[section][field[1]] = val
 
 		elif section == 'nsxmanager': 
@@ -327,6 +328,7 @@ def construct_config(args):
 				key = '{}_{}'.format(prefix, field[1])
 				val =  argDict[key]
 				if val:
+					val = unescape_value(val)
 					if 'uplink_' in key:
 						cliConfig['nsxmanager']['uplink_details'][field[1]] = val
 					elif 'static_' in key:
@@ -346,6 +348,8 @@ def construct_config(args):
 				key = '{}_{}_{}'.format(prefix, 'name', index)
 				name =  argDict[key]
 				if name:
+					name = unescape_value(name)
+					
 					if 'IsoZone' not in name:
 						switchEntry['name'] = 'IsoZone-' + name
 					else:
@@ -354,6 +358,7 @@ def construct_config(args):
 					key = '{}_{}_{}'.format(prefix, 'cidr', index)
 					cidr =  argDict[key]
 					if cidr:
+						cidr = unescape_value(cidr)
 						switchEntry['cidr'] = cidr
 				
 					cliConfig['logical_switches'].append(switchEntry)
@@ -381,6 +386,7 @@ def construct_config(args):
 				
 				name =  argDict[key]
 				if name:
+					name = unescape_value(name)						
 					esgEntry['name'] = name
 				else:
 					break
@@ -389,6 +395,7 @@ def construct_config(args):
 					key = '{}_{}_{}'.format(prefix, field[1], index)
 					val =  argDict[key]
 					if val:
+						val = unescape_value(val)
 						# build certs_config to certs.config dict structure
 						if 'iso_certs_config' in key:
 							field[1] =  field[1].replace('iso_certs_config_', '').replace('country', 'country_code')
@@ -434,7 +441,7 @@ def construct_config(args):
 						key = '{}_{}_{}_{}'.format(prefix, component, compField[1], index)
 						val =  argDict[key]
 						if val:
-
+							val = unescape_value(val)
 							# Structure for routed_components
 							"""
 							convert esg_opsmgr_uplink_ip_1 to:
@@ -625,6 +632,35 @@ def deepupdate(original, update):
 					deepupdate(givenEntry, matchingDestnEntry)
 				
 	return update
+
+def check_int(value):
+    intresult = None
+    try: 
+        intresult = int(value)
+        return True
+    except ValueError as error: 
+        pass
+    
+    if value[0] in ('-', '+'):
+        return value[1:].isdigit()
+    return value.isdigit()
+
+def unescape_value(value):
+
+    if isinstance( value, int ):
+        return value
+
+    # Remove any extraneous quoted strings
+    if isinstance(value, basestring):
+        value = value.decode('string_escape')
+        value = re.sub(r'^"|"$', '',value)
+        value = re.sub(r'^\'|\'$', '',value)
+        value = re.sub(r'^\xe2\x80\x9c|\xe2\x80\x9d$', '',value)
+        
+    if (check_int(value)):
+        return int(value)
+
+    return value
 
 def write_yaml(output_config_file, data):
 	
