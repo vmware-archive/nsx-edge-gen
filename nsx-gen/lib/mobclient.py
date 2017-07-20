@@ -299,13 +299,13 @@ def lookup_logicalswitch_managed_obj_name( resourceName):
     # If the length of the lswitch name is over 40 characters, 
     # then things get trimmed in the generated virtualwires
     # Sample virtualwire: vxw-dvs-50-virtualwire-16-sid-5015-lswitch-edge-nsx-pipeline-sample-Dynamic-Serv
-    if len(lswitch['name']) > 40:
-        lswitch_initial_chars = lswitch['name'][0:5]
+    if len(resourceName) > 40:
+        lswitch_initial_chars = resourceName[0:5]
         for key in vcenterMobMap:
             #print('key[{}] : {}'.format(key, str(vcenterMobMap[key])))
             if 'virtualwire' in key and lswitch_initial_chars in key:
                 associated_lsw_name = key[key.index(lswitch_initial_chars):]
-                if associated_lsw_name in lswitch['name']:
+                if associated_lsw_name in resourceName:
                     return key  
 
     print('Unable to lookup Moid for resource: {}'.format(resourceName))

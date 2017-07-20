@@ -58,8 +58,8 @@ class NSXConfig(dict):
     def validate(self):
         self.name = self.get('name', 'nsx-pcf')
         if len(self.name) > 15:
-            raise ValueError('Name of config "'+ self.name + '" over 15 characters,\n\
-             change name of config to avoid trim/overlap in generated virtualwire names')
+            raise ValueError('Name of config "'+ self.name + '" over 15 characters!!\n\
+            Change name of config to avoid trim/overlap in generated virtualwire names!')
 
         self.validate_defaults()
         self.validate_vcenter()
