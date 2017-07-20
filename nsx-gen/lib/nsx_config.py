@@ -169,13 +169,7 @@ class NSXConfig(dict):
             lswitch['primary_ip'] = addr_range[1]
             lswitch['subnet_length'] = string.atoi(lswitch['cidr'].split('/')[1])
             lswitch['name'] = lswitch['name'].replace(' ', '-')
-
-            # If the length of the lswitch name is over 40 characters, 
-            # then things get trimmed in the generated virtualwires
-            # Sample virtualwire: vxw-dvs-50-virtualwire-16-sid-5015-lswitch-edge-nsx-pipeline-sample-Dynamic-Serv
-            if len(lswitch['name']) > 40:
-                lswitch['name'] = lswitch['name'].replace('edge', 'e').replace('pipeline', 'p')
-
+            
             # This will be filled in later once we have parsed the routed components
             lswitch['secondary_ips'] = []       
             #print('Logical Switch Entry:', lswitch)
