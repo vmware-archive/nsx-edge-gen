@@ -57,6 +57,9 @@ class NSXConfig(dict):
 
     def validate(self):
         self.name = self.get('name', 'nsx-pcf')
+        if len(self.name) > 15:
+            raise ValueError('Name of config "'+ self.name + '" over 15 characters,\n\
+             change name of config to avoid trim/overlap in generated virtualwire names')
 
         self.validate_defaults()
         self.validate_vcenter()
@@ -160,12 +163,18 @@ class NSXConfig(dict):
             given_name = lswitch['name'].replace(' ', '-')
             lswitch['given_name'] = given_name
             addr_range = ipcalc.Network(lswitch['cidr'])
-            lswitch['name'] = 'lswitch-'+self.get('name') + '-' + lswitch['name']
+            lswitch['name'] = 'lsw-'+self.get('name') + '-' + lswitch['name']
             lswitch['subnet_mask'] = addr_range.netmask()
             lswitch['gateway'] = addr_range[0]
             lswitch['primary_ip'] = addr_range[1]
             lswitch['subnet_length'] = string.atoi(lswitch['cidr'].split('/')[1])
             lswitch['name'] = lswitch['name'].replace(' ', '-')
+
+            # If the length of the lswitch name is over 40 characters, 
+            # then things get trimmed in the generated virtualwires
+            # Sample virtualwire: vxw-dvs-50-virtualwire-16-sid-5015-lswitch-edge-nsx-pipeline-sample-Dynamic-Serv
+            if len(lswitch['name']) > 40:
+                lswitch['name'] = lswitch['name'].replace('edge', 'e').replace('pipeline', 'p')
 
             # This will be filled in later once we have parsed the routed components
             lswitch['secondary_ips'] = []       

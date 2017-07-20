@@ -52,8 +52,10 @@ For initializing a brand new one from available template, use init command to ns
 Example: 
 ```
 `./nsx-gen/bin/nsxgen -i test init` would create a new folder `test` with the default template.
- `./nsx-gen/bin/nsxgen init` would create a default `nsx-pcf` folder with the default template of nsx_cloud-config.yml
+ `./nsx-gen/bin/nsxgen init` would create a default `nsx-pcf` folder with the default template of nsx_cloud_config.yml
 ```
+
+Note: Ensure the identifier used for initialization of nsx_cloud_config is `unique` and also within `15 charactes` in length to avoid name collision with other instances as well as name not getting snipped when it comes to logical switches.
 
 # Configuration
 The default nsx_cloud_config.yml specifies the default set of logical switches and routed components.
