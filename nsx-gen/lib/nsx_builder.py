@@ -852,7 +852,7 @@ def add_iso_certs_to_nsx_edge(nsx_edges_dir, nsx_edge):
 
     if not iso_certs_section:
         print('No Iso certs section defined to use an available cert or generate cert , going to reuse ERT cert id for edge instance: {}'.\
-                    format( cert_section['name'], nsx_edge['name']))
+                    format( nsx_edge['name']))
         return  
 
     iso_zones = nsx_edge['iso_zones']
