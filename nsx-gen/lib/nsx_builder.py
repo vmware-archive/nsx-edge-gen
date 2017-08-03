@@ -112,7 +112,10 @@ def build(context, verbose=False):
         pprint(moidMap)   
     
     reconcile_uplinks(context)
+    #build_transport_zone('tz', context, 'transport_zone')
+    
     build_logical_switches('lswitch', context, 'logical_switches')
+    exit()
     build_nsx_dlrs('dlr', context)
     build_nsx_edge_gateways('edge', context)
 
@@ -257,7 +260,109 @@ def reconcile_uplinks(context):
                 routedComponent['uplink_details']['real_uplink_ip'] = routedComponentUplinkIp
                 #print 'Routed component {} mareked with routed component uplink ip: {}'.format(\
                 # routedComponent['name'], routedComponentUplinkIp)
+
+# Check for existence of transport zone and wire the id
+def check_transport_zone(context):
+    transport_zone_name = context['nsxmanager']['transport_zone']
+    if not transport_zone_name:
+        transport_zone_name = context['name'] + '-tz'
+
+    print 'Checking for Transport Zone, name: {}'.format(transport_zone_name)
+    vdnScopesResponse = client.get(NSX_URLS['scope']['all'])
+    vdnScopesDoc = xmltodict.parse(vdnScopesResponse.text)
+
+    if DEBUG:
+        print('VDN Scopes output: {}'.format(vdnScopesDoc))
+
+    # Handle multiple Transport zones
+    vdnScopes = vdnScopesDoc['vdnScopes'].get('vdnScope')
+    if vdnScopes:
+        # If just single entry, just wrap it in an array
+        if isinstance(vdnScopes, dict):
+            vdnScopes = [ vdnScopes ]
+
+        for entry in vdnScopes:
+            if DEBUG:
+                print('Transport Zone name in entry: {}'.format(entry['name']))
             
+            if entry['name'] == transport_zone_name:
+                context['nsxmanager']['transport_zone'] = entry['name']
+                context['nsxmanager']['transport_zone_id'] = entry['objectId']
+                print('Found matching TZ: {}, VDN Scope id :{}\n'.format(entry['name'], entry['objectId']))
+                return True
+
+    return False
+
+def build_transport_zone(dir, context, type='transport_zone', alternate_template=None):
+
+    # if found the matching transport zone (either given or default), return
+    if check_transport_zone(context):
+        return
+
+    # Transport zone does not exist, lets create
+    transport_zone_name = context['nsxmanager']['transport_zone']
+    if not transport_zone_name:
+        transport_zone_name = context['name'] + '-tz'
+
+    transport_zone = {}
+    transport_zone['name'] = transport_zone_name
+    transport_zone['cluster_names'] = context['nsxmanager']['transport_zone_clusters'].strip()
+    if not transport_zone['cluster_names'] or transport_zone['cluster_names'] == '':
+        raise Exception('Error! No cluster members specified to create the Transport Zone...!!')
+    
+    cluster_ids = ''
+    for cluster_name in transport_zone['cluster_names'].split(','):
+        cluster_id = mobclient.lookup_moid(cluster_name.strip())
+        if 'domain' in cluster_id:
+            cluster_ids += cluster_id + ','
+
+    cluster_ids = cluster_ids.strip(',')
+    if cluster_ids == '':
+        raise Exception('Error! No matching cluster members found to create the Transport Zone...!!')
+    
+    transport_zone['cluster_ids'] = cluster_ids
+    tz_context = {
+        'context': context,
+        'transport_zone': transport_zone,
+        'files': []
+    }    
+
+    transport_zones_dir = os.path.realpath(os.path.join(dir ))
+    if os.path.isdir(transport_zones_dir):
+        shutil.rmtree(transport_zones_dir)
+    mkdir_p(transport_zones_dir)
+
+    template_dir = '.'
+    if alternate_template is not None:
+        template_dir = os.path.join(template_dir, alternate_template)
+
+    template.render(
+        os.path.join(transport_zones_dir, transport_zone['name'] + '_payload.xml'),
+        os.path.join(template_dir, 'vdn_scope_post_payload.xml' ),
+        tz_context
+    )
+
+    post_response = client.post_xml(NSX_URLS['scope']['all'], 
+            os.path.join(transport_zones_dir, transport_zone['name'] + '_payload.xml'))
+    data = post_response.text
+    if DEBUG:
+        print('Transport Zone creation response:{}\n'.format(data))
+
+    if post_response.status_code < 400: 
+        print('Created Transport Zone : {}\n'.format(transport_zone['name']))
+        context['nsxmanager']['transport_zone'] = transport_zone['name']
+        context['nsxmanager']['transport_zone_id'] = data
+
+def delete_transport_zone(context):
+
+    # if no transport zone, nothing to delete
+    if not check_transport_zone(context):
+        return
+
+    transport_zone_id = context['nsxmanager']['transport_zone_id']
+    delete_response = client.delete(NSX_URLS['scope']['all'] + '/' +
+             transport_zone_id, False)
+    data = delete_response.text
 
 def build_logical_switches(dir, context, type='logical_switches', alternate_template=None):
 
@@ -271,37 +376,19 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
     if alternate_template is not None:
         template_dir = os.path.join(template_dir, alternate_template)
 
-    vdnScopesResponse = client.get(NSX_URLS['scope']['all'])
-    vdnScopesDoc = xmltodict.parse(vdnScopesResponse.text)
-
-    if DEBUG:
-        print('VDN Scopes output: {}'.format(vdnScopesDoc))
-
     vcenterMobMap = refresh_moid_map(context)
-
-    # Handle multiple Transport zones
-    vdnScopes = vdnScopesDoc['vdnScopes']['vdnScope']
-
-    # If just single entry, just wrap it in an array
-    if isinstance(vdnScopes, dict):
-        vdnScopes = [ vdnScopes ]
     
-    defaultVdnScopeId = None
     transportZone = context['nsxmanager']['transport_zone']
+    transportZoneClusters = context['nsxmanager']['transport_zone_clusters']
+    if transportZone or transportZoneClusters:
+        build_transport_zone(dir, context, 'transport_zone')
+    else:
+        raise Exception('Error! No transport zone name or cluster members specified to create the Transport Zone...!!')
+    
+    defaultVdnScopeId = context['nsxmanager']['transport_zone_id']
+
     enable_dlr = context['nsxmanager']['enable_dlr']
-
-    for entry in vdnScopes:
-        if DEBUG:
-            print('Transport Zone name: {}, Vdn Scope name in entry: {}'.format(transportZone, entry['name']))
-        if entry['name'] == transportZone:
-            defaultVdnScopeId = entry['objectId']
-            print('Found matching TZ, VDN Scope id :{}\n'.format(defaultVdnScopeId))
-            break
-
-    if not defaultVdnScopeId:
-        defaultVdnScopeId = vdnScopes[0]['objectId']
-        print('Unable to find matching TZ, going with first available TZ, VDN Scope id : {}\n'.format(defaultVdnScopeId))
-
+        
     for lswitch in  context[type]: 
 
         # Skip if DLR is disabled and OSPF is in the switch name
@@ -315,7 +402,6 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
         logical_switches_context = {
             'context': context,
             'logical_switch': lswitch,
-            #'managed_service_release_jobs': context['managed_service_release_jobs'],
             'files': []
         }    
 
@@ -971,7 +1057,11 @@ def map_nsx_esg_id(edge_service_gateways):
     if DEBUG:
         print('ESG response :\n{}\n'.format(existingEsgResponse.text)) 
 
-    edgeSummaries = existingEsgResponseDoc['pagedEdgeList']['edgePage']['edgeSummary']
+    edgeSummaries = existingEsgResponseDoc['pagedEdgeList']['edgePage'].get('edgeSummary')
+    if not edgeSummaries:
+        print('No NSX Edge instances found')
+        return matched_nsx_esgs
+
     edgeEntries = edgeSummaries
     if isinstance(edgeSummaries, dict):
         edgeEntries = [ edgeSummaries ]
@@ -1001,7 +1091,11 @@ def list_nsx_edge_gateways(context):
     if DEBUG:
         print('NSX ESG response :{}\n'.format(existingEsgResponse.text))
 
-    edgeSummaries = existingEsgResponseDoc['pagedEdgeList']['edgePage']['edgeSummary']
+    edgeSummaries = existingEsgResponseDoc['pagedEdgeList']['edgePage'].get('edgeSummary')
+    if not edgeSummaries:
+        print('No NSX Edge instances found')
+        return
+
     edgeEntries = edgeSummaries
     if isinstance(edgeSummaries, dict):
         edgeEntries = [ edgeSummaries ]

@@ -1,0 +1,13 @@
+<vdnScope>
+  <name>{{transport_zone['name']}}</name>
+  <clusters>
+    {% for cluster_id in transport_zone['cluster_ids'].split(',') %}
+    <cluster> 
+    <cluster> 
+        <objectId>{{cluster_id}}</objectId>
+    </cluster>
+	</cluster> 
+    {% endfor %}
+  </clusters>
+  <controlPlaneMode>UNICAST_MODE</controlPlaneMode>
+</vdnScope>

@@ -24,8 +24,9 @@ Set `--nsxmanager_enable_dlr true ` or  ` -nsxmanager_en_dlr true ` in command l
 nsxmanager:
   address: 12.1.1.1
   ...
-  transport_zone: TZ # Specified TransportZone should exist
-  distributed_portgroup: TestDistributedPortGroup
+  transport_zone: TZ # Specified TransportZone should exist or would be created
+  transport_zone_clusters: Cluster1,Cluster2 # Optional, needed on creation of transport zone
+  distributed_portgroup: TestDistributedPortGroup # Required for DLR
   enable_dlr: true
 ```
 Using a DLR does requires specifying a Distributed PortGroup as well as a password for the OSPF user.
