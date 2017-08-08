@@ -115,7 +115,6 @@ def build(context, verbose=False):
     #build_transport_zone('tz', context, 'transport_zone')
     
     build_logical_switches('lswitch', context, 'logical_switches')
-    exit()
     build_nsx_dlrs('dlr', context)
     build_nsx_edge_gateways('edge', context)
 
@@ -379,7 +378,12 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
     vcenterMobMap = refresh_moid_map(context)
     
     transportZone = context['nsxmanager']['transport_zone']
-    transportZoneClusters = context['nsxmanager']['transport_zone_clusters']
+    
+    try:
+        transportZoneClusters = context['nsxmanager']['transport_zone_clusters']
+    except KeyError:
+        pass
+    
     if transportZone or transportZoneClusters:
         build_transport_zone(dir, context, 'transport_zone')
     else:
