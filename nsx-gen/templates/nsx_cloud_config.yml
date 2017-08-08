@@ -14,6 +14,7 @@ nsxmanager:
   admin_user: user
   admin_passwd: passwd
   #transport_zone: TZ # Specified TransportZone should exist
+  transport_zone_clusters: ""
   distributed_portgroup: TestDistributedPortGroup
   enable_dlr: true
   bosh_nsx_enabled: false

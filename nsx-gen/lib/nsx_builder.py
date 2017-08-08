@@ -262,7 +262,7 @@ def reconcile_uplinks(context):
 
 # Check for existence of transport zone and wire the id
 def check_transport_zone(context):
-    transport_zone_name = context['nsxmanager']['transport_zone']
+    transport_zone_name = context['nsxmanager'].get('transport_zone')
     if not transport_zone_name:
         transport_zone_name = context['name'] + '-tz'
 
@@ -299,14 +299,14 @@ def build_transport_zone(dir, context, type='transport_zone', alternate_template
         return
 
     # Transport zone does not exist, lets create
-    transport_zone_name = context['nsxmanager']['transport_zone']
+    transport_zone_name = context['nsxmanager'].get('transport_zone')
     if not transport_zone_name:
         transport_zone_name = context['name'] + '-tz'
 
     transport_zone = {}
     transport_zone['name'] = transport_zone_name
-    transport_zone['cluster_names'] = context['nsxmanager']['transport_zone_clusters'].strip()
-    if not transport_zone['cluster_names'] or transport_zone['cluster_names'] == '':
+    transport_zone['cluster_names'] = context['nsxmanager'].get('transport_zone_clusters').strip()
+    if transport_zone['cluster_names'] == '':
         raise Exception('Error! No cluster members specified to create the Transport Zone...!!')
     
     cluster_ids = ''
@@ -377,10 +377,10 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
 
     vcenterMobMap = refresh_moid_map(context)
     
-    transportZone = context['nsxmanager']['transport_zone']
+    transportZone = context['nsxmanager'].get('transport_zone')
     
     try:
-        transportZoneClusters = context['nsxmanager']['transport_zone_clusters']
+        transportZoneClusters = context['nsxmanager'].get('transport_zone_clusters')
     except KeyError:
         pass
     
