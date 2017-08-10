@@ -41,8 +41,8 @@ requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.
 
 DEBUG = False
 # Grab following resource types from mob tree
-# leaving first letter for some that have upper case like Cluster, Datastore, Datacenter, Network
-RESOURCE_TYPES = [ 'atacenter', 'atastore', 'host', 'domain', 'luster', 'virtualwire', 'portgroup', 'etwork']
+# leaving first letter for some that have upper case like Cluster, Group, Datastore, Datacenter, Network
+RESOURCE_TYPES = [ 'atacenter', 'atastore', 'host', 'domain', 'roup', 'luster', 'virtualwire', 'portgroup', 'etwork']
 
 def get_context():
     if get_context.context is not None:
@@ -174,7 +174,7 @@ def traversedMoidTree(context, data, cookies):
 
     groupMoidMap = { }
     for key, entry in detailedMoidMap.iteritems():
-        if 'group' in entry['moid']:            
+        if 'group' in entry['moid'] or :            
             detailedVcenterMobUrl = '/mob/?moid=' + entry['moid']
             groupMoidMap.update(processVCenterMobRequest(context, detailedVcenterMobUrl, method, data, cookies))
 
