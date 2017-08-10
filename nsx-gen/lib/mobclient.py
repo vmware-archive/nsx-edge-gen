@@ -29,6 +29,7 @@ from lxml import html, etree
 import urllib
 import urllib2
 from urllib2 import urlopen, Request
+from requests.utils import quote
 
 try:
     # Python 3
@@ -271,6 +272,9 @@ def generateMoidMap(response, resourceTypes):
 
 def lookup_moid(resourceName):
 
+    # Handle / and other characters
+    resourceName = quote(resourceName, safe='')
+
     vcenterMobMap = checkMoidMap()
     if not vcenterMobMap:
         vcenterMobMap = refresh_vsphere_config()
@@ -287,6 +291,8 @@ def lookup_moid(resourceName):
     return resourceName
 
 def lookup_logicalswitch_managed_obj_name( resourceName):
+    # Handle / and other characters
+    resourceName = quote(resourceName, safe='')
     
     vcenterMobMap = checkMoidMap()
     if not vcenterMobMap:
