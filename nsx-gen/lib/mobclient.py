@@ -172,6 +172,14 @@ def traversedMoidTree(context, data, cookies):
 
     detailedMoidMap.update(datastoreMoidMap)
 
+    groupMoidMap = { }
+    for key, entry in detailedMoidMap.iteritems():
+        if 'group' in entry['moid']:            
+            detailedVcenterMobUrl = '/mob/?moid=' + entry['moid']
+            groupMoidMap.update(processVCenterMobRequest(context, detailedVcenterMobUrl, method, data, cookies))
+
+    detailedMoidMap.update(groupMoidMap)
+
     if DEBUG:
         print('Entire Moid Map:\n' + str(detailedMoidMap))
    
