@@ -174,7 +174,7 @@ def traversedMoidTree(context, data, cookies):
 
     groupMoidMap = { }
     for key, entry in detailedMoidMap.iteritems():
-        if 'group' in entry['moid'] or :            
+        if 'group' in entry['moid']:            
             detailedVcenterMobUrl = '/mob/?moid=' + entry['moid']
             groupMoidMap.update(processVCenterMobRequest(context, detailedVcenterMobUrl, method, data, cookies))
 
