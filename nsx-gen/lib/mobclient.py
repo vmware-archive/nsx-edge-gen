@@ -272,9 +272,6 @@ def generateMoidMap(response, resourceTypes):
 
 def lookup_moid(resourceName):
 
-    # Handle / and other characters
-    resourceName = quote(resourceName, safe='')
-
     vcenterMobMap = checkMoidMap()
     if not vcenterMobMap:
         vcenterMobMap = refresh_vsphere_config()
@@ -287,13 +284,16 @@ def lookup_moid(resourceName):
         elif 'vsan' + resourceName in vcenterMobMap:
             return vcenterMobMap['vsan' + resourceName]['moid']
 
+    # Handle / and other characters
+    resourceName = quote(resourceName, safe='')
+    if resourceName in vcenterMobMap:
+        return vcenterMobMap[resourceName]['moid']
+
     print('Unable to lookup Moid for resource: ' + resourceName)
     return resourceName
 
 def lookup_logicalswitch_managed_obj_name( resourceName):
-    # Handle / and other characters
-    resourceName = quote(resourceName, safe='')
-    
+
     vcenterMobMap = checkMoidMap()
     if not vcenterMobMap:
         vcenterMobMap = refresh_vsphere_config()
@@ -321,6 +321,13 @@ def lookup_logicalswitch_managed_obj_name( resourceName):
                 associated_lsw_name = key[key.index(lswitch_initial_chars):]
                 if associated_lsw_name in resourceName:
                     return key  
+
+    # Handle / and other characters
+    resourceName = quote(resourceName, safe='')
+    for key in vcenterMobMap:
+        #print('key[{}] : {}'.format(key, str(vcenterMobMap[key])))
+        if resourceName in key:
+            return key        
 
     print('Unable to lookup Moid for resource: {}'.format(resourceName))
     return resourceName
