@@ -92,6 +92,17 @@ class TransportScheme:
 			return self.is_ingress
 		return self.protocol
 
+	def __setitem__(self, field, val):
+		if field == 'port':
+			self.port = val
+		elif field == 'protocol':
+			self.protocol = val
+		elif field == 'monitor_port':
+			self.monitor_port = val
+		elif field == 'url':
+			self.url
+		elif field == 'is_ingress':
+			self.is_ingress = val	
 
 class RoutedComponentTransport:
 
@@ -172,18 +183,20 @@ class UplinkDetails:
 
 class RoutedComponent:
 
-	def __init__(self, name, switchName, uplink_details, transport=None, useVIP=True, instances=3, offset=5, is_external=True ):
+	def __init__(self, name, switchName, uplink_details, transport=None, useVIP=True, ssl_term=True, instances=3, offset=5, is_external=True ):
 
 		self.name = name
 		self.switch = None
 		self.switchName = switchName
 		self.switchTemplate = select_switch_template(name, switchName)
-		self.external = is_external		
+		self.external = is_external
+
 
 		self.uplink_details = uplink_details
 
 		self.useVIP = useVIP
 		self.offset = offset
+		self.ssl_term = ssl_term
 		self.instances = instances
 		self.transport = transport
 		self.monitor_id = None
@@ -269,8 +282,16 @@ class RoutedComponent:
 	def wire_app_rules_and_profiles(self, app_profiles):
 		ingressProtocol = self.transport['ingress']['protocol']
 		egressProtocol = self.transport['egress']['protocol']
-
 		protocolMap = ingressProtocol +':' + egressProtocol
+
+		# If the component does not want ssl termination,
+		# then let it flow through to tcps (not https as monitoring is off on http)
+		# Change the egress protocol/port/monitor_ports
+		if ingressProtocol == 'https' and self.ssl_term == False:
+			protocolMap = ingressProtocol +':tcps'
+			self.transport['egress']['protocol'] = 'https'
+			self.transport['egress']['port'] = '443'
+			self.transport['egress']['monitor_port'] = '443'
 
 		routed_comps_config_context = get_context()
 		
@@ -286,19 +307,20 @@ class RoutedComponent:
 		if not self.monitor_id:
 			self.monitor_id = locate_entry_in_list(default_monitors, 'monitor', egressProtocol.lower())['id']
 
-		# Always go with defaults of AppRule1 and 2 so they are in beginning
-		self.app_rules = [ "applicationRule-1", "applicationRule-2"  ]
+		# Always go with defaults of AppRule1, 2 and possibly 5 & 6 so they are in beginning
+		self.app_rules = [ "applicationRule-1", "applicationRule-2", "applicationRule-5", "applicationRule-6" ]
 
 		default_app_rules = routed_comps_config_context[APP_RULE_LIST]
 
 		for appRule in default_app_rules:
 			
-			if appRule['app_rule'] in [ 'optionlog', 'option httplog']:
+			if appRule['app_rule'] in [ 'optionlog', 'forwardfor', 'nooptionhttpclose', 'nooptionhttpserverclose' ]:
 				continue
 
 			if appRule['app_rule'].endswith(ingressProtocol.lower()):
 				self.app_rules.append( appRule['id'])
 
+		print('Updated app profile for {} is {}'.format(self.name, self.app_profile))
 
 	def check_for_opsmgr(self):
 		if ('OPS' in self.name.upper()):
@@ -422,6 +444,11 @@ def parse_routing_component(routeComponentEntry, logical_switches, app_profiles,
 	switchName = routeComponentEntry.get('switch')
 	monitor_port = routeComponentEntry.get('switch')
 	external = routeComponentEntry.get('external')
+	ssl_term = routeComponentEntry.get('ssl_terminate')
+	if not ssl_term or ssl_term == 'true':
+		ssl_term = True
+	else:
+		ssl_term = False
 
 	routedTransportSpecified = None
 
@@ -434,6 +461,7 @@ def parse_routing_component(routeComponentEntry, logical_switches, app_profiles,
 										new_uplink_details,
 										transportEntry,
 										useVIP=True,
+										ssl_term=ssl_term,
 										instances=instances,
 										offset=offset,
 										is_external=external

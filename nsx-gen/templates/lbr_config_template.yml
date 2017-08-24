@@ -69,17 +69,26 @@ app_profiles:
   sslPassthrough: 'true'
   serverSslEnabled: 'true'
   requires_cert: 'true'
-- profile: https:tcp
+- profile: https:tcps
   id: applicationProfile-5
+  name: HTTPS2TCPS
+  ingress: HTTPS
+  forward: TCPS
+  template: HTTPS
+  sslPassthrough: 'true'
+  serverSslEnabled: 'false'
+  requires_cert: 'false'
+- profile: https:tcp
+  id: applicationProfile-6
   name: HTTPS2TCP
   ingress: HTTPS
   forward: TCP
-  template: HTTP
+  template: HTTPS
   sslPassthrough: 'false'
   serverSslEnabled: 'false'
   requires_cert: 'true'
 - profile: tcp:tcp
-  id: applicationProfile-6
+  id: applicationProfile-7
   name: TCP2TCP
   ingress: TCP
   forward: TCP
@@ -88,7 +97,7 @@ app_profiles:
   serverSslEnabled: 'false'
   requires_cert: 'false'
 - profile: tcps:tcp
-  id: applicationProfile-7
+  id: applicationProfile-8
   name: TCPS2TCP
   ingress: TCPS
   forward: TCP
@@ -97,7 +106,7 @@ app_profiles:
   serverSslEnabled: 'false'
   requires_cert: 'true'
 - profile: tcps:tcps
-  id: applicationProfile-8
+  id: applicationProfile-9
   name: TCPS2TCPS
   ingress: TCPS
   forward: TCPS
@@ -123,3 +132,11 @@ app_rules:
   id: applicationRule-4
   name: X-Forwarded-Proto:https
   script: 'reqadd X-Forwarded-Proto:\ https'
+- app_rule: nooptionhttpclose
+  id: applicationRule-5
+  name: no option httpclose
+  script: 'no option httpclose'
+- app_rule: nooptionhttpserverclose
+  id: applicationRule-6
+  name: no option http-server-close
+  script: 'no option http-server-close'

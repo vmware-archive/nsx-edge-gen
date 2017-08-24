@@ -144,7 +144,8 @@ ATTRIBUTE_MAP_ARRAY = {
 		[ 'uplink_ip', 'uplink_ip'],
 		[ 'switch', 'switch'],
 		[ 'inst', 'instances', int],
-		[ 'off', 'offset', int]
+		[ 'off', 'offset', int],
+		[ 'ssl_term', 'ssl_terminate']
 	],
 	'isozone_switch':  [	
 		[ 'name', 'name'],
