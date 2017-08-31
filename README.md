@@ -44,6 +44,23 @@ Set `--nsxmanager_bosh_nsx_enabled true ` or  ` -nsxmanager_bosh_nsx_enabled tru
 Setting it to true indicates there is bosh nsx integration and pool members wont be assigned any static ips
 Setting it to false indicates there is no bosh nsx integration and pool members would be assigned static ips determined by nsx-edge-gen
 
+### SSL Termination
+NSX Loadbalancer can be configured to terminate SSL and decrypt the data and forward the plain data to GoRouter (default behavior) or just let the LBR do a pass-through of encrypted data to GoRouter and let it terminate the SSL and decrypt the data. The flag `esg_go_router_ssl_term_1` and `esg_go_router_isozone_1_ssl_term_1` can be applied for default gorouters as well as any iso-segment gorouters (replace the isozone index and suffix for the edge instance index).
+
+Set flag `esg_go_router_ssl_term_1` to true (default) if ssl should be terminated by LBR and only unencrypted traffic forwarded to GoRouter. Use `esg_go_router_isozone_1_ssl_term_1` for isozone-1 and `esg_go_router_isozone_2_ssl_term_1` for isozone-2 all in nsx edge instance 1.
+
+``` 
+  -esg_go_router_ssl_term_1 true 
+  -esg_go_router_isozone_1_ssl_term_1 true \
+
+```
+
+Set to false if encypted traffic should be forwarded as pass-through by LBR and ssl needs to be terminated only at GoRouter
+``` 
+  -esg_go_router_ssl_term_1 false \
+  -esg_go_router_isozone_1_ssl_term_1 false \
+```
+
 # Generating initial config
 Create a new config from template using nsx-gen init. The config file used to drive nsxgen is nsx_cloud_config.yml.
 

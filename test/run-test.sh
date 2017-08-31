@@ -31,6 +31,7 @@ rm -rf $CONFIG_NAME
   -esg_go_router_uplink_ip_1 10.193.99.172 \
   -esg_diego_brain_uplink_ip_1 10.193.99.173 \
   -esg_tcp_router_uplink_ip_1 10.193.99.174 \
+  -esg_go_router_ssl_term_1 true \
   -esg_mysql_ert_uplink_ip_1 192.168.23.250 \
   -esg_mysql_ert_inst_1 5  \
   -esg_mysql_tile_uplink_ip_1 192.168.27.250 \
@@ -60,6 +61,7 @@ rm -rf $CONFIG_NAME
  -esg_tcp_router_isozone_1_uplink_ip_1  10.193.99.182 \
  -esg_tcp_router_isozone_1_switch_1  IsoZone-1 \
  -esg_tcp_router_isozone_1_inst_1 2 \
+ -esg_go_router_isozone_1_ssl_term_1 false \
  -esg_go_router_isozone_2_uplink_ip_1  10.193.99.184 \
  -esg_go_router_isozone_2_inst_1 1 \
  -esg_go_router_isozone_2_switch_1 IsoZone-2 \
