@@ -77,13 +77,14 @@ routed_components:
   monitor_id: monitor-5
   transport:
     ingress:
-      port: '5000'
+      port: '5000'  #'1024-65535'
       protocol: tcp
     egress:
-      port: '5000'
+      port: '5000'  #'1024-65535'
       protocol: tcp
-      monitor_port: '80'
-      url: "/health"
+      #monitor_port: '1024-65535'
+      #monitor_port: '80'
+      #url: "/health"
   
 - id: MYSQL-ERT 
   name: MYSQL-ERT
@@ -166,12 +167,12 @@ routed_components:
   monitor_id: monitor-5
   transport:
     ingress:
-      port: '5000'
+      port: '5000' #'1024-65535'
       protocol: tcp
     egress:
-      port: '5000'
+      port: '5000'  #'1024-65535'
       protocol: tcp
-      monitor_port: '5000'
+      # monitor_port: '1024-65535'
       # protocol: http
       # monitor_port: '8080'
       # url: "/health"

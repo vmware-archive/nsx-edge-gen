@@ -239,8 +239,8 @@
                     <application>
                         <service>
                             <protocol>tcp</protocol>
-                            <port>5000</port>
-                            <sourcePort>any</sourcePort>
+                            <port>any</port>
+                            <sourcePort>1024-65535</sourcePort>
                         </service>
                     </application>
                 </firewallRule>
@@ -300,13 +300,14 @@
                         <service>
                             <protocol>tcp</protocol>
                             {% if 'TCP' in isozone_routed_comp['name'].upper() %}
-                            <port>5000</port>
+                            <port>any</port>
+                            <sourcePort>1024-65535</sourcePort>
                             {% else %}
                             <port>80</port>
                             <port>443</port>
                             <port>4443</port>
-                            {% endif %}
                             <sourcePort>any</sourcePort>
+                            {% endif %}                            
                     </service>
                     </application>
                 </firewallRule>
