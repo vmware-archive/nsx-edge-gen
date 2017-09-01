@@ -50,7 +50,7 @@ NSX Loadbalancer can be configured to terminate SSL and decrypt the data and for
 Set flag `esg_go_router_ssl_term_1` to true (default) if ssl should be terminated by LBR and only unencrypted traffic forwarded to GoRouter. Use `esg_go_router_isozone_1_ssl_term_1` for isozone-1 and `esg_go_router_isozone_2_ssl_term_1` for isozone-2 all in nsx edge instance 1.
 
 ``` 
-  -esg_go_router_ssl_term_1 true 
+  -esg_go_router_ssl_term_1 true \
   -esg_go_router_isozone_1_ssl_term_1 true \
 
 ```
