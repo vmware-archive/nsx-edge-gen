@@ -839,7 +839,7 @@ def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge, cert_section):
     map_nsx_esg_id( [ nsx_edge ] )
 
     cert_config = cert_section.get('config')
-    if not cert_config:
+    if not cert_config and not cert_section.get('key'):
         print('No certs section to use an available cert or generate cert was specified for cert: {} for edge instance: {}'.\
                     format( cert_section['name'], nsx_edge['name']))
         raise Exception('Creation of NSX Edge failed, no certs section was provided')   
@@ -850,10 +850,10 @@ def add_certs_to_nsx_edge(nsx_edges_dir, nsx_edge, cert_section):
         return
 
     
-    if cert_config.get('key') and cert_config.get('cert'):
+    if cert_section.get('key') and cert_section.get('cert'):
         print('Using the provided certs and key for associating with NSX Edge instance: {}'.format(nsx_edge['name']))
-        cert_config['key'] = cert_config.get('key').strip() + '\n'
-        cert_config['cert'] = cert_config.get('cert').strip() + '\n'
+        cert_section['key'] = cert_section.get('key').strip() + '\n'
+        cert_section['cert'] = cert_section.get('cert').strip() + '\n'
     else:
         # Try to generate certs if key and cert are not provided
         generate_certs(cert_section)
