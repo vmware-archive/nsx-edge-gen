@@ -519,8 +519,10 @@
 
         <routing>
             <enabled>true</enabled>
-            <routingGlobalConfig>
-                <routerId>10.193.99.160</routerId>
+
+        {% if not enable_dlr %}
+             <routingGlobalConfig>
+                <routerId>{{nsxmanager['uplink_details']['uplink_ip']}}</routerId>
                 <ecmp>false</ecmp>
                 <logging>
                     <enable>false</enable>
@@ -548,8 +550,49 @@
                     {% endfor %}
                 </staticRoutes>
             </staticRouting>
-
-            {% if enable_dlr %}
+            <ospf>
+                <enabled>false</enabled>
+                <ospfAreas>
+                    <ospfArea>
+                        <areaId>51</areaId>
+                        <type>nssa</type>
+                        <authentication>
+                            <type>none</type>
+                        </authentication>
+                    </ospfArea>
+                    <ospfArea>
+                        <areaId>0</areaId>
+                        <type>normal</type>
+                        <authentication>
+                            <type>none</type>
+                        </authentication>
+                    </ospfArea>
+                </ospfAreas>
+                <ospfInterfaces/>
+                <redistribution>
+                    <enabled>false</enabled>
+                    <rules/>
+                </redistribution>
+                <gracefulRestart>true</gracefulRestart>
+                <defaultOriginate>false</defaultOriginate>
+            </ospf>
+        {% else %}
+            <routingGlobalConfig>
+                <routerId>172.16.100.10</routerId>
+                <ecmp>false</ecmp>
+                <logging>
+                    <enable>false</enable>
+                    <logLevel>info</logLevel>
+                </logging>
+            </routingGlobalConfig>
+            <staticRouting>
+                <defaultRoute>
+                    <mtu>1500</mtu>
+                    <gatewayAddress>{{gateway_address}}</gatewayAddress>
+                    <adminDistance>1</adminDistance>
+                </defaultRoute>
+                <staticRoutes/>
+            </staticRouting>
             <ospf>
                 <enabled>true</enabled>
                 <ospfAreas>
