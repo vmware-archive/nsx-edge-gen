@@ -587,6 +587,7 @@
             </routingGlobalConfig>
             <staticRouting>
                 <defaultRoute>
+                    <vnic>0</vnic>
                     <mtu>1500</mtu>
                     <gatewayAddress>{{gateway_address}}</gatewayAddress>
                     <adminDistance>1</adminDistance>
