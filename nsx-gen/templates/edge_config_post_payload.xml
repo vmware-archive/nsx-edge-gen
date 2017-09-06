@@ -578,7 +578,7 @@
             </ospf>
         {% else %}
             <routingGlobalConfig>
-                <routerId>172.16.100.10</routerId>
+                <routerId>172.16.100.1</routerId>
                 <ecmp>false</ecmp>
                 <logging>
                     <enable>false</enable>
