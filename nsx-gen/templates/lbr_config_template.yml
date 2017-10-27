@@ -140,3 +140,11 @@ app_rules:
   id: applicationRule-6
   name: no option http-server-close
   script: 'no option http-server-close'
+- app_rule: optionhttpkeepalive
+  id: applicationRule-7
+  name: option http-keep-alive
+  script: 'option http-keep-alive'
+# - app_rule: httpkeepalive
+#   id: applicationRule-8
+#   name: timeout-http-keep-alive-30s
+#   script: 'timeout http-keep-alive 30s'  

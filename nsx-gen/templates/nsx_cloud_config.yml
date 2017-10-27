@@ -121,13 +121,31 @@ edge_service_gateways:
       #  port: 80
       #  protocol: tcp
       #  monitor_port: 80      
+  - name: go-router-nossl
+    switch: Ert
+    external: true
+    instances: 4
+    offset: 250
+    uplink_details:
+      uplink_ip: 10.114.216.173 # This gets exposed outside
+    #transport:
+      # Default ingress scheme is https/80 for ert
+      #ingress:
+      #  port: 80
+      #  protocol: http
+      # Default egress scheme is http/80 for ert
+      #egress: 
+      #  port: 80
+      #  protocol: tcp
+      #  monitor_port: 80      
+
   - name: diego-brain
     switch: Ert
     external: true
     instances: 3
     offset: 180
     uplink_details:
-      uplink_ip: 10.193.99.173 # This gets exposed outside  
+      uplink_ip: 10.193.99.174 # This gets exposed outside  
     #transport:
       #ingress:
       #  port: 2222
@@ -141,7 +159,7 @@ edge_service_gateways:
     instances: 4
     offset: 300
     uplink_details:
-      uplink_ip: 10.193.99.174 # This gets exposed outside
+      uplink_ip: 10.193.99.175 # This gets exposed outside
     #transport:
       # Use defaults - tcp/5000 ingress, tcp/5000 egress
       #ingress:

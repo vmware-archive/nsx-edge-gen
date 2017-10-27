@@ -121,11 +121,12 @@ class NSXConfig(dict):
             if not distributed_portgroup:
                 raise ValueError('distributed_portgroup field not set for nsxmanager')
     
-        bosh_nsx_enabled = self.nsxmanager['bosh_nsx_enabled']
-        if not bosh_nsx_enabled or bosh_nsx_enabled == 'false':
-            self.nsxmanager['bosh_nsx_enabled'] = False
-        else:
-            self.nsxmanager['bosh_nsx_enabled'] = True
+        for tag in ['bosh_nsx_enabled', 'http_lbr_enabled' ]:
+            tagValue = self.nsxmanager.get(tag)
+            if not tagValue or tagValue == 'false':
+                self.nsxmanager[tag] = False
+            else:
+                self.nsxmanager[tag] = True
 
         uplink_details = self.nsxmanager['uplink_details']
         if uplink_details.get('uplink_ip') is None:

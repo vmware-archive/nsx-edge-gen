@@ -38,28 +38,6 @@
     {% endfor %}
    {% endfor %}   
 
-<!--
-   {% for iso_zone in nsx_edge['iso_zones'] %}
-   {% for appProfile in nsx_edge['app_profiles'] %}
-   <applicationProfile>
-      <applicationProfileId>{{ appProfile['id']}}{{iso_zone['name'].upper().replace('ISOZONE', '').replace('-', '')}}</applicationProfileId>
-      <name>{{appProfile['name']}}-{{iso_zone['name']}}</name>
-      <insertXForwardedFor>true</insertXForwardedFor>
-      <sslPassthrough>{{ appProfile['sslPassthrough'] }}</sslPassthrough>
-      <template>{{ appProfile['template'] }}</template>
-      {% if 'HTTPS' in appProfile['name'] or 'TCPS' in appProfile['name'] %}
-        <clientSsl>
-            <ciphers>DEFAULT</ciphers>
-            <clientAuth>ignore</clientAuth>
-            <serviceCertificate>{{ iso_zone['cert_id'] }}</serviceCertificate>
-        </clientSsl>
-      {% endif %}
-      <serverSslEnabled>{{ appProfile['serverSslEnabled'] }}</serverSslEnabled>
-   </applicationProfile>
-   {% endfor %}
-   {% endfor %}
- -->
-
    {% for appProfile in app_profiles %}
    <applicationProfile>
       <applicationProfileId>{{ appProfile['id']}}</applicationProfileId>
@@ -105,25 +83,26 @@
    
      {% set outer_index = loop.index %}    
      {% for port in virtServer['transport']['ingress']['port'].split(',') %}
-
-   <virtualServer>
-    <virtualServerId>virtualServer-{{outer_index}}{{loop.index}}</virtualServerId>
-    <name>VIP-{{virtServer['name']}}-{{virtServer['transport']['ingress']['protocol']}}-{{outer_index}}{{loop.index}}</name>
-    <enabled>true</enabled>
-    <ipAddress>{{virtServer['uplink_details']['uplink_ip']}}</ipAddress>
-    <protocol>{{virtServer['transport']['ingress']['protocol']}}</protocol>
-    <port>{{ port }}</port>
-    <connectionLimit>0</connectionLimit>
-    <connectionRateLimit>0</connectionRateLimit>
-    <defaultPoolId>pool-{{outer_index}}{{loop.index}}</defaultPoolId>
-    <applicationProfileId>{{virtServer['app_profile']['id']}}</applicationProfileId>
-    <enableServiceInsertion>false</enableServiceInsertion>
-    <accelerationEnabled>false</accelerationEnabled>
-    {% for app_rule_id in virtServer['app_rules'] %}
-      <applicationRuleId>{{ app_rule_id }}</applicationRuleId>
-    {% endfor %}
-   </virtualServer>
-   {% endfor %}
+        {% if ('nossl' not in virtServer['name']) or ('nossl' in virtServer['name'] and  nsx_edge['http_lbr_enabled'] == True) %}
+          <virtualServer>
+            <virtualServerId>virtualServer-{{outer_index}}{{loop.index}}</virtualServerId>
+            <name>VIP-{{virtServer['name']}}-{{virtServer['transport']['ingress']['protocol']}}-{{outer_index}}{{loop.index}}</name>
+            <enabled>true</enabled>
+            <ipAddress>{{virtServer['uplink_details']['uplink_ip']}}</ipAddress>
+            <protocol>{{virtServer['transport']['ingress']['protocol']}}</protocol>
+            <port>{{ port }}</port>
+            <connectionLimit>0</connectionLimit>
+            <connectionRateLimit>0</connectionRateLimit>
+            <defaultPoolId>pool-{{outer_index}}{{loop.index}}</defaultPoolId>
+            <applicationProfileId>{{virtServer['app_profile']['id']}}</applicationProfileId>
+            <enableServiceInsertion>false</enableServiceInsertion>
+            <accelerationEnabled>false</accelerationEnabled>
+            {% for app_rule_id in virtServer['app_rules'] %}
+              <applicationRuleId>{{ app_rule_id }}</applicationRuleId>
+            {% endfor %}
+          </virtualServer>
+        {% endif %}
+     {% endfor %}
    {% endfor %}
 
    <logging>

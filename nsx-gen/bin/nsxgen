@@ -78,6 +78,7 @@ ATTRIBUTE_MAP_ARRAY = {
 		[ 'addr', 'address'],
 		[ 'en_dlr', 'enable_dlr'],
 		[ 'bosh_nsx_enabled', 'bosh_nsx_enabled'],
+		[ 'http_lbr_enabled', 'http_lbr_enabled'],
 		[ 'user', 'admin_user'],
 		[ 'pass', 'admin_passwd'],
 		[ 'tz', 'transport_zone'],
@@ -155,13 +156,13 @@ ATTRIBUTE_MAP_ARRAY = {
 
 # Should match
 # Supporting atmost 5 isolation segments per ESG Edge instance
-ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router', 'mysql_ert', 
+ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'go_router_nossl', 'diego_brain', 'tcp_router', 'mysql_ert', 
 						'mysql_tile', 'rabbitmq_tile', 
-						'go_router_isozone_1', 'tcp_router_isozone_1',
-						'go_router_isozone_2', 'tcp_router_isozone_2',
-						'go_router_isozone_3', 'tcp_router_isozone_3',
-						'go_router_isozone_4', 'tcp_router_isozone_4',
-						'go_router_isozone_5', 'tcp_router_isozone_5',
+						'go_router_isozone_1', 'go_router_nossl_isozone_1', 'tcp_router_isozone_1',
+						'go_router_isozone_2', 'go_router_nossl_isozone_2', 'tcp_router_isozone_2',
+						'go_router_isozone_3', 'go_router_nossl_isozone_3', 'tcp_router_isozone_3',
+						'go_router_isozone_4', 'go_router_nossl_isozone_4', 'tcp_router_isozone_4',
+						'go_router_isozone_5', 'go_router_nossl_isozone_5', 'tcp_router_isozone_5',
 					]
 
 cli_config = { }
@@ -325,6 +326,7 @@ def construct_config(args):
 			cliConfig['nsxmanager']['uplink_details'] = { }
 			cliConfig['nsxmanager']['enable_dlr'] = False
 			cliConfig['nsxmanager']['bosh_nsx_enabled'] = False
+			cliConfig['nsxmanager']['http_lbr_enabled'] = False
 
 			for field in ATTRIBUTE_MAP_ARRAY[section]:
 				key = '{}_{}'.format(prefix, field[1])

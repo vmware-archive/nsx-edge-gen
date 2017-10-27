@@ -752,6 +752,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
                 ospfLogicalSwitch = lswitch             
 
         nsx_edge['bosh_nsx_enabled'] = bosh_nsx_enabled
+        nsx_edge['http_lbr_enabled'] = nsxmanager['http_lbr_enabled']
 
         vcenter_ctx = context['vcenter']
 

@@ -1,7 +1,8 @@
 Complete args supported 
 ```
 $ python ./nsx-gen/bin/nsxgen -h
-       usage: nsxgen [-h] [-i INIT] [-c NSX_CONF]
+usage: nsxgen [-h] [-i INIT] [-nsxedge_names NSXEDGE_NAMES]
+              [-export_dir EXPORT_DIRECTORY] [-c NSX_CONF]
               [-isozone_switch_name_1 ISOZONE_SWITCH_NAME_1]
               [-isozone_switch_cidr_1 ISOZONE_SWITCH_CIDR_1]
               [-isozone_switch_name_2 ISOZONE_SWITCH_NAME_2]
@@ -61,76 +62,125 @@ $ python ./nsx-gen/bin/nsxgen -h
               [-esg_opsmgr_switch_1 ESG_OPSMGR_SWITCH_1]
               [-esg_opsmgr_inst_1 ESG_OPSMGR_INSTANCES_1]
               [-esg_opsmgr_off_1 ESG_OPSMGR_OFFSET_1]
+              [-esg_opsmgr_ssl_term_1 ESG_OPSMGR_SSL_TERMINATE_1]
               [-esg_go_router_uplink_ip_1 ESG_GO_ROUTER_UPLINK_IP_1]
               [-esg_go_router_switch_1 ESG_GO_ROUTER_SWITCH_1]
               [-esg_go_router_inst_1 ESG_GO_ROUTER_INSTANCES_1]
               [-esg_go_router_off_1 ESG_GO_ROUTER_OFFSET_1]
+              [-esg_go_router_ssl_term_1 ESG_GO_ROUTER_SSL_TERMINATE_1]
+              [-esg_go_router_nossl_uplink_ip_1 ESG_GO_ROUTER_NOSSL_UPLINK_IP_1]
+              [-esg_go_router_nossl_switch_1 ESG_GO_ROUTER_NOSSL_SWITCH_1]
+              [-esg_go_router_nossl_inst_1 ESG_GO_ROUTER_NOSSL_INSTANCES_1]
+              [-esg_go_router_nossl_off_1 ESG_GO_ROUTER_NOSSL_OFFSET_1]
+              [-esg_go_router_nossl_ssl_term_1 ESG_GO_ROUTER_NOSSL_SSL_TERMINATE_1]
               [-esg_diego_brain_uplink_ip_1 ESG_DIEGO_BRAIN_UPLINK_IP_1]
               [-esg_diego_brain_switch_1 ESG_DIEGO_BRAIN_SWITCH_1]
               [-esg_diego_brain_inst_1 ESG_DIEGO_BRAIN_INSTANCES_1]
               [-esg_diego_brain_off_1 ESG_DIEGO_BRAIN_OFFSET_1]
+              [-esg_diego_brain_ssl_term_1 ESG_DIEGO_BRAIN_SSL_TERMINATE_1]
               [-esg_tcp_router_uplink_ip_1 ESG_TCP_ROUTER_UPLINK_IP_1]
               [-esg_tcp_router_switch_1 ESG_TCP_ROUTER_SWITCH_1]
               [-esg_tcp_router_inst_1 ESG_TCP_ROUTER_INSTANCES_1]
               [-esg_tcp_router_off_1 ESG_TCP_ROUTER_OFFSET_1]
+              [-esg_tcp_router_ssl_term_1 ESG_TCP_ROUTER_SSL_TERMINATE_1]
               [-esg_mysql_ert_uplink_ip_1 ESG_MYSQL_ERT_UPLINK_IP_1]
               [-esg_mysql_ert_switch_1 ESG_MYSQL_ERT_SWITCH_1]
               [-esg_mysql_ert_inst_1 ESG_MYSQL_ERT_INSTANCES_1]
               [-esg_mysql_ert_off_1 ESG_MYSQL_ERT_OFFSET_1]
+              [-esg_mysql_ert_ssl_term_1 ESG_MYSQL_ERT_SSL_TERMINATE_1]
               [-esg_mysql_tile_uplink_ip_1 ESG_MYSQL_TILE_UPLINK_IP_1]
               [-esg_mysql_tile_switch_1 ESG_MYSQL_TILE_SWITCH_1]
               [-esg_mysql_tile_inst_1 ESG_MYSQL_TILE_INSTANCES_1]
               [-esg_mysql_tile_off_1 ESG_MYSQL_TILE_OFFSET_1]
+              [-esg_mysql_tile_ssl_term_1 ESG_MYSQL_TILE_SSL_TERMINATE_1]
               [-esg_rabbitmq_tile_uplink_ip_1 ESG_RABBITMQ_TILE_UPLINK_IP_1]
               [-esg_rabbitmq_tile_switch_1 ESG_RABBITMQ_TILE_SWITCH_1]
               [-esg_rabbitmq_tile_inst_1 ESG_RABBITMQ_TILE_INSTANCES_1]
               [-esg_rabbitmq_tile_off_1 ESG_RABBITMQ_TILE_OFFSET_1]
+              [-esg_rabbitmq_tile_ssl_term_1 ESG_RABBITMQ_TILE_SSL_TERMINATE_1]
               [-esg_go_router_isozone_1_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_1_UPLINK_IP_1]
               [-esg_go_router_isozone_1_switch_1 ESG_GO_ROUTER_ISOZONE_1_SWITCH_1]
               [-esg_go_router_isozone_1_inst_1 ESG_GO_ROUTER_ISOZONE_1_INSTANCES_1]
               [-esg_go_router_isozone_1_off_1 ESG_GO_ROUTER_ISOZONE_1_OFFSET_1]
+              [-esg_go_router_isozone_1_ssl_term_1 ESG_GO_ROUTER_ISOZONE_1_SSL_TERMINATE_1]
+              [-esg_go_router_nossl_isozone_1_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_UPLINK_IP_1]
+              [-esg_go_router_nossl_isozone_1_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_SWITCH_1]
+              [-esg_go_router_nossl_isozone_1_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_INSTANCES_1]
+              [-esg_go_router_nossl_isozone_1_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_OFFSET_1]
+              [-esg_go_router_nossl_isozone_1_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_SSL_TERMINATE_1]
               [-esg_tcp_router_isozone_1_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_1_UPLINK_IP_1]
               [-esg_tcp_router_isozone_1_switch_1 ESG_TCP_ROUTER_ISOZONE_1_SWITCH_1]
               [-esg_tcp_router_isozone_1_inst_1 ESG_TCP_ROUTER_ISOZONE_1_INSTANCES_1]
               [-esg_tcp_router_isozone_1_off_1 ESG_TCP_ROUTER_ISOZONE_1_OFFSET_1]
+              [-esg_tcp_router_isozone_1_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_1_SSL_TERMINATE_1]
               [-esg_go_router_isozone_2_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_2_UPLINK_IP_1]
               [-esg_go_router_isozone_2_switch_1 ESG_GO_ROUTER_ISOZONE_2_SWITCH_1]
               [-esg_go_router_isozone_2_inst_1 ESG_GO_ROUTER_ISOZONE_2_INSTANCES_1]
               [-esg_go_router_isozone_2_off_1 ESG_GO_ROUTER_ISOZONE_2_OFFSET_1]
+              [-esg_go_router_isozone_2_ssl_term_1 ESG_GO_ROUTER_ISOZONE_2_SSL_TERMINATE_1]
+              [-esg_go_router_nossl_isozone_2_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_UPLINK_IP_1]
+              [-esg_go_router_nossl_isozone_2_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_SWITCH_1]
+              [-esg_go_router_nossl_isozone_2_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_INSTANCES_1]
+              [-esg_go_router_nossl_isozone_2_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_OFFSET_1]
+              [-esg_go_router_nossl_isozone_2_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_SSL_TERMINATE_1]
               [-esg_tcp_router_isozone_2_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_2_UPLINK_IP_1]
               [-esg_tcp_router_isozone_2_switch_1 ESG_TCP_ROUTER_ISOZONE_2_SWITCH_1]
               [-esg_tcp_router_isozone_2_inst_1 ESG_TCP_ROUTER_ISOZONE_2_INSTANCES_1]
               [-esg_tcp_router_isozone_2_off_1 ESG_TCP_ROUTER_ISOZONE_2_OFFSET_1]
+              [-esg_tcp_router_isozone_2_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_2_SSL_TERMINATE_1]
               [-esg_go_router_isozone_3_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_3_UPLINK_IP_1]
               [-esg_go_router_isozone_3_switch_1 ESG_GO_ROUTER_ISOZONE_3_SWITCH_1]
               [-esg_go_router_isozone_3_inst_1 ESG_GO_ROUTER_ISOZONE_3_INSTANCES_1]
               [-esg_go_router_isozone_3_off_1 ESG_GO_ROUTER_ISOZONE_3_OFFSET_1]
+              [-esg_go_router_isozone_3_ssl_term_1 ESG_GO_ROUTER_ISOZONE_3_SSL_TERMINATE_1]
+              [-esg_go_router_nossl_isozone_3_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_UPLINK_IP_1]
+              [-esg_go_router_nossl_isozone_3_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_SWITCH_1]
+              [-esg_go_router_nossl_isozone_3_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_INSTANCES_1]
+              [-esg_go_router_nossl_isozone_3_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_OFFSET_1]
+              [-esg_go_router_nossl_isozone_3_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_SSL_TERMINATE_1]
               [-esg_tcp_router_isozone_3_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_3_UPLINK_IP_1]
               [-esg_tcp_router_isozone_3_switch_1 ESG_TCP_ROUTER_ISOZONE_3_SWITCH_1]
               [-esg_tcp_router_isozone_3_inst_1 ESG_TCP_ROUTER_ISOZONE_3_INSTANCES_1]
               [-esg_tcp_router_isozone_3_off_1 ESG_TCP_ROUTER_ISOZONE_3_OFFSET_1]
+              [-esg_tcp_router_isozone_3_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_3_SSL_TERMINATE_1]
               [-esg_go_router_isozone_4_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_4_UPLINK_IP_1]
               [-esg_go_router_isozone_4_switch_1 ESG_GO_ROUTER_ISOZONE_4_SWITCH_1]
               [-esg_go_router_isozone_4_inst_1 ESG_GO_ROUTER_ISOZONE_4_INSTANCES_1]
               [-esg_go_router_isozone_4_off_1 ESG_GO_ROUTER_ISOZONE_4_OFFSET_1]
+              [-esg_go_router_isozone_4_ssl_term_1 ESG_GO_ROUTER_ISOZONE_4_SSL_TERMINATE_1]
+              [-esg_go_router_nossl_isozone_4_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_UPLINK_IP_1]
+              [-esg_go_router_nossl_isozone_4_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_SWITCH_1]
+              [-esg_go_router_nossl_isozone_4_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_INSTANCES_1]
+              [-esg_go_router_nossl_isozone_4_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_OFFSET_1]
+              [-esg_go_router_nossl_isozone_4_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_SSL_TERMINATE_1]
               [-esg_tcp_router_isozone_4_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_4_UPLINK_IP_1]
               [-esg_tcp_router_isozone_4_switch_1 ESG_TCP_ROUTER_ISOZONE_4_SWITCH_1]
               [-esg_tcp_router_isozone_4_inst_1 ESG_TCP_ROUTER_ISOZONE_4_INSTANCES_1]
               [-esg_tcp_router_isozone_4_off_1 ESG_TCP_ROUTER_ISOZONE_4_OFFSET_1]
+              [-esg_tcp_router_isozone_4_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_4_SSL_TERMINATE_1]
               [-esg_go_router_isozone_5_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_5_UPLINK_IP_1]
               [-esg_go_router_isozone_5_switch_1 ESG_GO_ROUTER_ISOZONE_5_SWITCH_1]
               [-esg_go_router_isozone_5_inst_1 ESG_GO_ROUTER_ISOZONE_5_INSTANCES_1]
               [-esg_go_router_isozone_5_off_1 ESG_GO_ROUTER_ISOZONE_5_OFFSET_1]
+              [-esg_go_router_isozone_5_ssl_term_1 ESG_GO_ROUTER_ISOZONE_5_SSL_TERMINATE_1]
+              [-esg_go_router_nossl_isozone_5_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_UPLINK_IP_1]
+              [-esg_go_router_nossl_isozone_5_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_SWITCH_1]
+              [-esg_go_router_nossl_isozone_5_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_INSTANCES_1]
+              [-esg_go_router_nossl_isozone_5_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_OFFSET_1]
+              [-esg_go_router_nossl_isozone_5_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_SSL_TERMINATE_1]
               [-esg_tcp_router_isozone_5_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_5_UPLINK_IP_1]
               [-esg_tcp_router_isozone_5_switch_1 ESG_TCP_ROUTER_ISOZONE_5_SWITCH_1]
               [-esg_tcp_router_isozone_5_inst_1 ESG_TCP_ROUTER_ISOZONE_5_INSTANCES_1]
               [-esg_tcp_router_isozone_5_off_1 ESG_TCP_ROUTER_ISOZONE_5_OFFSET_1]
+              [-esg_tcp_router_isozone_5_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_5_SSL_TERMINATE_1]
               [-nsxmanager_addr NSXMANAGER_ADDRESS]
               [-nsxmanager_en_dlr NSXMANAGER_ENABLE_DLR]
               [-nsxmanager_bosh_nsx_enabled NSXMANAGER_BOSH_NSX_ENABLED]
+              [-nsxmanager_http_lbr_enabled NSXMANAGER_HTTP_LBR_ENABLED]
               [-nsxmanager_user NSXMANAGER_ADMIN_USER]
               [-nsxmanager_pass NSXMANAGER_ADMIN_PASSWD]
-              [-nsxmanager_tz NSXMANAGER_TRANSPORTZONE]
+              [-nsxmanager_tz NSXMANAGER_TRANSPORT_ZONE]
+              [-nsxmanager_tz_clusters NSXMANAGER_TRANSPORT_ZONE_CLUSTERS]
               [-nsxmanager_dportgroup NSXMANAGER_DISTRIBUTED_PORTGROUP]
               [-nsxmanager_uplink_ip NSXMANAGER_UPLINK_IP]
               [-nsxmanager_uplink_port NSXMANAGER_UPLINK_PORT_SWITCH]
@@ -157,25 +207,32 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -i INIT, --init INIT  name for nsx config directory on init
+  -nsxedge_names NSXEDGE_NAMES, --nsxedge_names NSXEDGE_NAMES
+                        export nsx instance state
+  -export_dir EXPORT_DIRECTORY, --export_directory EXPORT_DIRECTORY
+                        export nsx content into directory
   -c NSX_CONF, --nsx_conf NSX_CONF
                         nsx configuration yml file
-  -vcenter_addr VCENTER_ADDRESS, --vcenter_address VCENTER_ADDRESS
-                        vcenter address
-  -vcenter_user VCENTER_ADMIN_USER, --vcenter_admin_user VCENTER_ADMIN_USER
-                        vcenter admin user
-  -vcenter_pass VCENTER_ADMIN_PASSWD, --vcenter_admin_passwd VCENTER_ADMIN_PASSWD
-                        vcenter admin passwd
-  -vcenter_dc VCENTER_DATACENTER, --vcenter_datacenter VCENTER_DATACENTER
-                        vcenter datacenter
-  -vcenter_ds VCENTER_DATASTORE, --vcenter_datastore VCENTER_DATASTORE
-                        vcenter datastore
-  -vcenter_cluster VCENTER_CLUSTER, --vcenter_cluster VCENTER_CLUSTER
-                        vcenter cluster
-  -vcenter_fd VCENTER_FOLDER, --vcenter_folder VCENTER_FOLDER
-                        vcenter folder
-  -vcenter_host VCENTER_HOST, --vcenter_host VCENTER_HOST
-                        vcenter host
-
+  -isozone_switch_name_1 ISOZONE_SWITCH_NAME_1, --isozone_switch_name_1 ISOZONE_SWITCH_NAME_1
+                        isozone_switch instance 1 name
+  -isozone_switch_cidr_1 ISOZONE_SWITCH_CIDR_1, --isozone_switch_cidr_1 ISOZONE_SWITCH_CIDR_1
+                        isozone_switch instance 1 cidr
+  -isozone_switch_name_2 ISOZONE_SWITCH_NAME_2, --isozone_switch_name_2 ISOZONE_SWITCH_NAME_2
+                        isozone_switch instance 2 name
+  -isozone_switch_cidr_2 ISOZONE_SWITCH_CIDR_2, --isozone_switch_cidr_2 ISOZONE_SWITCH_CIDR_2
+                        isozone_switch instance 2 cidr
+  -isozone_switch_name_3 ISOZONE_SWITCH_NAME_3, --isozone_switch_name_3 ISOZONE_SWITCH_NAME_3
+                        isozone_switch instance 3 name
+  -isozone_switch_cidr_3 ISOZONE_SWITCH_CIDR_3, --isozone_switch_cidr_3 ISOZONE_SWITCH_CIDR_3
+                        isozone_switch instance 3 cidr
+  -isozone_switch_name_4 ISOZONE_SWITCH_NAME_4, --isozone_switch_name_4 ISOZONE_SWITCH_NAME_4
+                        isozone_switch instance 4 name
+  -isozone_switch_cidr_4 ISOZONE_SWITCH_CIDR_4, --isozone_switch_cidr_4 ISOZONE_SWITCH_CIDR_4
+                        isozone_switch instance 4 cidr
+  -isozone_switch_name_5 ISOZONE_SWITCH_NAME_5, --isozone_switch_name_5 ISOZONE_SWITCH_NAME_5
+                        isozone_switch instance 5 name
+  -isozone_switch_cidr_5 ISOZONE_SWITCH_CIDR_5, --isozone_switch_cidr_5 ISOZONE_SWITCH_CIDR_5
+                        isozone_switch instance 5 cidr
   -esg_name_1 ESG_NAME_1, --esg_name_1 ESG_NAME_1
                         esg instance 1 name
   -esg_size_1 ESG_SIZE_1, --esg_size_1 ESG_SIZE_1
@@ -276,6 +333,8 @@ optional arguments:
                         esg instance 1 routed opsmgr instances
   -esg_opsmgr_off_1 ESG_OPSMGR_OFFSET_1, --esg_opsmgr_offset_1 ESG_OPSMGR_OFFSET_1
                         esg instance 1 routed opsmgr offset
+  -esg_opsmgr_ssl_term_1 ESG_OPSMGR_SSL_TERMINATE_1, --esg_opsmgr_ssl_terminate_1 ESG_OPSMGR_SSL_TERMINATE_1
+                        esg instance 1 routed opsmgr ssl terminate
   -esg_go_router_uplink_ip_1 ESG_GO_ROUTER_UPLINK_IP_1, --esg_go_router_uplink_ip_1 ESG_GO_ROUTER_UPLINK_IP_1
                         esg instance 1 routed go_router uplink ip
   -esg_go_router_switch_1 ESG_GO_ROUTER_SWITCH_1, --esg_go_router_switch_1 ESG_GO_ROUTER_SWITCH_1
@@ -284,6 +343,18 @@ optional arguments:
                         esg instance 1 routed go_router instances
   -esg_go_router_off_1 ESG_GO_ROUTER_OFFSET_1, --esg_go_router_offset_1 ESG_GO_ROUTER_OFFSET_1
                         esg instance 1 routed go_router offset
+  -esg_go_router_ssl_term_1 ESG_GO_ROUTER_SSL_TERMINATE_1, --esg_go_router_ssl_terminate_1 ESG_GO_ROUTER_SSL_TERMINATE_1
+                        esg instance 1 routed go_router ssl terminate
+  -esg_go_router_nossl_uplink_ip_1 ESG_GO_ROUTER_NOSSL_UPLINK_IP_1, --esg_go_router_nossl_uplink_ip_1 ESG_GO_ROUTER_NOSSL_UPLINK_IP_1
+                        esg instance 1 routed go_router_nossl uplink ip
+  -esg_go_router_nossl_switch_1 ESG_GO_ROUTER_NOSSL_SWITCH_1, --esg_go_router_nossl_switch_1 ESG_GO_ROUTER_NOSSL_SWITCH_1
+                        esg instance 1 routed go_router_nossl switch
+  -esg_go_router_nossl_inst_1 ESG_GO_ROUTER_NOSSL_INSTANCES_1, --esg_go_router_nossl_instances_1 ESG_GO_ROUTER_NOSSL_INSTANCES_1
+                        esg instance 1 routed go_router_nossl instances
+  -esg_go_router_nossl_off_1 ESG_GO_ROUTER_NOSSL_OFFSET_1, --esg_go_router_nossl_offset_1 ESG_GO_ROUTER_NOSSL_OFFSET_1
+                        esg instance 1 routed go_router_nossl offset
+  -esg_go_router_nossl_ssl_term_1 ESG_GO_ROUTER_NOSSL_SSL_TERMINATE_1, --esg_go_router_nossl_ssl_terminate_1 ESG_GO_ROUTER_NOSSL_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_nossl ssl terminate
   -esg_diego_brain_uplink_ip_1 ESG_DIEGO_BRAIN_UPLINK_IP_1, --esg_diego_brain_uplink_ip_1 ESG_DIEGO_BRAIN_UPLINK_IP_1
                         esg instance 1 routed diego_brain uplink ip
   -esg_diego_brain_switch_1 ESG_DIEGO_BRAIN_SWITCH_1, --esg_diego_brain_switch_1 ESG_DIEGO_BRAIN_SWITCH_1
@@ -292,6 +363,8 @@ optional arguments:
                         esg instance 1 routed diego_brain instances
   -esg_diego_brain_off_1 ESG_DIEGO_BRAIN_OFFSET_1, --esg_diego_brain_offset_1 ESG_DIEGO_BRAIN_OFFSET_1
                         esg instance 1 routed diego_brain offset
+  -esg_diego_brain_ssl_term_1 ESG_DIEGO_BRAIN_SSL_TERMINATE_1, --esg_diego_brain_ssl_terminate_1 ESG_DIEGO_BRAIN_SSL_TERMINATE_1
+                        esg instance 1 routed diego_brain ssl terminate
   -esg_tcp_router_uplink_ip_1 ESG_TCP_ROUTER_UPLINK_IP_1, --esg_tcp_router_uplink_ip_1 ESG_TCP_ROUTER_UPLINK_IP_1
                         esg instance 1 routed tcp_router uplink ip
   -esg_tcp_router_switch_1 ESG_TCP_ROUTER_SWITCH_1, --esg_tcp_router_switch_1 ESG_TCP_ROUTER_SWITCH_1
@@ -300,6 +373,8 @@ optional arguments:
                         esg instance 1 routed tcp_router instances
   -esg_tcp_router_off_1 ESG_TCP_ROUTER_OFFSET_1, --esg_tcp_router_offset_1 ESG_TCP_ROUTER_OFFSET_1
                         esg instance 1 routed tcp_router offset
+  -esg_tcp_router_ssl_term_1 ESG_TCP_ROUTER_SSL_TERMINATE_1, --esg_tcp_router_ssl_terminate_1 ESG_TCP_ROUTER_SSL_TERMINATE_1
+                        esg instance 1 routed tcp_router ssl terminate
   -esg_mysql_ert_uplink_ip_1 ESG_MYSQL_ERT_UPLINK_IP_1, --esg_mysql_ert_uplink_ip_1 ESG_MYSQL_ERT_UPLINK_IP_1
                         esg instance 1 routed mysql_ert uplink ip
   -esg_mysql_ert_switch_1 ESG_MYSQL_ERT_SWITCH_1, --esg_mysql_ert_switch_1 ESG_MYSQL_ERT_SWITCH_1
@@ -308,6 +383,8 @@ optional arguments:
                         esg instance 1 routed mysql_ert instances
   -esg_mysql_ert_off_1 ESG_MYSQL_ERT_OFFSET_1, --esg_mysql_ert_offset_1 ESG_MYSQL_ERT_OFFSET_1
                         esg instance 1 routed mysql_ert offset
+  -esg_mysql_ert_ssl_term_1 ESG_MYSQL_ERT_SSL_TERMINATE_1, --esg_mysql_ert_ssl_terminate_1 ESG_MYSQL_ERT_SSL_TERMINATE_1
+                        esg instance 1 routed mysql_ert ssl terminate
   -esg_mysql_tile_uplink_ip_1 ESG_MYSQL_TILE_UPLINK_IP_1, --esg_mysql_tile_uplink_ip_1 ESG_MYSQL_TILE_UPLINK_IP_1
                         esg instance 1 routed mysql_tile uplink ip
   -esg_mysql_tile_switch_1 ESG_MYSQL_TILE_SWITCH_1, --esg_mysql_tile_switch_1 ESG_MYSQL_TILE_SWITCH_1
@@ -316,6 +393,8 @@ optional arguments:
                         esg instance 1 routed mysql_tile instances
   -esg_mysql_tile_off_1 ESG_MYSQL_TILE_OFFSET_1, --esg_mysql_tile_offset_1 ESG_MYSQL_TILE_OFFSET_1
                         esg instance 1 routed mysql_tile offset
+  -esg_mysql_tile_ssl_term_1 ESG_MYSQL_TILE_SSL_TERMINATE_1, --esg_mysql_tile_ssl_terminate_1 ESG_MYSQL_TILE_SSL_TERMINATE_1
+                        esg instance 1 routed mysql_tile ssl terminate
   -esg_rabbitmq_tile_uplink_ip_1 ESG_RABBITMQ_TILE_UPLINK_IP_1, --esg_rabbitmq_tile_uplink_ip_1 ESG_RABBITMQ_TILE_UPLINK_IP_1
                         esg instance 1 routed rabbitmq_tile uplink ip
   -esg_rabbitmq_tile_switch_1 ESG_RABBITMQ_TILE_SWITCH_1, --esg_rabbitmq_tile_switch_1 ESG_RABBITMQ_TILE_SWITCH_1
@@ -324,6 +403,8 @@ optional arguments:
                         esg instance 1 routed rabbitmq_tile instances
   -esg_rabbitmq_tile_off_1 ESG_RABBITMQ_TILE_OFFSET_1, --esg_rabbitmq_tile_offset_1 ESG_RABBITMQ_TILE_OFFSET_1
                         esg instance 1 routed rabbitmq_tile offset
+  -esg_rabbitmq_tile_ssl_term_1 ESG_RABBITMQ_TILE_SSL_TERMINATE_1, --esg_rabbitmq_tile_ssl_terminate_1 ESG_RABBITMQ_TILE_SSL_TERMINATE_1
+                        esg instance 1 routed rabbitmq_tile ssl terminate
   -esg_go_router_isozone_1_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_1_UPLINK_IP_1, --esg_go_router_isozone_1_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_1_UPLINK_IP_1
                         esg instance 1 routed go_router_isozone_1 uplink ip
   -esg_go_router_isozone_1_switch_1 ESG_GO_ROUTER_ISOZONE_1_SWITCH_1, --esg_go_router_isozone_1_switch_1 ESG_GO_ROUTER_ISOZONE_1_SWITCH_1
@@ -332,6 +413,18 @@ optional arguments:
                         esg instance 1 routed go_router_isozone_1 instances
   -esg_go_router_isozone_1_off_1 ESG_GO_ROUTER_ISOZONE_1_OFFSET_1, --esg_go_router_isozone_1_offset_1 ESG_GO_ROUTER_ISOZONE_1_OFFSET_1
                         esg instance 1 routed go_router_isozone_1 offset
+  -esg_go_router_isozone_1_ssl_term_1 ESG_GO_ROUTER_ISOZONE_1_SSL_TERMINATE_1, --esg_go_router_isozone_1_ssl_terminate_1 ESG_GO_ROUTER_ISOZONE_1_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_isozone_1 ssl terminate
+  -esg_go_router_nossl_isozone_1_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_UPLINK_IP_1, --esg_go_router_nossl_isozone_1_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_UPLINK_IP_1
+                        esg instance 1 routed go_router_nossl_isozone_1 uplink ip
+  -esg_go_router_nossl_isozone_1_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_SWITCH_1, --esg_go_router_nossl_isozone_1_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_SWITCH_1
+                        esg instance 1 routed go_router_nossl_isozone_1 switch
+  -esg_go_router_nossl_isozone_1_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_INSTANCES_1, --esg_go_router_nossl_isozone_1_instances_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_INSTANCES_1
+                        esg instance 1 routed go_router_nossl_isozone_1 instances
+  -esg_go_router_nossl_isozone_1_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_OFFSET_1, --esg_go_router_nossl_isozone_1_offset_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_OFFSET_1
+                        esg instance 1 routed go_router_nossl_isozone_1 offset
+  -esg_go_router_nossl_isozone_1_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_SSL_TERMINATE_1, --esg_go_router_nossl_isozone_1_ssl_terminate_1 ESG_GO_ROUTER_NOSSL_ISOZONE_1_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_nossl_isozone_1 ssl terminate
   -esg_tcp_router_isozone_1_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_1_UPLINK_IP_1, --esg_tcp_router_isozone_1_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_1_UPLINK_IP_1
                         esg instance 1 routed tcp_router_isozone_1 uplink ip
   -esg_tcp_router_isozone_1_switch_1 ESG_TCP_ROUTER_ISOZONE_1_SWITCH_1, --esg_tcp_router_isozone_1_switch_1 ESG_TCP_ROUTER_ISOZONE_1_SWITCH_1
@@ -340,6 +433,8 @@ optional arguments:
                         esg instance 1 routed tcp_router_isozone_1 instances
   -esg_tcp_router_isozone_1_off_1 ESG_TCP_ROUTER_ISOZONE_1_OFFSET_1, --esg_tcp_router_isozone_1_offset_1 ESG_TCP_ROUTER_ISOZONE_1_OFFSET_1
                         esg instance 1 routed tcp_router_isozone_1 offset
+  -esg_tcp_router_isozone_1_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_1_SSL_TERMINATE_1, --esg_tcp_router_isozone_1_ssl_terminate_1 ESG_TCP_ROUTER_ISOZONE_1_SSL_TERMINATE_1
+                        esg instance 1 routed tcp_router_isozone_1 ssl terminate
   -esg_go_router_isozone_2_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_2_UPLINK_IP_1, --esg_go_router_isozone_2_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_2_UPLINK_IP_1
                         esg instance 1 routed go_router_isozone_2 uplink ip
   -esg_go_router_isozone_2_switch_1 ESG_GO_ROUTER_ISOZONE_2_SWITCH_1, --esg_go_router_isozone_2_switch_1 ESG_GO_ROUTER_ISOZONE_2_SWITCH_1
@@ -348,6 +443,18 @@ optional arguments:
                         esg instance 1 routed go_router_isozone_2 instances
   -esg_go_router_isozone_2_off_1 ESG_GO_ROUTER_ISOZONE_2_OFFSET_1, --esg_go_router_isozone_2_offset_1 ESG_GO_ROUTER_ISOZONE_2_OFFSET_1
                         esg instance 1 routed go_router_isozone_2 offset
+  -esg_go_router_isozone_2_ssl_term_1 ESG_GO_ROUTER_ISOZONE_2_SSL_TERMINATE_1, --esg_go_router_isozone_2_ssl_terminate_1 ESG_GO_ROUTER_ISOZONE_2_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_isozone_2 ssl terminate
+  -esg_go_router_nossl_isozone_2_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_UPLINK_IP_1, --esg_go_router_nossl_isozone_2_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_UPLINK_IP_1
+                        esg instance 1 routed go_router_nossl_isozone_2 uplink ip
+  -esg_go_router_nossl_isozone_2_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_SWITCH_1, --esg_go_router_nossl_isozone_2_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_SWITCH_1
+                        esg instance 1 routed go_router_nossl_isozone_2 switch
+  -esg_go_router_nossl_isozone_2_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_INSTANCES_1, --esg_go_router_nossl_isozone_2_instances_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_INSTANCES_1
+                        esg instance 1 routed go_router_nossl_isozone_2 instances
+  -esg_go_router_nossl_isozone_2_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_OFFSET_1, --esg_go_router_nossl_isozone_2_offset_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_OFFSET_1
+                        esg instance 1 routed go_router_nossl_isozone_2 offset
+  -esg_go_router_nossl_isozone_2_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_SSL_TERMINATE_1, --esg_go_router_nossl_isozone_2_ssl_terminate_1 ESG_GO_ROUTER_NOSSL_ISOZONE_2_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_nossl_isozone_2 ssl terminate
   -esg_tcp_router_isozone_2_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_2_UPLINK_IP_1, --esg_tcp_router_isozone_2_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_2_UPLINK_IP_1
                         esg instance 1 routed tcp_router_isozone_2 uplink ip
   -esg_tcp_router_isozone_2_switch_1 ESG_TCP_ROUTER_ISOZONE_2_SWITCH_1, --esg_tcp_router_isozone_2_switch_1 ESG_TCP_ROUTER_ISOZONE_2_SWITCH_1
@@ -356,6 +463,8 @@ optional arguments:
                         esg instance 1 routed tcp_router_isozone_2 instances
   -esg_tcp_router_isozone_2_off_1 ESG_TCP_ROUTER_ISOZONE_2_OFFSET_1, --esg_tcp_router_isozone_2_offset_1 ESG_TCP_ROUTER_ISOZONE_2_OFFSET_1
                         esg instance 1 routed tcp_router_isozone_2 offset
+  -esg_tcp_router_isozone_2_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_2_SSL_TERMINATE_1, --esg_tcp_router_isozone_2_ssl_terminate_1 ESG_TCP_ROUTER_ISOZONE_2_SSL_TERMINATE_1
+                        esg instance 1 routed tcp_router_isozone_2 ssl terminate
   -esg_go_router_isozone_3_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_3_UPLINK_IP_1, --esg_go_router_isozone_3_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_3_UPLINK_IP_1
                         esg instance 1 routed go_router_isozone_3 uplink ip
   -esg_go_router_isozone_3_switch_1 ESG_GO_ROUTER_ISOZONE_3_SWITCH_1, --esg_go_router_isozone_3_switch_1 ESG_GO_ROUTER_ISOZONE_3_SWITCH_1
@@ -364,6 +473,18 @@ optional arguments:
                         esg instance 1 routed go_router_isozone_3 instances
   -esg_go_router_isozone_3_off_1 ESG_GO_ROUTER_ISOZONE_3_OFFSET_1, --esg_go_router_isozone_3_offset_1 ESG_GO_ROUTER_ISOZONE_3_OFFSET_1
                         esg instance 1 routed go_router_isozone_3 offset
+  -esg_go_router_isozone_3_ssl_term_1 ESG_GO_ROUTER_ISOZONE_3_SSL_TERMINATE_1, --esg_go_router_isozone_3_ssl_terminate_1 ESG_GO_ROUTER_ISOZONE_3_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_isozone_3 ssl terminate
+  -esg_go_router_nossl_isozone_3_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_UPLINK_IP_1, --esg_go_router_nossl_isozone_3_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_UPLINK_IP_1
+                        esg instance 1 routed go_router_nossl_isozone_3 uplink ip
+  -esg_go_router_nossl_isozone_3_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_SWITCH_1, --esg_go_router_nossl_isozone_3_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_SWITCH_1
+                        esg instance 1 routed go_router_nossl_isozone_3 switch
+  -esg_go_router_nossl_isozone_3_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_INSTANCES_1, --esg_go_router_nossl_isozone_3_instances_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_INSTANCES_1
+                        esg instance 1 routed go_router_nossl_isozone_3 instances
+  -esg_go_router_nossl_isozone_3_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_OFFSET_1, --esg_go_router_nossl_isozone_3_offset_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_OFFSET_1
+                        esg instance 1 routed go_router_nossl_isozone_3 offset
+  -esg_go_router_nossl_isozone_3_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_SSL_TERMINATE_1, --esg_go_router_nossl_isozone_3_ssl_terminate_1 ESG_GO_ROUTER_NOSSL_ISOZONE_3_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_nossl_isozone_3 ssl terminate
   -esg_tcp_router_isozone_3_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_3_UPLINK_IP_1, --esg_tcp_router_isozone_3_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_3_UPLINK_IP_1
                         esg instance 1 routed tcp_router_isozone_3 uplink ip
   -esg_tcp_router_isozone_3_switch_1 ESG_TCP_ROUTER_ISOZONE_3_SWITCH_1, --esg_tcp_router_isozone_3_switch_1 ESG_TCP_ROUTER_ISOZONE_3_SWITCH_1
@@ -372,6 +493,8 @@ optional arguments:
                         esg instance 1 routed tcp_router_isozone_3 instances
   -esg_tcp_router_isozone_3_off_1 ESG_TCP_ROUTER_ISOZONE_3_OFFSET_1, --esg_tcp_router_isozone_3_offset_1 ESG_TCP_ROUTER_ISOZONE_3_OFFSET_1
                         esg instance 1 routed tcp_router_isozone_3 offset
+  -esg_tcp_router_isozone_3_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_3_SSL_TERMINATE_1, --esg_tcp_router_isozone_3_ssl_terminate_1 ESG_TCP_ROUTER_ISOZONE_3_SSL_TERMINATE_1
+                        esg instance 1 routed tcp_router_isozone_3 ssl terminate
   -esg_go_router_isozone_4_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_4_UPLINK_IP_1, --esg_go_router_isozone_4_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_4_UPLINK_IP_1
                         esg instance 1 routed go_router_isozone_4 uplink ip
   -esg_go_router_isozone_4_switch_1 ESG_GO_ROUTER_ISOZONE_4_SWITCH_1, --esg_go_router_isozone_4_switch_1 ESG_GO_ROUTER_ISOZONE_4_SWITCH_1
@@ -380,6 +503,18 @@ optional arguments:
                         esg instance 1 routed go_router_isozone_4 instances
   -esg_go_router_isozone_4_off_1 ESG_GO_ROUTER_ISOZONE_4_OFFSET_1, --esg_go_router_isozone_4_offset_1 ESG_GO_ROUTER_ISOZONE_4_OFFSET_1
                         esg instance 1 routed go_router_isozone_4 offset
+  -esg_go_router_isozone_4_ssl_term_1 ESG_GO_ROUTER_ISOZONE_4_SSL_TERMINATE_1, --esg_go_router_isozone_4_ssl_terminate_1 ESG_GO_ROUTER_ISOZONE_4_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_isozone_4 ssl terminate
+  -esg_go_router_nossl_isozone_4_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_UPLINK_IP_1, --esg_go_router_nossl_isozone_4_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_UPLINK_IP_1
+                        esg instance 1 routed go_router_nossl_isozone_4 uplink ip
+  -esg_go_router_nossl_isozone_4_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_SWITCH_1, --esg_go_router_nossl_isozone_4_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_SWITCH_1
+                        esg instance 1 routed go_router_nossl_isozone_4 switch
+  -esg_go_router_nossl_isozone_4_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_INSTANCES_1, --esg_go_router_nossl_isozone_4_instances_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_INSTANCES_1
+                        esg instance 1 routed go_router_nossl_isozone_4 instances
+  -esg_go_router_nossl_isozone_4_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_OFFSET_1, --esg_go_router_nossl_isozone_4_offset_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_OFFSET_1
+                        esg instance 1 routed go_router_nossl_isozone_4 offset
+  -esg_go_router_nossl_isozone_4_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_SSL_TERMINATE_1, --esg_go_router_nossl_isozone_4_ssl_terminate_1 ESG_GO_ROUTER_NOSSL_ISOZONE_4_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_nossl_isozone_4 ssl terminate
   -esg_tcp_router_isozone_4_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_4_UPLINK_IP_1, --esg_tcp_router_isozone_4_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_4_UPLINK_IP_1
                         esg instance 1 routed tcp_router_isozone_4 uplink ip
   -esg_tcp_router_isozone_4_switch_1 ESG_TCP_ROUTER_ISOZONE_4_SWITCH_1, --esg_tcp_router_isozone_4_switch_1 ESG_TCP_ROUTER_ISOZONE_4_SWITCH_1
@@ -388,6 +523,8 @@ optional arguments:
                         esg instance 1 routed tcp_router_isozone_4 instances
   -esg_tcp_router_isozone_4_off_1 ESG_TCP_ROUTER_ISOZONE_4_OFFSET_1, --esg_tcp_router_isozone_4_offset_1 ESG_TCP_ROUTER_ISOZONE_4_OFFSET_1
                         esg instance 1 routed tcp_router_isozone_4 offset
+  -esg_tcp_router_isozone_4_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_4_SSL_TERMINATE_1, --esg_tcp_router_isozone_4_ssl_terminate_1 ESG_TCP_ROUTER_ISOZONE_4_SSL_TERMINATE_1
+                        esg instance 1 routed tcp_router_isozone_4 ssl terminate
   -esg_go_router_isozone_5_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_5_UPLINK_IP_1, --esg_go_router_isozone_5_uplink_ip_1 ESG_GO_ROUTER_ISOZONE_5_UPLINK_IP_1
                         esg instance 1 routed go_router_isozone_5 uplink ip
   -esg_go_router_isozone_5_switch_1 ESG_GO_ROUTER_ISOZONE_5_SWITCH_1, --esg_go_router_isozone_5_switch_1 ESG_GO_ROUTER_ISOZONE_5_SWITCH_1
@@ -396,6 +533,18 @@ optional arguments:
                         esg instance 1 routed go_router_isozone_5 instances
   -esg_go_router_isozone_5_off_1 ESG_GO_ROUTER_ISOZONE_5_OFFSET_1, --esg_go_router_isozone_5_offset_1 ESG_GO_ROUTER_ISOZONE_5_OFFSET_1
                         esg instance 1 routed go_router_isozone_5 offset
+  -esg_go_router_isozone_5_ssl_term_1 ESG_GO_ROUTER_ISOZONE_5_SSL_TERMINATE_1, --esg_go_router_isozone_5_ssl_terminate_1 ESG_GO_ROUTER_ISOZONE_5_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_isozone_5 ssl terminate
+  -esg_go_router_nossl_isozone_5_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_UPLINK_IP_1, --esg_go_router_nossl_isozone_5_uplink_ip_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_UPLINK_IP_1
+                        esg instance 1 routed go_router_nossl_isozone_5 uplink ip
+  -esg_go_router_nossl_isozone_5_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_SWITCH_1, --esg_go_router_nossl_isozone_5_switch_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_SWITCH_1
+                        esg instance 1 routed go_router_nossl_isozone_5 switch
+  -esg_go_router_nossl_isozone_5_inst_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_INSTANCES_1, --esg_go_router_nossl_isozone_5_instances_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_INSTANCES_1
+                        esg instance 1 routed go_router_nossl_isozone_5 instances
+  -esg_go_router_nossl_isozone_5_off_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_OFFSET_1, --esg_go_router_nossl_isozone_5_offset_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_OFFSET_1
+                        esg instance 1 routed go_router_nossl_isozone_5 offset
+  -esg_go_router_nossl_isozone_5_ssl_term_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_SSL_TERMINATE_1, --esg_go_router_nossl_isozone_5_ssl_terminate_1 ESG_GO_ROUTER_NOSSL_ISOZONE_5_SSL_TERMINATE_1
+                        esg instance 1 routed go_router_nossl_isozone_5 ssl terminate
   -esg_tcp_router_isozone_5_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_5_UPLINK_IP_1, --esg_tcp_router_isozone_5_uplink_ip_1 ESG_TCP_ROUTER_ISOZONE_5_UPLINK_IP_1
                         esg instance 1 routed tcp_router_isozone_5 uplink ip
   -esg_tcp_router_isozone_5_switch_1 ESG_TCP_ROUTER_ISOZONE_5_SWITCH_1, --esg_tcp_router_isozone_5_switch_1 ESG_TCP_ROUTER_ISOZONE_5_SWITCH_1
@@ -404,18 +553,24 @@ optional arguments:
                         esg instance 1 routed tcp_router_isozone_5 instances
   -esg_tcp_router_isozone_5_off_1 ESG_TCP_ROUTER_ISOZONE_5_OFFSET_1, --esg_tcp_router_isozone_5_offset_1 ESG_TCP_ROUTER_ISOZONE_5_OFFSET_1
                         esg instance 1 routed tcp_router_isozone_5 offset
+  -esg_tcp_router_isozone_5_ssl_term_1 ESG_TCP_ROUTER_ISOZONE_5_SSL_TERMINATE_1, --esg_tcp_router_isozone_5_ssl_terminate_1 ESG_TCP_ROUTER_ISOZONE_5_SSL_TERMINATE_1
+                        esg instance 1 routed tcp_router_isozone_5 ssl terminate
   -nsxmanager_addr NSXMANAGER_ADDRESS, --nsxmanager_address NSXMANAGER_ADDRESS
                         nsxmanager address
   -nsxmanager_en_dlr NSXMANAGER_ENABLE_DLR, --nsxmanager_enable_dlr NSXMANAGER_ENABLE_DLR
                         nsxmanager enable dlr
   -nsxmanager_bosh_nsx_enabled NSXMANAGER_BOSH_NSX_ENABLED, --nsxmanager_bosh_nsx_enabled NSXMANAGER_BOSH_NSX_ENABLED
                         nsxmanager bosh nsx enabled
+  -nsxmanager_http_lbr_enabled NSXMANAGER_HTTP_LBR_ENABLED, --nsxmanager_http_lbr_enabled NSXMANAGER_HTTP_LBR_ENABLED
+                        nsxmanager http lbr enabled
   -nsxmanager_user NSXMANAGER_ADMIN_USER, --nsxmanager_admin_user NSXMANAGER_ADMIN_USER
                         nsxmanager admin user
   -nsxmanager_pass NSXMANAGER_ADMIN_PASSWD, --nsxmanager_admin_passwd NSXMANAGER_ADMIN_PASSWD
                         nsxmanager admin passwd
-  -nsxmanager_tz NSXMANAGER_TRANSPORTZONE, --nsxmanager_transportzone NSXMANAGER_TRANSPORTZONE
-                        nsxmanager transportzone
+  -nsxmanager_tz NSXMANAGER_TRANSPORT_ZONE, --nsxmanager_transport_zone NSXMANAGER_TRANSPORT_ZONE
+                        nsxmanager transport zone
+  -nsxmanager_tz_clusters NSXMANAGER_TRANSPORT_ZONE_CLUSTERS, --nsxmanager_transport_zone_clusters NSXMANAGER_TRANSPORT_ZONE_CLUSTERS
+                        nsxmanager transport zone clusters
   -nsxmanager_dportgroup NSXMANAGER_DISTRIBUTED_PORTGROUP, --nsxmanager_distributed_portgroup NSXMANAGER_DISTRIBUTED_PORTGROUP
                         nsxmanager distributed portgroup
   -nsxmanager_uplink_ip NSXMANAGER_UPLINK_IP, --nsxmanager_uplink_ip NSXMANAGER_UPLINK_IP
@@ -430,26 +585,29 @@ optional arguments:
                         nsxmanager static route gateway
   -nsxmanager_sr_hop NSXMANAGER_STATIC_ROUTE_HOP, --nsxmanager_static_route_hop NSXMANAGER_STATIC_ROUTE_HOP
                         nsxmanager static route hop
-
-  -isozone_switch_name_1 ISOZONE_SWITCH_NAME_1, --isozone_switch_name_1 ISOZONE_SWITCH_NAME_1
-                        isozone_switch instance 1 name
-  -isozone_switch_cidr_1 ISOZONE_SWITCH_CIDR_1, --isozone_switch_cidr_1 ISOZONE_SWITCH_CIDR_1
-                        isozone_switch instance 1 cidr
-  -isozone_switch_name_2 ISOZONE_SWITCH_NAME_2, --isozone_switch_name_2 ISOZONE_SWITCH_NAME_2
-                        isozone_switch instance 2 name
-  -isozone_switch_cidr_2 ISOZONE_SWITCH_CIDR_2, --isozone_switch_cidr_2 ISOZONE_SWITCH_CIDR_2
-                        isozone_switch instance 2 cidr
-  -isozone_switch_name_3 ISOZONE_SWITCH_NAME_3, --isozone_switch_name_3 ISOZONE_SWITCH_NAME_3
-                        isozone_switch instance 3 name
-  -isozone_switch_cidr_3 ISOZONE_SWITCH_CIDR_3, --isozone_switch_cidr_3 ISOZONE_SWITCH_CIDR_3
-                        isozone_switch instance 3 cidr
-  -isozone_switch_name_4 ISOZONE_SWITCH_NAME_4, --isozone_switch_name_4 ISOZONE_SWITCH_NAME_4
-                        isozone_switch instance 4 name
-  -isozone_switch_cidr_4 ISOZONE_SWITCH_CIDR_4, --isozone_switch_cidr_4 ISOZONE_SWITCH_CIDR_4
-                        isozone_switch instance 4 cidr
-  -isozone_switch_name_5 ISOZONE_SWITCH_NAME_5, --isozone_switch_name_5 ISOZONE_SWITCH_NAME_5
-                        isozone_switch instance 5 name
-  -isozone_switch_cidr_5 ISOZONE_SWITCH_CIDR_5, --isozone_switch_cidr_5 ISOZONE_SWITCH_CIDR_5
-                        isozone_switch instance 5 cidr
+  -ntp NTP_IPS, --ntp_ips NTP_IPS
+                        default ntp ips
+  -dns DNS_IPS, --dns_ips DNS_IPS
+                        default dns ips
+  -log SYSLOG_IPS, --syslog_ips SYSLOG_IPS
+                        default syslog ips
+  -ldap LDAP_IPS, --ldap_ips LDAP_IPS
+                        default ldap ips
+  -vcenter_addr VCENTER_ADDRESS, --vcenter_address VCENTER_ADDRESS
+                        vcenter address
+  -vcenter_user VCENTER_ADMIN_USER, --vcenter_admin_user VCENTER_ADMIN_USER
+                        vcenter admin user
+  -vcenter_pass VCENTER_ADMIN_PASSWD, --vcenter_admin_passwd VCENTER_ADMIN_PASSWD
+                        vcenter admin passwd
+  -vcenter_dc VCENTER_DATACENTER, --vcenter_datacenter VCENTER_DATACENTER
+                        vcenter datacenter
+  -vcenter_ds VCENTER_DATASTORE, --vcenter_datastore VCENTER_DATASTORE
+                        vcenter datastore
+  -vcenter_cluster VCENTER_CLUSTER, --vcenter_cluster VCENTER_CLUSTER
+                        vcenter cluster
+  -vcenter_fd VCENTER_FOLDER, --vcenter_folder VCENTER_FOLDER
+                        vcenter folder
+  -vcenter_host VCENTER_HOST, --vcenter_host VCENTER_HOST
+                        vcenter host
 
 ```

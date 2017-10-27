@@ -18,6 +18,7 @@ rm -rf $CONFIG_NAME
   -nsxmanager_dportgroup DPortGroupTest \
   -nsxmanager_en_dlr true \
   -nsxmanager_bosh_nsx_enabled true \
+  -nsxmanager_http_lbr_enabled true \
   -nsxmanager_tz TestTZ \
   -nsxmanager_tz_clusters 'Cluster1,Cluster2' \
   -esg_ert_certs_config_sysd_1 sys2.test.pivotal.io \

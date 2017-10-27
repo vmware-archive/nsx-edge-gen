@@ -292,6 +292,8 @@ class RoutedComponent:
 			self.transport['egress']['protocol'] = 'https'
 			self.transport['egress']['port'] = '443'
 			self.transport['egress']['monitor_port'] = '443'
+			self.monitor_id = 'monitor-3' # Use https monitor
+
 
 		routed_comps_config_context = get_context()
 		
@@ -308,13 +310,15 @@ class RoutedComponent:
 			self.monitor_id = locate_entry_in_list(default_monitors, 'monitor', egressProtocol.lower())['id']
 
 		# Always go with defaults of AppRule1, 2 and possibly 5 & 6 so they are in beginning
-		self.app_rules = [ "applicationRule-1", "applicationRule-2", "applicationRule-5", "applicationRule-6" ]
+		self.app_rules = [ "applicationRule-1", "applicationRule-2", 
+							"applicationRule-5", "applicationRule-6", "applicationRule-7" ]
 
 		default_app_rules = routed_comps_config_context[APP_RULE_LIST]
 
 		for appRule in default_app_rules:
 			
-			if appRule['app_rule'] in [ 'optionlog', 'forwardfor', 'nooptionhttpclose', 'nooptionhttpserverclose' ]:
+			if appRule['app_rule'] in [ 'optionlog', 'forwardfor', 'nooptionhttpclose', 
+			                          'nooptionhttpserverclose', 'optionhttpkeepalive' ]:
 				continue
 
 			if appRule['app_rule'].endswith(ingressProtocol.lower()):
