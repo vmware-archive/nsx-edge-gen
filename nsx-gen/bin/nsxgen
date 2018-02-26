@@ -89,12 +89,14 @@ ATTRIBUTE_MAP_ARRAY = {
 		[ 'sr_name', 'static_route_name'],
 		[ 'sr_subnet', 'static_route_subnet'],
 		[ 'sr_gateway', 'static_route_gateway'],
-		[ 'sr_hop', 'static_route_hop', int],
+		[ 'sr_hop', 'static_route_hop'],
+		[ 'sr_distance', 'static_route_distance', int],
 	],
 
 	'esg': [
 		[ 'name', 'name'],
 		[ 'size', 'size'],
+		[ 'dlr_size', 'dlr_size'],
 		[ 'gateway', 'gateway_ip'],
 		[ 'ospf_password', 'ospf_password'],
 		[ 'cli_user', 'cli_username'],

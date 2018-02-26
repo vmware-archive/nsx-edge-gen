@@ -329,7 +329,6 @@ class RoutedComponent:
 	def check_for_opsmgr(self):
 		if ('OPS' in self.name.upper()):
 			self.useVIP = False
-			self.offset = 5
 			self.instances = 1 
 			self.external = True
 
@@ -501,11 +500,11 @@ def select_templated_routed_component(routedComponentName):
 	# Go first with longer name matches (like go-router-isozone rather than go-router)
 	routed_comps_config_context = get_context()
 	routed_comps_map = routed_comps_config_context[KNOWN_ROUTED_COMPONENTS]
-	routed_comps_names = [ routed_comp['id'] for routed_comp in routed_comps_map]
+	routed_comps_names = [ routed_comp['name'] for routed_comp in routed_comps_map]
 	default_routed_component_names = sorted(routed_comps_names, key=len, reverse=True)
 	
 	if routedComponentNameUpper in default_routed_component_names:
-		return locate_entry_in_list(routed_comps_map, 'id', routedComponentNameUpper)
+		return locate_entry_in_list(routed_comps_map, 'name', routedComponentNameUpper)
 
 	# for routedComponent in DEFAULT_ROUTED_COMPONENT_TRANSPORT_MAP:
 	# 	if any( token for token in routedComponent.split('-') if token in routedComponentNameUpper):
@@ -514,7 +513,7 @@ def select_templated_routed_component(routedComponentName):
 	routedComponent = None
 	for key in default_routed_component_names: #DEFAULT_ROUTED_COMPONENT_MAP:
 		if key in routedComponentNameUpper or routedComponentNameUpper in key:
-			routedComponent = locate_entry_in_list(routed_comps_map, 'id', key)
+			routedComponent = locate_entry_in_list(routed_comps_map, 'name', key)
 			return routedComponent
 
 	 
@@ -532,7 +531,7 @@ def select_templated_routed_component(routedComponentName):
 def select_switch_template(routedComponentName, switchName):
 	if not switchName:
 		templatedRoutedComp = select_templated_routed_component(routedComponentName)
-		return templatedRoutedComp['switch']
+		return templatedRoutedComp['switch_type']
 
 	switchUpper = switchName.upper()
 
@@ -545,9 +544,9 @@ def select_switch_template(routedComponentName, switchName):
 		if any( token for token in switch['id'].split('-') if token in switchUpper):
 			return switch['id']
 
-	if 'ISOZONE' in routedComponentName.upper():
+	if 'ISO' in routedComponentName.upper():
 		templatedRoutedComp = select_templated_routed_component(routedComponentName)
-		return templatedRoutedComp['switch']['id']
+		return templatedRoutedComp['switch_type']['id']
 
 	raise ValueError('Unable to find match for specified switch:{} \
 							for Routed Component:{}'.format( switchName, routedComponentName))
@@ -622,7 +621,7 @@ def validate_default_routed_components_map():
 	nsx_lbr_config = load_lbr_cfg()
 	routed_comps_config = load_routed_comps_cfg()
 	
-	routed_comps_config_context[KNOWN_LSWITCHES]         = routed_comps_config['switches']
+	routed_comps_config_context[KNOWN_LSWITCHES]         = routed_comps_config['switch_types']
 	routed_comps_config_context[KNOWN_ROUTED_COMPONENTS] = routed_comps_config['routed_components']
 
 	routed_comps_config_context[MONITOR_LIST]     = nsx_lbr_config['monitors']
@@ -637,7 +636,7 @@ def validate_default_routed_components_map():
 	for routedCompKey in routed_comps_config_context[KNOWN_ROUTED_COMPONENTS]:
 
 		switch_ids = [ switch['id'] for switch in routed_comps_config_context[KNOWN_LSWITCHES] ]
-		assert routedCompKey['switch'] in switch_ids 
+		assert routedCompKey['switch_type'] in switch_ids 
 		
 #		else:
 #			raise Exception('Routed Component[{}] not found with matching switch id...'.format(routedCompKey))

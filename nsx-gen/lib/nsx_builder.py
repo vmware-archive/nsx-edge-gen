@@ -605,17 +605,27 @@ def add_ospf_to_nsx_dlr(nsx_dlrs_dir, context, nsx_dlr):
 
     template_dir = '.'
     logical_switches = context['logical_switches']
-    
+
+    for lswitch in logical_switches:
+        switch_name_upper = lswitch['name'].upper()
+        if 'OSPF' in switch_name_upper:
+            ospfLogicalSwitch = lswitch
+
+    disable_ospf = False
+    static_routes = nsxmanager['static_routes']
+    disable_ospf=(static_routes is not None and len(static_routes) > 0)
+
     nsx_dlrs_context = {
         'context': context,
         'defaults': context['defaults'],
         'nsxmanager': context['nsxmanager'],
         'dlr': nsx_dlr,
         'logical_switches': logical_switches,
+        'ospfLogicalSwitch': ospfLogicalSwitch,
+        'disable_ospf': disable_ospf,
         'gateway_address': nsx_dlr['gateway_ip'],
         'files': []
     }    
-
 
     template.render(
         os.path.join(nsx_dlrs_dir, nsx_dlr['name'] + '_dlr_config_put_payload.xml'),
@@ -744,6 +754,11 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 
         for name, lswitch in nsx_edge['global_switches'].iteritems():
             switch_name_upper = name.upper()
+
+            # Add each logical-switch's snat address to the edge uplink secondary ip
+            if lswitch.get('snat_address') is not None and lswitch.get('snat_address') != '':
+                nsx_edge['secondary_ips'].append(lswitch['snat_address'])
+
             if 'ERT' in switch_name_upper:
                 ertLogicalSwitch = lswitch
             elif 'INFRA' in switch_name_upper:
@@ -778,6 +793,10 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
 
         cross_logical_network_combo = cross_combine_lists(firewall_src_network_list, firewall_destn_network_list)       
 
+        disable_ospf = False
+        static_routes = nsxmanager['static_routes']
+        disable_ospf=(static_routes is not None and len(static_routes) > 0)
+
         if DEBUG:
             print('NSX Edge config: {}\n'.format(str(nsx_edge)))   
 
@@ -786,6 +805,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
             'defaults': context['defaults'],
             'nsxmanager': context['nsxmanager'],
             'static_routes': context['nsxmanager']['static_routes'],
+            'disable_ospf': disable_ospf,
             'edge': nsx_edge,
             'enable_dlr': nsx_edge['enable_dlr'],
             'logical_switches': logical_switches,
@@ -1019,6 +1039,53 @@ def add_lbr_to_nsx_edge(nsx_edges_dir, nsx_edge):
             else: #if not switch_name or (switch_name and 'ERT' in switch_name.upper()):
                 app_profile['cert_id'] = ert_certId
                 continue
+            
+    nsx_edges_context = {
+        'nsx_edge': nsx_edge,
+        'app_profiles': app_profiles,
+        'app_rules': nsx_edge['app_rules'],
+        'monitor_list': nsx_edge['monitor_list'],
+        'routed_components':  nsx_edge['routed_components'],
+        'files': []
+    }    
+
+    template.render(
+        os.path.join(nsx_edges_dir, nsx_edge['name'] + '_lbr_config_put_payload.xml'),
+        os.path.join(template_dir, 'edge_lbr_config_put_payload.xml' ),
+        nsx_edges_context
+    )
+
+    put_response = client.put_xml(NSX_URLS['esg']['all'] 
+                                    + '/' + nsx_edge['id']
+                                    + NSX_URLS['lbrConfig']['all'], 
+                                    os.path.join(nsx_edges_dir, nsx_edge['name'] 
+                                    + '_lbr_config_put_payload.xml'), 
+                                check=False)
+    data = put_response.text
+
+    if DEBUG:
+        print('NSX Edge LBR Config Update response:{}\n'.format(data))
+
+    if put_response.status_code < 400: 
+        print('Updated NSX Edge LBR Config for : {}\n'.format(nsx_edge['name']))        
+    else:
+        print('Update of NSX Edge LBR Config failed, details:{}\n'.format(data))
+        raise Exception('Update of NSX Edge LBR Config failed, details:\n {}'.format(data))
+
+def add_lbr_to_nsx_edge_with_no_certs(nsx_edges_dir, nsx_edge):
+    
+    template_dir = '.'
+    map_nsx_esg_id( [ nsx_edge ] )
+
+    iso_zones = nsx_edge['iso_zones']
+    app_profiles = nsx_edge['app_profiles']
+    
+    # Link the iso cert id against the corresponding app profiles, 
+    # if they are using any ssl/secure protocol and are associated 
+    # with Ert or IsoZone switches
+    for app_profile in app_profiles:
+        switch_name = app_profile.get('switch')
+        app_profile_name = app_profile['name']
             
     nsx_edges_context = {
         'nsx_edge': nsx_edge,

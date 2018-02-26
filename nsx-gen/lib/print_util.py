@@ -54,16 +54,18 @@ def print_logical_switches_available(switches):
 def print_logical_switches_configured(switches):
     print
     print('-'*150)
-    print('{:<50}{:<60}{:<10}'.format('', 'Logical Switches (from configuration)', ''))
-    print("{:<60} | {:<20} | {:20}".format( 'Name', 
-                                            'CIDR', 
+    print('{:<50}{:<90}{:<10}'.format('', 'Logical Switches (from configuration)', ''))
+    print("{:<60} | {:<20} | {:<30} |{:20}".format( 'Name', 
+                                            'CIDR',
+                                            'Type', 
                                             'Primary IP'))
-    print('-'*150)
+    print('-'*180)
     for switch in switches:
-        print('{:<60} | {:<20} | {:20}'.format(switch['name'], 
-                                                switch.get('cidr'), 
+        print('{:<60} | {:<20} | {:<30} | {:20}'.format(switch['name'], 
+                                                switch.get('cidr'),
+                                                switch.get('switch_type'), 
                                                 switch.get('primary_ip')))
-    print('-'*150)
+    print('-'*180)
     print   
 
 

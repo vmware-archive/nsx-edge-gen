@@ -1,5 +1,5 @@
 ---
-switches:
+switch_types:
 - id: INFRA
   name: Infra
 - id: ERT
@@ -10,11 +10,106 @@ switches:
   name: Dynamic-Services
 - id: ISOZONE
   name: IsoZone
-    
+- id: GENERIC
+  name: generic
+
 routed_components:
-- id: OPS 
-  name: OPS
-  switch: INFRA
+- name: GENERIC_HTTPS_NO_TERMINATION
+  switch_type: GENERIC
+  external: true
+  useVIP: true
+  instances: 1
+  offset: 5
+  monitor_id: monitor-3
+  transport:
+    ingress:
+      port: '443'
+      protocol: https
+    egress:
+      port: '443'
+      protocol: https
+      monitor_port: '443'
+
+- name: GENERIC_HTTPS_TERMINATE
+  switch_type: GENERIC
+  external: true
+  useVIP: true
+  instances: 1
+  offset: 5
+  monitor_id: monitor-4
+  transport:
+    ingress:
+      port: '443'
+      protocol: https
+    egress:
+      port: '80'
+      protocol: http
+      monitor_port: '80'
+
+- name: GENERIC_HTTP_EXT
+  switch_type: GENERIC
+  external: true
+  useVIP: true
+  instances: 1
+  offset: 5
+  monitor_id: monitor-4
+  transport:
+    ingress:
+      port: '80'
+      protocol: http
+    egress:
+      port: '80'
+      protocol: tcp
+      monitor_port: '80'
+
+- name: GENERIC_TCP_EXT
+  switch_type: GENERIC
+  external: true
+  useVIP: true
+  instances: 1
+  offset: 10
+  monitor_id: monitor-5
+  transport:
+    ingress:
+      port: '5000'  #'1024-65535'
+      protocol: tcp
+    egress:
+      port: '5000'  #'1024-65535'
+      protocol: tcp
+
+- name: GENERIC_HTTP_INT
+  switch_type: GENERIC
+  external: false
+  useVIP: true
+  instances: 1
+  offset: 5
+  monitor_id: monitor-4
+  transport:
+    ingress:
+      port: '80'
+      protocol: http
+    egress:
+      port: '80'
+      protocol: tcp
+      monitor_port: '80'
+
+- name: GENERIC_TCP_INT
+  switch_type: GENERIC
+  external: false
+  useVIP: true
+  instances: 1
+  offset: 10
+  monitor_id: monitor-5
+  transport:
+    ingress:
+      port: '5000'  #'1024-65535'
+      protocol: tcp
+    egress:
+      port: '5000'  #'1024-65535'
+      protocol: tcp
+
+- name: OPS
+  switch_type: INFRA
   external: true
   useVIP: false
   instances: 1
@@ -30,9 +125,8 @@ routed_components:
       monitor_port: '443'
       url: "/"
   
-- id: GO-ROUTER
-  name: GO-ROUTER
-  switch: ERT
+- name: GO-ROUTER
+  switch_type: ERT
   external: true
   useVIP: true
   instances: 4
@@ -50,9 +144,8 @@ routed_components:
       # monitor_port: '8080'
       # url: "/health"
 
-- id: GO-ROUTER-NOSSL
-  name: GO-ROUTER-NOSSL
-  switch: ERT
+- name: GO-ROUTER-NOSSL
+  switch_type: ERT
   external: true
   useVIP: true
   instances: 4
@@ -70,9 +163,8 @@ routed_components:
       # monitor_port: '8080'
       # url: "/health"
 
-- id: DIEGO
-  name: DIEGO
-  switch: ERT
+- name: DIEGO
+  switch_type: ERT
   external: true
   useVIP: true
   instances: 3
@@ -87,9 +179,8 @@ routed_components:
       protocol: tcp
       monitor_port: '2222'
   
-- id: TCP-ROUTER
-  name: TCP-ROUTER
-  switch: ERT
+- name: TCP-ROUTER
+  switch_type: ERT
   external: true
   useVIP: true
   instances: 4
@@ -108,7 +199,7 @@ routed_components:
   
 - id: MYSQL-ERT 
   name: MYSQL-ERT
-  switch: PCF-TILES
+  switch_type: PCF-TILES
   external: false
   useVIP: true
   instances: 3
@@ -124,9 +215,8 @@ routed_components:
       monitor_port: '1936'
   
   
-- id: MYSQL-TILE
-  name: MYSQL-TILE
-  switch: PCF-TILES
+- name: MYSQL-TILE
+  switch_type: PCF-TILES
   external: false
   useVIP: true
   instances: 3
@@ -141,9 +231,8 @@ routed_components:
       protocol: tcp
       monitor_port: '1936'
   
-- id: RABBITMQ-TILE
-  name: RABBITMQ-TILE
-  switch: PCF-TILES
+- name: RABBITMQ-TILE
+  switch_type: PCF-TILES
   external: false
   useVIP: true
   instances: 3
@@ -157,9 +246,8 @@ routed_components:
       port: '15672,5672,5671'
       protocol: tcp
   
-- id: GO-ROUTER-ISO
-  name: GO-ROUTER-ISO
-  switch: ISOZONE
+- name: GO-ROUTER-ISO
+  switch_type: ISOZONE
   external: true
   useVIP: true
   instances: 2
@@ -177,9 +265,8 @@ routed_components:
       # monitor_port: '8080'
       # url: "/health"
 
-- id: GO-ROUTER-ISO-NOSSL
-  name: GO-ROUTER-ISO-NOSSL
-  switch: ISOZONE
+- name: GO-ROUTER-ISO-NOSSL
+  switch_type: ISOZONE
   external: true
   useVIP: true
   instances: 2
@@ -197,9 +284,8 @@ routed_components:
       # monitor_port: '8080'
       # url: "/health"
 
-- id: TCP-ROUTER-ISO
-  name: TCP-ROUTER-ISO
-  switch: ISOZONE
+- name: TCP-ROUTER-ISO
+  switch_type: ISOZONE
   external: true
   useVIP: true
   instances: 2

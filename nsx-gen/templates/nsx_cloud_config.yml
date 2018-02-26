@@ -37,6 +37,7 @@ defaults:
 edge_service_gateways:
 - name: {{ name }}
   size: compact
+  dlr_size: compact
   gateway_ip: 10.114.216.1
   cli:
     username: testuser
@@ -128,16 +129,16 @@ edge_service_gateways:
     offset: 250
     uplink_details:
       uplink_ip: 10.114.216.173 # This gets exposed outside
-    #transport:
-      # Default ingress scheme is https/80 for ert
-      #ingress:
-      #  port: 80
-      #  protocol: http
-      # Default egress scheme is http/80 for ert
-      #egress: 
-      #  port: 80
-      #  protocol: tcp
-      #  monitor_port: 80      
+    transport:
+      #Default ingress scheme is https/80 for ert
+      ingress:
+       port: 80
+       protocol: http
+      #Default egress scheme is http/80 for ert
+      egress: 
+       port: 80
+       protocol: tcp
+       monitor_port: 80      
 
   - name: diego-brain
     switch: Ert
@@ -292,23 +293,42 @@ logical_switches:
 - name: OSPF  
   cidr: 172.16.100.10/24
   primary_ip: 172.16.100.2
+  switch_type: OSPF
 - name: Infra  
   cidr: 192.168.10.0/26
   primary_ip: 192.168.10.2
+  switch_type: INFRA
+  # Empty snat_address field would use default Edge Uplink IP
+  #snat_address: 10.131.11.210 # EDIT ME
 - name: Ert
   cidr: 192.168.20.0/22
   primary_ip: 192.168.20.2
+  switch_type: ERT
+  # Empty snat_address field would use default Edge Uplink IP
+  #snat_address: 10.131.11.211 # EDIT ME
 - name: PCF-Tiles
   cidr: 192.168.24.0/22
   primary_ip: 192.168.24.2
+  switch_type: PCF-TILES
+  # Empty snat_address field would use default Edge Uplink IP
+  #snat_address: 10.131.11.212 # EDIT ME
 - name: Dynamic-Services
   cidr: 192.168.28.0/22
   primary_ip: 192.168.28.2
-#- name: IsoZone-01
-#  cidr: 192.168.32.0/22
-#  primary_ip: 192.168.32.2
+  switch_type: DYNAMIC-SERVICES
+  # Empty snat_address field would use default Edge Uplink IP
+  #snat_address: 10.131.11.213 # EDIT ME
+# - name: IsoZone-01
+#   cidr: 192.168.32.0/22
+#   primary_ip: 192.168.32.2
+#   switch_type: ISOZONE
+#   #Empty snat_address field would use default Edge Uplink IP
+#   snat_address: 10.131.11.211 # EDIT ME
 # - name: IsoZone-02
 #   cidr: 192.168.36.0/22
 #   primary_ip: 192.168.36.2
+#   switch_type: ISOZONE
+#   #Empty snat_address field would use default Edge Uplink IP
+#   snat_address: 10.131.11.211 # EDIT ME
 
 

@@ -139,6 +139,11 @@ class NSXConfig(dict):
         uplink_details['subnet_mask'] = addr_range.netmask()
         uplink_details['subnet_length'] = string.atoi(uplink_details['cidr'].split('/')[1])
 
+        # Disable OSPF if static route defined
+        self.nsxmanager['disable_ospf'] = False
+        static_routes = self.nsxmanager['static_routes']
+        self.nsxmanager['disable_ospf'] = (static_routes is not None and len(static_routes) > 0)
+
         #print('NSX Manager context:{}'.format(self.nsxmanager))
 
     def validate_logical_switches(self):
@@ -148,11 +153,15 @@ class NSXConfig(dict):
         
         enable_dlr = self.get('nsxmanager')['enable_dlr']
         
-        fields = [ 'name',  'cidr'] #, 'primary_ip', 'secondary_ips']
+        fields = [ 'name',  'cidr', 'switch_type'] #, 'primary_ip', 'secondary_ips']
         given_logical_switches = copy.deepcopy(self.logical_switches)
         #self.logical_switches = [ ]
         for lswitch in self.logical_switches:
+
             for field in fields:
+                if 'ISO' in lswitch['name'].upper():
+                    lswitch['switch_type'] = 'ISOZONE'
+
                 if lswitch[field] is None:
                     raise ValueError(field + ' field not set for logical_switch')
             
@@ -166,20 +175,24 @@ class NSXConfig(dict):
             addr_range = ipcalc.Network(lswitch['cidr'])
             lswitch['name'] = 'lsw-'+self.get('name') + '-' + lswitch['name']
             lswitch['subnet_mask'] = addr_range.netmask()
-            lswitch['gateway'] = addr_range[0]
-            lswitch['primary_ip'] = addr_range[1]
+            lswitch['gateway'] = addr_range[1]
+            lswitch['primary_ip'] = addr_range[2]
             lswitch['subnet_length'] = string.atoi(lswitch['cidr'].split('/')[1])
             lswitch['name'] = lswitch['name'].replace(' ', '-')
             
             # This will be filled in later once we have parsed the routed components
-            lswitch['secondary_ips'] = []       
-            #print('Logical Switch Entry:', lswitch)
+            lswitch['secondary_ips'] = []     
+              
+            # Check for snat_address for that switch
+            if  lswitch.get("snat_address") is None:
+                lswitch['snat_address'] = ''
             
-            # Skip OSPF Switch if DLR not enabled
-            #if not (lswitch['given_name'] == 'OSPF' and not enable_dlr):
-            #   filtered_logical_switches.append(lswitch)               
-        
-        #self.logical_switches = filtered_logical_switches  
+            # Going with fixed ips for the ospf switch
+            if 'OSPF' in lswitch['given_name'].upper():
+                lswitch['protocolAddress'] = addr_range[253]
+                lswitch['forwardingAddress'] = addr_range[11]
+                lswitch['routerId'] = addr_range[10]
+           
         print_logical_switches_configured(self.logical_switches)
         
     def validate_nsx_edges(self):
@@ -201,16 +214,19 @@ class NSXConfig(dict):
                 given_name = lswitch['name'].upper()
             global_switches[given_name] = lswitch
 
-        fields = [ 'name', 'size', 'cli', 'routed_components', 'gateway_ip', 'ospf_password']
+        fields = [ 'name', 'size', 'dlr_size', 'cli', 'routed_components', 'gateway_ip', 'ospf_password']
         for nsx_edge in self.nsx_edges:
 
             for field in fields:
                 if nsx_edge[field] is None:
                     raise ValueError(field + ' field not set for nsx_edge')
         
-            size = nsx_edge['size']
-            if not size or size not in [ 'xlarge', 'quadlarge', 'large', 'compact' ]:
+            if not nsx_edge['size'] or nsx_edge['size'] not in [ 'xlarge', 'quadlarge', 'large', 'compact' ]:
                 nsx_edge['size'] = 'large'
+
+            if not nsx_edge['dlr_size'] or nsx_edge['dlr_size'] not in [ 'xlarge', 'quadlarge', 'large', 'compact' ]:
+                nsx_edge['dlr_size'] = 'compact'
+
 
             # If DLR is enabled, then it needs ospf password defined
             nsx_edge['enable_dlr'] = enable_dlr
@@ -281,7 +297,7 @@ class NSXConfig(dict):
             input_config_file = input_config_file + '/' + CONFIG_FILE
 
         try:
-            with open(input_config_file) as config_file:
+            with open(input_config_file, 'r') as config_file:
                 self.update(read_yaml(config_file))
         except IOError as e:
             

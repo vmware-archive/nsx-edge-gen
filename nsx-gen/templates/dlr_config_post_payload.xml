@@ -9,7 +9,7 @@
     <enableAesni>true</enableAesni>
     <enableFips>false </enableFips>
     <appliances>
-        <applianceSize>{{dlr['size']}}</applianceSize>
+        <applianceSize>{{dlr['dlr_size']}}</applianceSize>
         <appliance>
             <resourcePoolId>{{dlr['cluster_id']}}</resourcePoolId>
             <datastoreId>{{dlr['datastore_id']}}</datastoreId>

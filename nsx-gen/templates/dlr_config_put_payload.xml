@@ -43,12 +43,12 @@
            </logging>
         </loadBalancer>
         
-
+        {% if not disable_ospf %}
         <routing>
             <enabled>true</enabled>
             <routingGlobalConfig>
-                <routerId>172.16.100.10</routerId>
                 <ecmp>false</ecmp>
+                </routerId>{{ospfLogicalSwitch['routerId']}}</routerId>
                 <logging>
                     <enable>false</enable>
                     <logLevel>info</logLevel>
@@ -57,15 +57,15 @@
             <staticRouting>
                 <defaultRoute>
                     <mtu>1500</mtu>
-                    <gatewayAddress>172.16.100.1</gatewayAddress>
+                    <gatewayAddress>{{ospfLogicalSwitch['gateway']}}</gatewayAddress>
                     <adminDistance>1</adminDistance>
                 </defaultRoute>
                 <staticRoutes/>
             </staticRouting>
             <ospf>
                 <enabled>true</enabled>
-                <protocolAddress>172.16.100.253</protocolAddress>
-                <forwardingAddress>172.16.100.11</forwardingAddress>
+                <protocolAddress>{{ospfLogicalSwitch['protocolAddress']}}</protocolAddress>
+                <forwardingAddress>{{ospfLogicalSwitch['forwardingAddress']}}</forwardingAddress>
                 <ospfAreas>
                     <ospfArea>
                         <areaId>51</areaId>
@@ -103,10 +103,63 @@
                         </rule>
                     </rules>
                 </redistribution>
-                <gracefulRestart>false</gracefulRestart>
+                <gracefulRestart>true</gracefulRestart>
                 <defaultOriginate>false</defaultOriginate>
             </ospf>
         </routing>
+
+        {% else %}
+        <!-- ospf disabled -->
+        <routing>
+            <enabled>true</enabled>
+            <routingGlobalConfig>
+                <ecmp>false</ecmp>
+                <logging>
+                    <enable>false</enable>
+                    <logLevel>info</logLevel>
+                </logging>
+            </routingGlobalConfig>
+            <staticRouting>
+                <defaultRoute>
+                    <mtu>1500</mtu>
+                    <gatewayAddress>{{ospfLogicalSwitch['gateway']}}</gatewayAddress>
+                    <adminDistance>1</adminDistance>
+                </defaultRoute>
+                <staticRoutes/>
+            </staticRouting>
+            <ospf>
+                <enabled>false</enabled>
+                <ospfAreas>
+                    <ospfArea>
+                        <areaId>51</areaId>
+                        <type>normal</type>
+                        <authentication>
+                            <type>none</type>
+                        </authentication>
+                    </ospfArea>
+                </ospfAreas>
+                <ospfInterfaces/>
+                <redistribution>
+                    <enabled>true</enabled>
+                    <rules>
+                        <rule>
+                            <id>0</id>
+                            <from>
+                                <isis>false</isis>
+                                <ospf>false</ospf>
+                                <bgp>false</bgp>
+                                <static>false</static>
+                                <connected>true</connected>
+                            </from>
+                            <action>permit</action>
+                        </rule>
+                    </rules>
+                </redistribution>
+                <gracefulRestart>true</gracefulRestart>
+                <defaultOriginate>false</defaultOriginate>
+            </ospf>
+        </routing>
+        {% endif %}
         <featureConfig/>
         <!--
         <highAvailability>
@@ -161,7 +214,7 @@
             {% endif %}
             <isConnected>true</isConnected>
             <isSharedNetwork>false</isSharedNetwork>
-            <index>{{ loop.index + 1}}</index>
+            <!--index>{{ loop.index + 1}}</index-->
             <connectedToId>{{ lswitch['id']}}</connectedToId>
             <connectedToName>{{lswitch['name']}}</connectedToName>
         </interface>
