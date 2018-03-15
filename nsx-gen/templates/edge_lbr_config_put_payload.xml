@@ -14,7 +14,7 @@
     <transparent>false</transparent>
     <monitorId>{{ pool['monitor_id']}}</monitorId>
 
-    {% if nsx_edge['bosh_nsx_enabled'] == False %}
+    {% if nsx_edge['bosh_nsx_enabled'] == False or 'opsdir' in pool['name'] %}
 
      {% for ip in pool['ips'].split(',') %}
     <member>

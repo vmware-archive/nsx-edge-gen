@@ -158,7 +158,7 @@ ATTRIBUTE_MAP_ARRAY = {
 
 # Should match
 # Supporting atmost 5 isolation segments per ESG Edge instance
-ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'go_router_nossl', 'diego_brain', 'tcp_router', 'mysql_ert', 
+ROUTED_COMPONENTS = [ 'opsmgr', 'opsdir', 'go_router', 'go_router_nossl', 'diego_brain', 'tcp_router', 'mysql_ert', 
 						'mysql_tile', 'rabbitmq_tile', 
 						'go_router_isozone_1', 'go_router_nossl_isozone_1', 'tcp_router_isozone_1',
 						'go_router_isozone_2', 'go_router_nossl_isozone_2', 'tcp_router_isozone_2',

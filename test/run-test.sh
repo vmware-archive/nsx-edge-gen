@@ -29,6 +29,8 @@ rm -rf $CONFIG_NAME
   -esg_iso_certs_config_cc_1_1 US \
   -esg_iso_certs_config_domains_1_1 zone1-app.test.pivotal.io \
   -esg_opsmgr_uplink_ip_1 10.193.99.171 \
+  -esg_opsdir_uplink_ip_1 10.193.99.176 \
+  -esg_opsdir_off_1 10 \
   -esg_go_router_uplink_ip_1 10.193.99.172 \
   -esg_diego_brain_uplink_ip_1 10.193.99.173 \
   -esg_tcp_router_uplink_ip_1 10.193.99.174 \

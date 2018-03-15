@@ -719,9 +719,10 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
         # FIX ME -- would have to update this 
         # for any new component that needs direct route via firewall
         opsmgr_routed_component = nsx_edge['routed_components'][0]
-        ert_routed_component    = nsx_edge['routed_components'][1]
-        diego_routed_component  = nsx_edge['routed_components'][2]
-        tcp_routed_component    = nsx_edge['routed_components'][3]
+        opsdir_routed_component = nsx_edge['routed_components'][1]
+        ert_routed_component    = nsx_edge['routed_components'][2]
+        diego_routed_component  = nsx_edge['routed_components'][3]
+        tcp_routed_component    = nsx_edge['routed_components'][4]
 
         isozone_routed_components = []
         iso_zones = []
@@ -737,8 +738,10 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
                 if iso_zone not in iso_zones:
                     iso_zones.append(iso_zone)
             else:
-                if 'OPS' in routed_component_name_upper:
+                if 'OPSMGR' in routed_component_name_upper:
                     opsmgr_routed_component = routed_component
+                elif 'OPSDIR' in routed_component_name_upper:
+                    opsdir_routed_component = routed_component
                 elif 'GO-ROUTER' in routed_component_name_upper:
                     ert_routed_component = routed_component
                 elif 'DIEGO' in routed_component_name_upper:
@@ -816,6 +819,7 @@ def build_nsx_edge_gateways(dir, context, alternate_template=None):
             'ertLogicalSwitch': ertLogicalSwitch,
             'routed_components':  nsx_edge['routed_components'],
             'opsmgr_routed_component': opsmgr_routed_component,
+            'opsdir_routed_component': opsdir_routed_component,
             'ert_routed_component': ert_routed_component,
             'diego_routed_component': diego_routed_component,
             'tcp_routed_component': tcp_routed_component,

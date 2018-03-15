@@ -108,7 +108,7 @@ routed_components:
       port: '5000'  #'1024-65535'
       protocol: tcp
 
-- name: OPS
+- name: OPSMGR
   switch_type: INFRA
   external: true
   useVIP: false
@@ -124,7 +124,22 @@ routed_components:
       protocol: https
       monitor_port: '443'
       url: "/"
-  
+
+- name: OPSDIR
+  switch_type: INFRA
+  external: true
+  useVIP: true
+  instances: 1
+  offset: 10
+  monitor_id: monitor-1
+  transport:
+    ingress:
+      port: 8443,4222,25555,25250,443
+      protocol: tcp
+    egress:
+      port: 8443,4222,25555,25250,443
+      protocol: tcp
+    
 - name: GO-ROUTER
   switch_type: ERT
   external: true

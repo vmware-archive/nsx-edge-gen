@@ -244,10 +244,36 @@
                         </service>
                     </application>
                 </firewallRule>
-                <!--
                 <firewallRule>
                     <id>13105</id>
                     <ruleTag>13105</ruleTag>
+                    <name>Allow Ingress -&gt; Ops Dir</name>
+                    <ruleType>user</ruleType>
+                    <enabled>true</enabled>
+                    <loggingEnabled>false</loggingEnabled>
+                    <description></description>
+                    <matchTranslated>false</matchTranslated>
+                    <action>accept</action>
+                    <destination>
+                        <exclude>false</exclude>
+                        <ipAddress>{{opsdir_routed_component['uplink_details']['uplink_ip']}}</ipAddress>                        
+                    </destination>
+                    <application>
+                        <service>
+                            <protocol>tcp</protocol>
+                            <port>443</port>
+                            <port>8443</port>
+                            <port>4222</port>
+                            <port>25555</port>
+                            <port>25250</port>
+                            <sourcePort>any</sourcePort>
+                        </service>
+                    </application>
+                </firewallRule>
+                <!--
+                <firewallRule>
+                    <id>13106</id>
+                    <ruleTag>13106</ruleTag>
                     <name>Allow Inside &lt;-&gt; Inside</name>
                     <ruleType>user</ruleType>
                     <enabled>true</enabled>
@@ -266,8 +292,8 @@
                 </firewallRule>
                 
                 <firewallRule>
-                    <id>13106</id>
-                    <ruleTag>13106</ruleTag>
+                    <id>13107</id>
+                    <ruleTag>13107</ruleTag>
                     <name>Allow Egress -&gt; All Outbound</name>
                     <ruleType>user</ruleType>
                     <enabled>true</enabled>
@@ -388,7 +414,9 @@
                     </source>
                     <destination>
                         <exclude>false</exclude>                       
-                        <ipAddress>{{defaults['ntp_ips']}}</ipAddress>
+                        {% for ntp_ip in defaults['ntp_ips'].split(',') %}                       
+                        <ipAddress>{{ntp_ip}}</ipAddress>
+                        {% endfor %}
                     </destination>
                     <application>
                         <service>
@@ -417,7 +445,9 @@
                     </source>
                     <destination>
                         <exclude>false</exclude>                       
-                        <ipAddress>{{defaults['syslog_ips']}}</ipAddress>
+                        {% for syslog_ip in defaults['syslog_ips'].split(',') %}                       
+                        <ipAddress>{{syslog_ip}}</ipAddress>
+                        {% endfor %}
                     </destination>
                     <application>
                         <service>
@@ -471,7 +501,9 @@
                     </source>
                     <destination>
                         <exclude>false</exclude>                       
-                        <ipAddress>{{defaults['ldap_ips']}}</ipAddress>
+                        {% for ldap_ip in defaults['ldap_ips'].split(',') %}                       
+                        <ipAddress>{{ldap_ip}}</ipAddress>
+                        {% endfor %}
                     </destination>
                     <application>
                         <service>
@@ -499,8 +531,10 @@
                         <ipAddress>{{cross_network_cidr}}</ipAddress>
                     </source>
                     <destination>
-                        <exclude>false</exclude>                       
-                        <ipAddress>{{defaults['dns_ips']}}</ipAddress>
+                        <exclude>false</exclude>
+                        {% for dns_ip in defaults['dns_ips'].split(',') %}                       
+                        <ipAddress>{{dns_ip}}</ipAddress>
+                        {% endfor %}
                     </destination>
                     <application>
                         <service>

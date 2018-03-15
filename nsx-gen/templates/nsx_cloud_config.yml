@@ -105,6 +105,22 @@ edge_service_gateways:
       #  port: 443
       #  protocol: https
       #  monitor_port: 443    
+
+  # - name: opsdir
+  #   switch: Infra
+  #   external: true
+  #   instances: 1
+  #   offset: 10
+  #   uplink_details:
+  #     uplink_ip: 10.114.216.176 # This gets exposed outside   
+    #transport:
+      # ingress:
+      #  port: 8443,4222,25555,25250,443
+      #  protocol: tcp
+      # egress: 
+      #  port: 8443,4222,25555,25250,443
+      #  protocol: tcp
+      
   - name: go-router
     switch: Ert
     external: true
@@ -220,6 +236,8 @@ edge_service_gateways:
       egress: 
         port: 15672,5671,5672
         protocol: tcp
+
+  
 
 #  - name: go-router-isozone-1
 #    switch: IsoZone-1

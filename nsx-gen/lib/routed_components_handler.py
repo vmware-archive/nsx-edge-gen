@@ -327,7 +327,7 @@ class RoutedComponent:
 		print('Updated app profile for {} is {}'.format(self.name, self.app_profile))
 
 	def check_for_opsmgr(self):
-		if ('OPS' in self.name.upper()):
+		if ('OPSMGR' in self.name.upper()):
 			self.useVIP = False
 			self.instances = 1 
 			self.external = True

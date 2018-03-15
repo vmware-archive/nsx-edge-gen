@@ -197,6 +197,39 @@ Example:
 ```
 The default set of routed components are already filled in code to take care of default number of instances, offset, transport details etc.
 
+Note: Now its possible to expose the Bosh director and associated management services via Loadbalancer/vip using `opsdir` routed component.
+Just specify the uplink ip for the ops dir and following ports would be automatically get exposed: 8443,4222,25555,25250,443
+```
+  -esg_opsmgr_uplink_ip_1 10.74.37.171 \
+  -esg_go_router_uplink_ip_1 10.74.37.172 \
+  -esg_opsdir_uplink_ip_1 10.74.37.176 \
+```
+
+Default instance ip for the Bosh Director would be use offset `10` from the Infra logical switch subnet (like 192.168.10.10)
+Specify the offsets by either declaring the section in the nsx_cloud_config.yml :
+```
+   - name: opsdir
+     switch: Infra
+     external: true
+     instances: 1
+     offset: 10
+     uplink_details:
+       uplink_ip: 10.114.216.176 # This gets exposed outside   
+    #transport: # uncomment to change the defaults
+      # ingress:
+      #  port: 8443,4222,25555,25250,443
+      #  protocol: tcp
+      # egress: 
+      #  port: 8443,4222,25555,25250,443
+      #  protocol: tcp
+```
+
+or via additional command line args:
+```
+  -esg_opsdir_uplink_ip_1 10.74.37.176 \
+  -esg_opsdir_off_1 10 \
+```
+
 Avoid editing the default set of routed_components. 
 Additional new routed components can be added if necessary.
 
