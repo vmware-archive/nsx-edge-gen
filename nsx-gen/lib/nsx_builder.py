@@ -149,7 +149,7 @@ def export_firewall_rules(context, verbose=False):
     export_nsx_edge_gateway_firewall_rules(context)  
 
 def map_logical_switches_id(logical_switches):
-    existinglSwitchesResponse = client.get(NSX_URLS['lswitch']['all'] + '?&startindex=0&pagesize=100')
+    existinglSwitchesResponse = client.get(NSX_URLS['lswitch']['all'] + '?&startindex=0&pagesize=1000')
     existinglSwitchesResponseDoc = xmltodict.parse(existinglSwitchesResponse.text)
     if DEBUG:
         print('LogicalSwitches response :{}\n'.format(existinglSwitchesResponse.text)) 
@@ -430,7 +430,7 @@ def build_logical_switches(dir, context, type='logical_switches', alternate_temp
 
 def list_logical_switches(context, reportAll=True):
 
-    existinglSwitchesResponse = client.get(NSX_URLS['lswitch']['all']+ '?&startindex=0&pagesize=100')#'/api/2.0/vdn/virtualwires')
+    existinglSwitchesResponse = client.get(NSX_URLS['lswitch']['all']+ '?&startindex=0&pagesize=1000')#'/api/2.0/vdn/virtualwires')
     existinglSwitchesResponseDoc = xmltodict.parse(existinglSwitchesResponse.text)
     if DEBUG:
         print('LogicalSwitches response :{}\n'.format(existinglSwitchesResponse.text)) 
@@ -1124,7 +1124,7 @@ def add_lbr_to_nsx_edge_with_no_certs(nsx_edges_dir, nsx_edge):
         raise Exception('Update of NSX Edge LBR Config failed, details:\n {}'.format(data))
 
 def map_nsx_esg_id(edge_service_gateways):
-    existingEsgResponse = client.get('/api/4.0/edges'+ '?&startindex=0&pagesize=100')
+    existingEsgResponse = client.get('/api/4.0/edges'+ '?&startindex=0&pagesize=1000')
     existingEsgResponseDoc = xmltodict.parse(existingEsgResponse.text)
 
     matched_nsx_esgs = 0
