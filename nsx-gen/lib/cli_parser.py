@@ -41,7 +41,7 @@ REPO_PATH = os.path.realpath(os.path.join(LIB_PATH, '..'))
 import config
 from config import Config
 
-ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router']
+ROUTED_COMPONENTS = [ 'opsmgr', 'go_router', 'diego_brain', 'tcp_router', 'opsdir']
 
 ATTRIBUTE_MAP_ARRAY = {
     'vcenter' : [ 
