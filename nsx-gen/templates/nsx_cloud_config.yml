@@ -19,12 +19,12 @@ nsxmanager:
   enable_dlr: true
   bosh_nsx_enabled: false
   uplink_details:
-    primary_ip: 10.114.216.167
+    primary_ip: 1.1.1.167
     uplink_port_switch: SampleUplinkPort # if not specified, would use VM Networks as default
 #  static_routes:
 #  - name: static-route-1
 #    subnet: 10.0.0.0/8
-#    gateway: 10.114.216.180
+#    gateway: 1.1.1.180
 #    hop: 1
 
 defaults:
@@ -38,7 +38,7 @@ edge_service_gateways:
 - name: {{ name }}
   size: compact
   dlr_size: compact
-  gateway_ip: 10.114.216.1
+  gateway_ip: 1.1.1.1
   cli:
     username: testuser
     password: Test$assword123456
@@ -94,7 +94,7 @@ edge_service_gateways:
     instances: 1
     offset: 5
     uplink_details:
-      uplink_ip: 10.114.216.171 # This gets exposed outside   
+      uplink_ip: 1.1.1.171 # This gets exposed outside   
     #transport:
       # #Default ingress scheme is https/443 for opsmgr
       # ingress:
@@ -112,7 +112,7 @@ edge_service_gateways:
   #   instances: 1
   #   offset: 10
   #   uplink_details:
-  #     uplink_ip: 10.114.216.176 # This gets exposed outside   
+  #     uplink_ip: 1.1.1.176 # This gets exposed outside   
     #transport:
       # ingress:
       #  port: 8443,4222,25555,25250,443
@@ -127,7 +127,7 @@ edge_service_gateways:
     instances: 4
     offset: 200
     uplink_details:
-      uplink_ip: 10.114.216.172 # This gets exposed outside
+      uplink_ip: 1.1.1.172 # This gets exposed outside
     #transport:
       # Default ingress scheme is https/443 for ert
       #ingress:
@@ -144,7 +144,7 @@ edge_service_gateways:
     instances: 4
     offset: 250
     uplink_details:
-      uplink_ip: 10.114.216.173 # This gets exposed outside
+      uplink_ip: 1.1.1.173 # This gets exposed outside
     transport:
       #Default ingress scheme is https/80 for ert
       ingress:

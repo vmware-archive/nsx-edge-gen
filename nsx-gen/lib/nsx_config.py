@@ -283,7 +283,12 @@ class NSXConfig(dict):
                 routedComponent = parse_routing_component(entry, self.logical_switches, 
                                                         app_profiles, enable_dlr)
                 print('Routed component: {}'.format(routedComponent))
-                nsx_edge['routed_components'].append(routedComponent)
+
+                # Ignore those components that are using default 1.1.1.x uplink ips
+                if not routedComponent['uplink_details']['uplink_ip'].startswith('1.1.1'):
+                    nsx_edge['routed_components'].append(routedComponent)
+                else:
+                    print('WARNING!! Ignoring Routed component: {} as it was not supplied with Uplink IP!!\n'.format(routedComponent['name'])) 
 
             name = 'esg-' + self.get('name')
             if  self.get('name') != nsx_edge['name']:

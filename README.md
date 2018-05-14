@@ -233,6 +233,12 @@ or via additional command line args:
 Avoid editing the default set of routed_components. 
 Additional new routed components can be added if necessary.
 
+Note: The default uplink ip for the routed components in the template has been changed to 1.1.1.x (those exposed externally). For those components that are not overiding this default ip, the routed components would be ignored from the setup. This is to avoid errors later when a default uplink ip is not part of the defined network subnets and block creation of the edge.
+Sample warning error for those components that miss the uplink ip:
+```
+WARNING!! Ignoring Routed component: go-router-nossl as it was not supplied with Uplink IP!!
+```
+
 # Build Logical switches and ESG
 Build new instances of ESGs and logical switches using the build command as arg to nsxgen
 
