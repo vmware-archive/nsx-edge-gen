@@ -175,8 +175,8 @@ class NSXConfig(dict):
             addr_range = ipcalc.Network(lswitch['cidr'])
             lswitch['name'] = 'lsw-'+self.get('name') + '-' + lswitch['name']
             lswitch['subnet_mask'] = addr_range.netmask()
-            lswitch['gateway'] = addr_range[1]
-            lswitch['primary_ip'] = addr_range[2]
+            lswitch['gateway'] = addr_range[0]
+            lswitch['primary_ip'] = addr_range[1]
             lswitch['subnet_length'] = string.atoi(lswitch['cidr'].split('/')[1])
             lswitch['name'] = lswitch['name'].replace(' ', '-')
             
